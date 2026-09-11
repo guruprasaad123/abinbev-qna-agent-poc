@@ -1,0 +1,21 @@
+# The core runtime (src/) has ZERO required third-party dependencies -- it's
+# pure Python standard library (sqlite3, json, re, math, statistics, io,
+# signal). This was a deliberate design choice for portability and to keep
+# the offline/mock smoke tests (tests/test_pipeline.py) runnable anywhere.
+# See docs/DESIGN_DECISIONS.md.
+#
+# Install only the extras you actually need:
+
+# --- LLM provider: install ONE of these to match LLM_PROVIDER ---
+anthropic>=0.40.0
+openai>=1.50.0
+
+# --- Web search sub-agent (optional) ---
+# requests is needed only if TAVILY_API_KEY is set (production search provider)
+requests>=2.31.0
+# duckduckgo-search is an optional free/no-key fallback for the demo
+duckduckgo-search>=6.0
+
+# --- Notebook ---
+jupyter>=1.0.0
+notebook>=7.0.0
