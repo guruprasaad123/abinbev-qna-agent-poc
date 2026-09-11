@@ -2,7 +2,7 @@
 Sandboxed Python execution for the Coding Sub-Agent.
 
 Used for on-the-fly derived calculations the structured-data SQL layer isn't
-well suited to (e.g. "what CAGR would get CocoNest from its FY23 revenue to
+well suited to (e.g. "what CAGR would get Havenbrook Seltzer from its FY23 revenue to
 $5M by FY28?", custom multi-step arithmetic, ad-hoc aggregation of numbers
 already retrieved by other sub-agents, simple matplotlib charts).
 

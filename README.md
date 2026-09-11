@@ -1,18 +1,22 @@
-# Solara FMCG Group — Enterprise Q&A Agent (Prototype)
+# Meridian Brewing Group — Enterprise Q&A Agent (Prototype)
 
-A multi-agent enterprise Q&A prototype over a synthetic FMCG business: one
-orchestrator agent backed by four specialist sub-agents (structured data,
-unstructured documents, internet search, coding), answering natural-language
-questions with citations, safety controls, and transparent limitations.
+A multi-agent enterprise Q&A prototype over a synthetic global brewing
+business: one orchestrator agent backed by four specialist sub-agents
+(structured data, unstructured documents, internet search, coding),
+answering natural-language questions with citations, safety controls, and
+transparent limitations.
 
 Built as a take-home assignment. See `docs/` for the full design writeup and
 `notebooks/demo.ipynb` for a prerun demo covering every required capability.
 
 ## What's here
 
-- **A synthetic FMCG company** — Solara FMCG Group — with 8 brands across 4
-  categories, 8 markets, 4 channels, and 8 KPIs, generated as a SQLite fact
-  table (`data/db/solara_fmcg.db`, ~11k rows, Jan 2023–Aug 2026).
+- **A synthetic FMCG (brewing) company** — Meridian Brewing Group — with 8
+  brands across 3 categories / 5 sub-categories (International Premium,
+  Craft & Specialty, Mainstream Lager, and a "Beyond Beer" segment of
+  Non-Alcoholic and Hard Seltzer), 8 markets, 4 channels, and 8 KPIs,
+  generated as a SQLite fact table (`data/db/meridian_brewing.db`, ~11k rows,
+  Jan 2023–Aug 2026).
 - **28 unstructured documents** (press releases, earnings commentary, market
   research, sustainability updates, competitor intel, strategy memos)
   deliberately overlapping in entities and themes with each other and with
@@ -84,12 +88,12 @@ src/
     websearch_agent.py     # NL -> web search results
     coding_agent.py         # NL -> sandboxed calculation
 scripts/
-  generate_structured_data.py  # builds data/db/solara_fmcg.db
+  generate_structured_data.py  # builds data/db/meridian_brewing.db
   generate_documents.py        # builds data/unstructured/*.md + manifest.json
   build_notebook.py            # builds notebooks/demo.ipynb
   chat_cli.py                  # interactive terminal chat
 data/
-  db/solara_fmcg.db           # generated structured dataset
+  db/meridian_brewing.db           # generated structured dataset
   unstructured/*.md            # generated document corpus + manifest.json
 notebooks/demo.ipynb           # prerun demo covering every required capability
 tests/test_pipeline.py         # offline test suite (mock LLM, no API key needed)

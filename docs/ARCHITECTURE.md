@@ -49,9 +49,10 @@
         ▼                ▼               ▼                │
 ┌───────────────┐ ┌─────────────┐ ┌────────────┐          │
 │ SQLite:        │ │ 28 markdown │ │  public    │          │
-│ solara_fmcg.db │ │ documents + │ │  internet  │          │
-│ (fact_monthly_ │ │ manifest.   │ │ (optional) │          │
-│ kpi + dims)    │ │ json        │ │            │          │
+│ meridian_      │ │ documents + │ │  internet  │          │
+│ brewing.db     │ │ manifest.   │ │ (optional) │          │
+│ (fact_monthly_ │ │ json        │ │            │          │
+│ kpi + dims)    │ │             │ │            │          │
 └───────────────┘ └─────────────┘ └────────────┘          │
                                                     (no external data;
                                                      pure computation)
@@ -70,14 +71,14 @@ that records every call's tokens/latency/estimated cost — this is what makes
    entity catalogs plus the current `ConversationMemory.context_block()`
    (rolling summary + active filters). Returns intent, detected language,
    extracted/aliased entities, an explicit clarification flag+question when
-   needed, any entities that aren't in Solara's known lists, and which
+   needed, any entities that aren't in Meridian's known lists, and which
    sub-agents are needed.
 3. **Fast paths** for `greeting` / `capability_intro` / `out_of_scope` /
    `metadata_discovery` / `clarification_needed` answer immediately without
    touching any sub-agent — cheap and instant.
 4. **Hierarchy fallback** (`_hierarchy_fallback_notes`): any city named by the
    user is resolved to its country (structured data's actual grain) with an
-   explicit note; anything not in Solara's tracked brands/countries at all
+   explicit note; anything not in Meridian's tracked brands/countries at all
    (e.g. a competitor) is flagged as unsupported, also explicitly.
 5. **Routing**: the NLU's `needed_subagents` list (which can contain more than
    one — this is what makes retrieval "hybrid") drives which of the four
@@ -104,7 +105,7 @@ that records every call's tokens/latency/estimated cost — this is what makes
 
 ## Data model
 
-- **Structured**: one SQLite DB (`data/db/solara_fmcg.db`), one fact table
+- **Structured**: one SQLite DB (`data/db/meridian_brewing.db`), one fact table
   (`fact_monthly_kpi`, grain = brand × country × channel × month) plus three
   dimension tables. See `scripts/generate_structured_data.py` and
   `src/tools/sql_tool.py::schema_description()`.

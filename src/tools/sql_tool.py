@@ -32,7 +32,7 @@ import sqlite3
 from pathlib import Path
 from dataclasses import dataclass
 
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "solara_fmcg.db"
+DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "meridian_brewing.db"
 
 ALLOWED_TABLES = {"fact_monthly_kpi", "dim_brand", "dim_geo", "dim_channel"}
 BLOCKED_KEYWORDS = re.compile(
@@ -135,6 +135,6 @@ Tables (read-only):
   dim_channel(channel TEXT PRIMARY KEY)
 
 Grain of fact_monthly_kpi is one row per (brand, country, channel, year, month).
-Data covers Jan 2023 through Aug 2026 (year-to-date). volume_unit is 'hL' for
-Beverages brands and 'K units' for Food brands -- always report volume with its unit.
+Data covers Jan 2023 through Aug 2026 (year-to-date). volume_unit is always 'hL'
+(hectoliters, the standard brewing-industry volume unit) -- always report volume with its unit.
 """.strip()

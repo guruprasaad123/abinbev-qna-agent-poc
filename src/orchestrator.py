@@ -50,7 +50,7 @@ Known KPIs: {', '.join(ALL_KPIS)}
 In-scope domain: {DOMAIN_DESCRIPTION}
 
 The user may write in any language, mix languages, use abbreviations (e.g. "GP" for
-Glacier Peak, "US" for United States), or make typos -- resolve these to the canonical
+Northstar Lager, "US" for United States), or make typos -- resolve these to the canonical
 names above wherever confident.
 
 Respond with ONLY a JSON object (no markdown fences) with this exact shape:
@@ -144,10 +144,8 @@ class Orchestrator:
                 resolved_countries.append(country)
                 notes.append(f"Structured data isn't broken out by city; showing **{country}** "
                               f"(the country containing {key}) instead.")
-            elif key in COUNTRY_TO_REGION.values() if False else key in ["Beverages", "Food"]:
-                pass
             else:
-                notes.append(f"'{key}' isn't part of Solara's tracked entities (brand/country/competitor), "
+                notes.append(f"'{key}' isn't part of {COMPANY_NAME}'s tracked entities (brand/country/competitor), "
                               f"so no internal data exists for it. Any answer about it, if given, is "
                               f"qualitative/public information only, not internal reporting.")
         if resolved_countries:
@@ -166,12 +164,8 @@ class Orchestrator:
         evidence = []
         assumptions = list(result.notes)
         if result.ok:
-            vol_units = None
-            if "volume" in result.columns and "brand" in result.columns:
-                vol_units = [
-                    ("hL" if BRANDS.get(row[result.columns.index("brand")], {}).get("category") == "Beverages" else "K units")
-                    for row in result.rows
-                ]
+            # Volume is always reported in hL (hectoliters) -- see src/config.py.
+            vol_units = ["hL"] * len(result.rows) if "volume" in result.columns else None
             table = rows_to_markdown_table(result.columns, result.rows, volume_unit_by_row=vol_units)
             evidence.append(f"STRUCTURED DATA (SQL: {result.sql_used}):\n{table}")
         else:

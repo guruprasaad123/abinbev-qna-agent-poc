@@ -216,7 +216,7 @@ class MockLLMClient(LLMClient):
             channels = [c for c in ALL_CHANNELS if c.lower() in u]
             kpis = [k for k in ALL_KPIS if k.replace("_", " ") in u]
             unsupported = [city for city in CITY_TO_COUNTRY if city.lower() in u]
-            for fake_competitor in ("northern lager", "blue ridge", "meridian beverages", "alpine confectionery"):
+            for fake_competitor in ("highland brewing", "continental lager", "pacific rim brewers"):
                 if fake_competitor in u:
                     unsupported.append(fake_competitor.title())
 

@@ -1,5 +1,5 @@
 """
-Central business-domain configuration for the Solara FMCG Group synthetic universe.
+Central business-domain configuration for the Meridian Brewing Group synthetic universe.
 
 This is the SINGLE SOURCE OF TRUTH for entities (company/category/brand/SKU,
 geography, channel), KPIs, and aliases. Both the structured-data generator and
@@ -8,48 +8,56 @@ the two corpora share the same entities and themes (a requirement of the
 assignment) rather than being generated independently and only coincidentally
 overlapping.
 
-NOTE ON REALISM: "Solara FMCG Group" and all brand names below are entirely
-fictional. We deliberately did NOT model this on a real company's actual
-financials/brands, even though the assignment domain is FMCG — fabricated
-numbers attributed to a real company would be misleading. The category mix
-(beer / non-alcoholic beverages / snacks / confectionery) mirrors a realistic
-multi-category FMCG portfolio so the retrieval and reasoning challenges
-(hierarchy, multi-KPI comparisons, temporal reasoning) are representative.
+NOTE ON REALISM: "Meridian Brewing Group" and all brand names below are
+entirely fictional. We deliberately did NOT model this on a real company's
+actual financials/brands, even though the domain (a global brewer, mirroring
+the kind of portfolio and business-zone structure a company like AB InBev
+has) is intentionally realistic — fabricating numbers and attributing them
+to a real, identifiable company would be misleading even in an obviously
+synthetic exercise. The category/segment mix (International Premium, Craft
+& Specialty, Mainstream Lager, and a "Beyond Beer" segment of Non-Alcoholic/
+Hard Seltzer) mirrors how a real global brewer actually segments its
+portfolio, so the hierarchy, multi-KPI comparison, and temporal-reasoning
+challenges are representative of the real domain.
 """
 
 from __future__ import annotations
 from datetime import date
 
-COMPANY_NAME = "Solara FMCG Group"
+COMPANY_NAME = "Meridian Brewing Group"
 
 # ---------------------------------------------------------------------------
 # Category hierarchy: Category -> Sub-category
+# Mirrors how a global brewer actually segments its portfolio: price-tier
+# segments (Premium & Above, Core & Value) plus the "Beyond Beer" growth
+# segment (non-alcoholic / hard seltzer) that real brewers report separately.
 # ---------------------------------------------------------------------------
 CATEGORY_HIERARCHY = {
-    "Beverages": ["Beer", "Non-Alcoholic"],
-    "Food": ["Salty Snacks", "Confectionery"],
+    "Premium & Above": ["International Premium", "Craft & Specialty"],
+    "Core & Value": ["Mainstream Lager"],
+    "Beyond Beer": ["Non-Alcoholic", "Hard Seltzer"],
 }
 
 # ---------------------------------------------------------------------------
 # Brand hierarchy: Brand -> Category / Sub-category, plus SKUs
 # ---------------------------------------------------------------------------
 BRANDS = {
-    "Glacier Peak":   {"category": "Beverages", "sub_category": "Beer",
-                        "skus": ["Glacier Peak 330ml Can 6-Pack", "Glacier Peak 500ml Bottle", "Glacier Peak 1L Multipack"]},
-    "Ironclad Stout": {"category": "Beverages", "sub_category": "Beer",
-                        "skus": ["Ironclad Stout 330ml Can 4-Pack", "Ironclad Stout 500ml Bottle"]},
-    "Vivo Splash":    {"category": "Beverages", "sub_category": "Non-Alcoholic",
-                        "skus": ["Vivo Splash 500ml Bottle", "Vivo Splash 1.5L Bottle", "Vivo Splash Zero 500ml Bottle"]},
-    "PureSpring":     {"category": "Beverages", "sub_category": "Non-Alcoholic",
-                        "skus": ["PureSpring 500ml Bottle", "PureSpring 1L Bottle"]},
-    "CrunchWave":     {"category": "Food", "sub_category": "Salty Snacks",
-                        "skus": ["CrunchWave 150g Bag", "CrunchWave Family Pack 300g"]},
-    "Golden Harvest": {"category": "Food", "sub_category": "Salty Snacks",
-                        "skus": ["Golden Harvest 120g Bag", "Golden Harvest Sharing Pack 250g"]},
-    "SweetPeak":      {"category": "Food", "sub_category": "Confectionery",
-                        "skus": ["SweetPeak Bar 45g", "SweetPeak Sharing Bag 180g"]},
-    "CocoNest":       {"category": "Food", "sub_category": "Confectionery",
-                        "skus": ["CocoNest Bar 40g", "CocoNest Gift Box 200g"]},
+    "Northstar Lager":       {"category": "Premium & Above", "sub_category": "International Premium",
+                               "skus": ["Northstar Lager 330ml Can 6-Pack", "Northstar Lager 500ml Bottle", "Northstar Lager 30L Keg"]},
+    "Kestrel Pilsner":       {"category": "Premium & Above", "sub_category": "International Premium",
+                               "skus": ["Kestrel Pilsner 330ml Can 4-Pack", "Kestrel Pilsner 500ml Bottle"]},
+    "Ironclad Stout":        {"category": "Premium & Above", "sub_category": "Craft & Specialty",
+                               "skus": ["Ironclad Stout 330ml Can 4-Pack", "Ironclad Stout 500ml Bottle"]},
+    "Copperline Amber Ale":  {"category": "Premium & Above", "sub_category": "Craft & Specialty",
+                               "skus": ["Copperline Amber Ale 355ml Can 6-Pack", "Copperline Amber Ale 500ml Bottle"]},
+    "Frostpeak Light":       {"category": "Core & Value", "sub_category": "Mainstream Lager",
+                               "skus": ["Frostpeak Light 355ml Can 12-Pack", "Frostpeak Light 500ml Bottle", "Frostpeak Light 30L Keg"]},
+    "Harborlight Gold":      {"category": "Core & Value", "sub_category": "Mainstream Lager",
+                               "skus": ["Harborlight Gold 330ml Can 6-Pack", "Harborlight Gold 1L Bottle"]},
+    "Clearwater Zero":       {"category": "Beyond Beer", "sub_category": "Non-Alcoholic",
+                               "skus": ["Clearwater Zero 330ml Can 6-Pack", "Clearwater Zero 500ml Bottle"]},
+    "Havenbrook Seltzer":    {"category": "Beyond Beer", "sub_category": "Hard Seltzer",
+                               "skus": ["Havenbrook Seltzer 355ml Can 12-Pack Variety", "Havenbrook Seltzer 355ml Can 6-Pack"]},
 }
 ALL_BRANDS = list(BRANDS.keys())
 
@@ -64,14 +72,16 @@ GEO_HIERARCHY = {
     "North America": {"United States": ["New York", "Los Angeles"], "Canada": ["Toronto"]},
     "Europe": {"United Kingdom": ["London"], "Germany": ["Berlin"]},
     "APAC": {"India": ["Mumbai", "Delhi"], "Australia": ["Sydney"]},
-    "LATAM": {"Brazil": ["Sao Paulo"], "Mexico": ["Mexico City"]},
+    "South America": {"Brazil": ["Sao Paulo"], "Mexico": ["Mexico City"]},
 }
 ALL_COUNTRIES = [c for region in GEO_HIERARCHY.values() for c in region]
 COUNTRY_TO_REGION = {c: r for r, cs in GEO_HIERARCHY.items() for c in cs}
 CITY_TO_COUNTRY = {city: c for r, cs in GEO_HIERARCHY.items() for c, cities in cs.items() for city in cities}
 
 # ---------------------------------------------------------------------------
-# Channels
+# Channels -- On-Premise (bars/pubs/restaurants) matters far more for a
+# brewer than for a generic FMCG portfolio, so it's kept as a first-class
+# channel rather than an afterthought.
 # ---------------------------------------------------------------------------
 ALL_CHANNELS = ["Modern Trade", "Traditional Trade", "E-commerce", "On-Premise"]
 
@@ -86,6 +96,8 @@ CURRENT_YEAR = 2026
 # KPI catalog: canonical key -> metadata. Units matter for unit-aware
 # presentation; category_scope restricts which KPIs make sense for which
 # sub-categories (used for metadata discovery / graceful "not applicable").
+# Volume is reported in hectoliters (hL) throughout -- the beer industry's
+# standard volume unit -- for every brand, including Beyond Beer.
 # ---------------------------------------------------------------------------
 KPI_CATALOG = {
     "net_revenue_usd": {
@@ -94,17 +106,17 @@ KPI_CATALOG = {
         "category_scope": "all",
     },
     "volume": {
-        "label": "Volume", "unit": "varies by category", "format": "volume",
-        "description": "Sales volume. Reported in hectoliters (hL) for Beverages, thousand units (K units) for Food.",
+        "label": "Volume", "unit": "hL", "format": "volume",
+        "description": "Sales volume in hectoliters (hL), the standard brewing-industry volume unit.",
         "category_scope": "all",
     },
     "market_share_pct": {
         "label": "Market Share", "unit": "%", "format": "percent",
-        "description": "Estimated value share within the relevant category/country.",
+        "description": "Estimated value share within the relevant segment/country.",
         "category_scope": "all",
     },
     "avg_selling_price_usd": {
-        "label": "Average Selling Price (ASP)", "unit": "USD", "format": "currency",
+        "label": "Average Selling Price (ASP)", "unit": "USD per hL", "format": "currency",
         "description": "Net revenue divided by volume.",
         "category_scope": "all",
     },
@@ -115,7 +127,7 @@ KPI_CATALOG = {
     },
     "marketing_spend_usd": {
         "label": "Marketing Spend", "unit": "USD", "format": "currency",
-        "description": "Above-the-line marketing investment.",
+        "description": "Above-the-line marketing investment (incl. sponsorships).",
         "category_scope": "all",
     },
     "promo_spend_usd": {
@@ -134,46 +146,47 @@ ALL_KPIS = list(KPI_CATALOG.keys())
 # ---------------------------------------------------------------------------
 # Entity aliases / abbreviations / common typos -> canonical entity.
 # This is a deterministic first-pass normalizer that runs BEFORE the LLM
-# sees the query (cheap, fast, auditable) — the LLM is the second-pass
-# fallback for anything not in this table (see src/nlu.py).
+# sees the query (cheap, fast, auditable) -- the LLM is the second-pass
+# fallback for anything not in this table (see src/nlu logic in orchestrator.py).
 # ---------------------------------------------------------------------------
 ENTITY_ALIASES = {
     # Brands: abbreviations & common typos
-    "gp": "Glacier Peak", "glacier": "Glacier Peak", "glacer peak": "Glacier Peak", "glacie peak": "Glacier Peak",
+    "northstar": "Northstar Lager", "nsl": "Northstar Lager", "norhstar": "Northstar Lager",
+    "kestrel": "Kestrel Pilsner", "kestral pilsner": "Kestrel Pilsner",
     "ironclad": "Ironclad Stout", "stout": "Ironclad Stout",
-    "vivo": "Vivo Splash", "vivosplash": "Vivo Splash",
-    "purespring": "PureSpring", "pure spring": "PureSpring",
-    "crunchwave": "CrunchWave", "crunch wave": "CrunchWave", "cw": "CrunchWave",
-    "golden harvest": "Golden Harvest", "gh": "Golden Harvest",
-    "sweetpeak": "SweetPeak", "sweet peak": "SweetPeak",
-    "coconest": "CocoNest", "coco nest": "CocoNest",
+    "copperline": "Copperline Amber Ale", "copper line": "Copperline Amber Ale", "amber ale": "Copperline Amber Ale",
+    "frostpeak": "Frostpeak Light", "frost peak": "Frostpeak Light", "frostpeek": "Frostpeak Light",
+    "harborlight": "Harborlight Gold", "harbor light": "Harborlight Gold", "harbourlight": "Harborlight Gold",
+    "clearwater": "Clearwater Zero", "clear water zero": "Clearwater Zero",
+    "havenbrook": "Havenbrook Seltzer", "haven brook": "Havenbrook Seltzer",
     # Geography
     "us": "United States", "usa": "United States", "u.s.": "United States", "u.s.a.": "United States",
     "uk": "United Kingdom", "u.k.": "United Kingdom", "britain": "United Kingdom",
     "de": "Germany", "deutschland": "Germany",
     "nyc": "New York", "la": "Los Angeles",
-    "na": "North America", "apac": "APAC", "latam": "LATAM",
+    "na": "North America", "apac": "APAC", "latam": "South America",
     # Channels
     "mt": "Modern Trade", "modern trade": "Modern Trade",
     "tt": "Traditional Trade", "traditional trade": "Traditional Trade",
     "ecom": "E-commerce", "e-comm": "E-commerce", "online": "E-commerce",
-    "on prem": "On-Premise", "on-prem": "On-Premise", "bars": "On-Premise",
+    "on prem": "On-Premise", "on-prem": "On-Premise", "bars": "On-Premise", "draught": "On-Premise",
     # KPIs (incl. common non-English terms for multilingual support)
     "revenue": "net_revenue_usd", "sales": "net_revenue_usd", "rev": "net_revenue_usd",
     "ingresos": "net_revenue_usd", "chiffre d'affaires": "net_revenue_usd",
-    "vol": "volume", "volumen": "volume",
+    "vol": "volume", "volumen": "volume", "hectoliters": "volume", "hectolitres": "volume",
     "share": "market_share_pct", "mkt share": "market_share_pct", "market share": "market_share_pct",
     "asp": "avg_selling_price_usd", "price": "avg_selling_price_usd", "precio": "avg_selling_price_usd",
     "acv": "distribution_acv_pct", "distribution": "distribution_acv_pct",
-    "marketing": "marketing_spend_usd", "a&p": "marketing_spend_usd",
+    "marketing": "marketing_spend_usd", "a&p": "marketing_spend_usd", "sponsorship": "marketing_spend_usd",
     "promo": "promo_spend_usd", "promotion": "promo_spend_usd",
     "margin": "gross_margin_pct", "gm": "gross_margin_pct",
 }
 
 # Business-domain scope statement, shown in greeting / used for out-of-scope detection
 DOMAIN_DESCRIPTION = (
-    f"{COMPANY_NAME} performance across its Beverages (Beer, Non-Alcoholic) and "
-    f"Food (Salty Snacks, Confectionery) portfolios — revenue, volume, market share, "
-    f"pricing, distribution, marketing/promotion spend and margin, by brand, market "
-    f"and channel, plus related company news, market research and competitive context."
+    f"{COMPANY_NAME} performance across its Premium & Above (International Premium, "
+    f"Craft & Specialty), Core & Value (Mainstream Lager), and Beyond Beer (Non-Alcoholic, "
+    f"Hard Seltzer) portfolios -- revenue, volume, market share, pricing, distribution, "
+    f"marketing/promotion spend and margin, by brand, market and channel, plus related "
+    f"company news, market research and competitive context."
 )

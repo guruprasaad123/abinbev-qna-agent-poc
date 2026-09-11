@@ -1,16 +1,17 @@
 """
-Generate the synthetic structured dataset for Solara FMCG Group.
+Generate the synthetic structured dataset for Meridian Brewing Group.
 
-Produces a SQLite database at data/db/solara_fmcg.db with:
+Produces a SQLite database at data/db/meridian_brewing.db with:
   - dim_brand, dim_geo, dim_channel : dimension tables
   - fact_monthly_kpi                : brand x country x channel x month grain fact table
 
 Design choices (see docs/DESIGN_DECISIONS.md for the full rationale):
   - Deterministic seed -> reproducible dataset (important for grading/demo stability).
   - Realistic-looking but clearly synthetic time series: base level per brand/country
-    (bigger brands/markets get bigger numbers), a mild YoY growth trend, monthly
-    seasonality (Q4 uplift for snacks/confectionery, summer uplift for beer/soft
-    drinks), and bounded random noise.
+    (bigger brands/markets get bigger numbers), a mild YoY growth trend (faster for
+    the "Beyond Beer" non-alcoholic/hard-seltzer segment, mirroring the real-world
+    growth trend in that segment), monthly seasonality (a summer uplift, common
+    across beer/near-beer/seltzer occasions), and bounded random noise.
   - KPIs are internally consistent: avg_selling_price = revenue / volume (approx),
     so an agent cross-checking derived metrics against stored ones will find them
     coherent -- this matters for the "answer validation" capability.
@@ -29,15 +30,30 @@ from src.config import (
 
 random.seed(42)
 
-DB_PATH = Path(__file__).resolve().parents[1] / "data" / "db" / "solara_fmcg.db"
+DB_PATH = Path(__file__).resolve().parents[1] / "data" / "db" / "meridian_brewing.db"
 
 # Relative base "size" multipliers so numbers feel like a real portfolio rather
 # than uniform noise -- flagship brands and larger markets are bigger.
 BRAND_BASE = {
-    "Glacier Peak": 1.6, "Ironclad Stout": 0.6,
-    "Vivo Splash": 1.2, "PureSpring": 0.7,
-    "CrunchWave": 1.3, "Golden Harvest": 0.8,
-    "SweetPeak": 1.0, "CocoNest": 0.5,
+    "Northstar Lager": 1.6, "Kestrel Pilsner": 0.9,
+    "Ironclad Stout": 0.6, "Copperline Amber Ale": 0.5,
+    "Frostpeak Light": 1.3, "Harborlight Gold": 0.8,
+    "Clearwater Zero": 0.7, "Havenbrook Seltzer": 0.6,
+}
+# Annualized YoY growth rate per brand -- Beyond Beer (non-alc / hard seltzer)
+# grows fastest, mirroring the real-world trend in that segment; Mainstream
+# Lager grows slowest, reflecting a more mature/flat segment.
+BRAND_GROWTH = {
+    "Northstar Lager": 1.05, "Kestrel Pilsner": 1.06,
+    "Ironclad Stout": 1.09, "Copperline Amber Ale": 1.08,
+    "Frostpeak Light": 1.02, "Harborlight Gold": 1.03,
+    "Clearwater Zero": 1.14, "Havenbrook Seltzer": 1.16,
+}
+# Base price (USD per hL) by sub-category -- craft/specialty commands the
+# highest price, mainstream lager the lowest.
+BASE_PRICE_BY_SUBCAT = {
+    "International Premium": 70, "Craft & Specialty": 85,
+    "Mainstream Lager": 45, "Non-Alcoholic": 55, "Hard Seltzer": 60,
 }
 COUNTRY_BASE = {
     "United States": 2.2, "Canada": 0.6, "United Kingdom": 1.1, "Germany": 1.3,
@@ -46,9 +62,12 @@ COUNTRY_BASE = {
 CHANNEL_SHARE = {  # relative share of volume by channel (sums ~1.0)
     "Modern Trade": 0.42, "Traditional Trade": 0.28, "E-commerce": 0.15, "On-Premise": 0.15,
 }
-# Beer sub-category leans more on On-Premise; non-alc/food lean less. Small
-# per-subcategory adjustment applied at generation time.
-SUBCAT_ONPREM_ADJ = {"Beer": 1.6, "Non-Alcoholic": 0.5, "Salty Snacks": 0.3, "Confectionery": 0.4}
+# On-Premise (bars/pubs/restaurants) over-indexes for occasion-led premium and
+# craft drinking, under-indexes for retail-led Beyond Beer purchases.
+SUBCAT_ONPREM_ADJ = {
+    "International Premium": 1.4, "Craft & Specialty": 1.7,
+    "Mainstream Lager": 1.0, "Non-Alcoholic": 0.5, "Hard Seltzer": 0.6,
+}
 
 
 def month_range(start: date, end: date):
@@ -61,13 +80,10 @@ def month_range(start: date, end: date):
             y += 1
 
 
-def seasonality(sub_category: str, month: int) -> float:
-    """Return a multiplier >0 capturing category-specific seasonality."""
-    if sub_category in ("Beer", "Non-Alcoholic"):
-        # Summer (N. hemisphere) uplift centered July, mild
-        return 1.0 + 0.18 * (1 - abs(month - 7) / 6)
-    else:  # Confectionery / Salty Snacks -> Q4 holiday uplift
-        return 1.0 + (0.30 if month in (11, 12) else 0.05 if month in (1,) else 0.0)
+def seasonality(month: int) -> float:
+    """Summer (N. hemisphere) uplift centered on July -- applies across beer,
+    non-alcoholic beer, and hard seltzer occasions alike."""
+    return 1.0 + 0.20 * (1 - abs(month - 7) / 6)
 
 
 def build():
@@ -119,26 +135,21 @@ def build():
 
     for brand, meta in BRANDS.items():
         sub_cat = meta["sub_category"]
-        is_beverage = meta["category"] == "Beverages"
-        volume_unit = "hL" if is_beverage else "K units"
-        base_price = {"Beer": 65, "Non-Alcoholic": 22, "Salty Snacks": 18, "Confectionery": 14}[sub_cat]
+        base_price = BASE_PRICE_BY_SUBCAT[sub_cat]
         brand_mult = BRAND_BASE[brand]
+        growth_rate = BRAND_GROWTH[brand]
 
         for country in ALL_COUNTRIES:
             country_mult = COUNTRY_BASE[country]
             # Small fixed per-brand-country random factor (some brands under-index in some markets)
             local_mix = 0.6 + 1.0 * random.random()
-            base_monthly_volume = 8000 * brand_mult * country_mult * local_mix / 12 * n_months / n_months  # ~monthly hL/Kunits
+            base_monthly_volume = 8000 * brand_mult * country_mult * local_mix / 12 * n_months / n_months  # ~monthly hL
 
-            for ci, month_idx in enumerate(months):
+            for month_idx in months:
                 year, month = month_idx
-                # YoY growth trend: ~4-9% annualized, brand-specific
                 years_elapsed = (year - months[0][0]) + (month - months[0][1]) / 12
-                growth_rate = {"Glacier Peak": 1.06, "Ironclad Stout": 1.09, "Vivo Splash": 1.08,
-                                "PureSpring": 1.10, "CrunchWave": 1.05, "Golden Harvest": 1.07,
-                                "SweetPeak": 1.04, "CocoNest": 1.11}[brand]
                 trend = growth_rate ** years_elapsed
-                season = seasonality(sub_cat, month)
+                season = seasonality(month)
                 total_volume_month = base_monthly_volume * trend * season
 
                 for channel in ALL_CHANNELS:
@@ -161,11 +172,11 @@ def build():
                     distribution = round(max(20.0, min(98.0, 55 + 20 * brand_mult + random.uniform(-8, 8))), 1)
                     marketing_spend = round(revenue * random.uniform(0.03, 0.07), 2)
                     promo_spend = round(revenue * random.uniform(0.02, 0.05), 2)
-                    gross_margin = round(max(25.0, min(65.0, 48 + (5 if is_beverage else -3) + random.uniform(-4, 4))), 1)
+                    gross_margin = round(max(25.0, min(65.0, 50 + random.uniform(-4, 4))), 1)
 
                     rows.append((
                         brand, country, channel, year, month,
-                        revenue, volume, volume_unit, market_share,
+                        revenue, volume, "hL", market_share,
                         round(price, 2), distribution, marketing_spend, promo_spend, gross_margin,
                     ))
 

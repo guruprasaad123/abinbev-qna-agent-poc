@@ -47,12 +47,12 @@ class TestSQLSafety(unittest.TestCase):
 
 class TestRetrieval(unittest.TestCase):
     def test_finds_relevant_document(self):
-        results = get_index().search("sustainable cocoa sourcing SweetPeak", k=3)
+        results = get_index().search("water stewardship Ironclad Stout brewery", k=3)
         self.assertTrue(any(d.doc_id == "DOC-014" for d in results))
 
     def test_metadata_filter_by_brand(self):
-        results = get_index().search("launch", k=10, brands=["Vivo Splash"])
-        self.assertTrue(all("Vivo Splash" in d.brands or d.score > 0 for d in results))
+        results = get_index().search("launch", k=10, brands=["Clearwater Zero"])
+        self.assertTrue(all("Clearwater Zero" in d.brands or d.score > 0 for d in results))
         self.assertTrue(len(results) > 0)
 
 
@@ -89,29 +89,29 @@ class TestOrchestrator(unittest.TestCase):
         self.assertIn("Net Revenue", r.answer)
 
     def test_data_query_routes_to_structured(self):
-        r = self.orch.handle_turn("What was Glacier Peak revenue in the United States?")
+        r = self.orch.handle_turn("What was Northstar Lager revenue in the United States?")
         self.assertIn("structured", r.sub_agents_used)
 
     def test_hybrid_routes_both_structured_and_unstructured(self):
-        r = self.orch.handle_turn("Why did Vivo Splash grow in Germany, any press releases?")
+        r = self.orch.handle_turn("Why did Clearwater Zero grow in Germany, any press releases?")
         self.assertIn("structured", r.sub_agents_used)
         self.assertIn("unstructured", r.sub_agents_used)
         self.assertTrue(len(r.citations) > 0)
 
     def test_hierarchy_fallback_city_to_country(self):
-        r = self.orch.handle_turn("How is Glacier Peak doing in New York?")
+        r = self.orch.handle_turn("How is Northstar Lager doing in New York?")
         self.assertTrue(any("United States" in a for a in r.assumptions))
 
     def test_unsupported_competitor_flagged(self):
-        r = self.orch.handle_turn("How is Northern Lager Co performing?")
+        r = self.orch.handle_turn("How is Highland Brewing Collective performing?")
         self.assertTrue(any("tracked entities" in a for a in r.assumptions))
 
     def test_conversation_memory_persists_filters(self):
-        self.orch.handle_turn("What was Glacier Peak revenue in the United States in 2025?")
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Glacier Peak")
+        self.orch.handle_turn("What was Northstar Lager revenue in the United States in 2025?")
+        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Northstar Lager")
         self.orch.handle_turn("Sales figure question with no new entity")
         # brand should still be remembered from the previous turn
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Glacier Peak")
+        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Northstar Lager")
 
 
 if __name__ == "__main__":

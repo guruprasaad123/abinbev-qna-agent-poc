@@ -1,19 +1,19 @@
 {
-  "company": "Solara FMCG Group",
+  "company": "Meridian Brewing Group",
   "generated": "2026-09-11",
   "documents": [
     {
       "doc_id": "DOC-001",
-      "title": "Solara Launches Vivo Splash Zero in Germany and the UK",
+      "title": "Meridian Launches Clearwater Zero in Germany and the UK",
       "date": "2025-03-10",
       "source_type": "press_release",
       "tags": [
         "product_launch",
         "non_alcoholic",
-        "sugar_free"
+        "beyond_beer"
       ],
       "brands": [
-        "Vivo Splash"
+        "Clearwater Zero"
       ],
       "countries": [
         "Germany",
@@ -23,16 +23,17 @@
     },
     {
       "doc_id": "DOC-002",
-      "title": "Q1 2025 Earnings Commentary: Non-Alcoholic Momentum in Europe",
+      "title": "Q1 2025 Earnings Commentary: Beyond Beer Momentum in Europe",
       "date": "2025-05-02",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
         "non_alcoholic",
+        "beyond_beer",
         "europe"
       ],
       "brands": [
-        "Vivo Splash"
+        "Clearwater Zero"
       ],
       "countries": [
         "Germany",
@@ -42,18 +43,17 @@
     },
     {
       "doc_id": "DOC-003",
-      "title": "Market Research Note: Sugar-Free Positioning in Western Europe",
+      "title": "Market Research Note: Non-Alcoholic Beer Positioning in Western Europe",
       "date": "2025-06-15",
       "source_type": "market_research",
       "tags": [
         "non_alcoholic",
-        "sugar_free",
+        "beyond_beer",
         "europe",
         "consumer_trend"
       ],
       "brands": [
-        "Vivo Splash",
-        "PureSpring"
+        "Clearwater Zero"
       ],
       "countries": [
         "Germany",
@@ -63,7 +63,7 @@
     },
     {
       "doc_id": "DOC-004",
-      "title": "Sustainability Update: Recyclable Packaging for Vivo Splash Zero",
+      "title": "Sustainability Update: Recyclable Packaging for Clearwater Zero",
       "date": "2025-04-22",
       "source_type": "sustainability",
       "tags": [
@@ -72,7 +72,7 @@
         "non_alcoholic"
       ],
       "brands": [
-        "Vivo Splash"
+        "Clearwater Zero"
       ],
       "countries": [
         "Germany",
@@ -82,7 +82,7 @@
     },
     {
       "doc_id": "DOC-005",
-      "title": "Q3 2025 Earnings Commentary: Glacier Peak On-Premise Recovery",
+      "title": "Q3 2025 Earnings Commentary: Northstar Lager On-Premise Recovery",
       "date": "2025-11-04",
       "source_type": "earnings_commentary",
       "tags": [
@@ -92,7 +92,7 @@
         "north_america"
       ],
       "brands": [
-        "Glacier Peak"
+        "Northstar Lager"
       ],
       "countries": [
         "United States"
@@ -101,7 +101,7 @@
     },
     {
       "doc_id": "DOC-006",
-      "title": "Market Research Note: Craft and Premium Beer Trends, USA",
+      "title": "Market Research Note: Premiumization Trends in US Beer",
       "date": "2025-09-01",
       "source_type": "market_research",
       "tags": [
@@ -111,7 +111,7 @@
         "consumer_trend"
       ],
       "brands": [
-        "Glacier Peak",
+        "Northstar Lager",
         "Ironclad Stout"
       ],
       "countries": [
@@ -121,7 +121,7 @@
     },
     {
       "doc_id": "DOC-007",
-      "title": "Competitor Intelligence: Northern Lager Co. On-Premise Push",
+      "title": "Competitor Intelligence: Highland Brewing Collective On-Premise Push",
       "date": "2025-10-12",
       "source_type": "competitor_intel",
       "tags": [
@@ -131,7 +131,7 @@
         "north_america"
       ],
       "brands": [
-        "Glacier Peak"
+        "Northstar Lager"
       ],
       "countries": [
         "United States"
@@ -140,75 +140,74 @@
     },
     {
       "doc_id": "DOC-008",
-      "title": "Solara Launches 'Share the Crunch' Campaign in India",
+      "title": "Meridian Launches 'Brighter Days' Havenbrook Seltzer Campaign in Australia",
       "date": "2025-10-20",
       "source_type": "press_release",
       "tags": [
         "product_launch",
         "campaign",
-        "salty_snacks",
+        "hard_seltzer",
         "apac"
       ],
       "brands": [
-        "CrunchWave"
+        "Havenbrook Seltzer"
       ],
       "countries": [
-        "India"
+        "Australia"
       ],
       "file": "DOC-008.md"
     },
     {
       "doc_id": "DOC-009",
-      "title": "Q4 2025 Earnings Commentary: CrunchWave India Holiday Performance",
+      "title": "Q4 2025 Earnings Commentary: Havenbrook Seltzer Australia Summer Performance",
       "date": "2026-02-03",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "salty_snacks",
+        "hard_seltzer",
         "apac",
         "seasonality"
       ],
       "brands": [
-        "CrunchWave"
+        "Havenbrook Seltzer"
       ],
       "countries": [
-        "India"
+        "Australia"
       ],
       "file": "DOC-009.md"
     },
     {
       "doc_id": "DOC-010",
-      "title": "Market Research Note: Festive Snacking Trends in APAC",
+      "title": "Market Research Note: Hard Seltzer Trends in APAC",
       "date": "2025-12-01",
       "source_type": "market_research",
       "tags": [
-        "salty_snacks",
+        "hard_seltzer",
         "apac",
         "seasonality",
         "consumer_trend"
       ],
       "brands": [
-        "CrunchWave",
-        "Golden Harvest"
+        "Havenbrook Seltzer"
       ],
       "countries": [
-        "India",
-        "Australia"
+        "Australia",
+        "India"
       ],
       "file": "DOC-010.md"
     },
     {
       "doc_id": "DOC-011",
-      "title": "Ironclad Stout Expands Distribution in the United Kingdom",
+      "title": "Copperline Amber Ale Expands Distribution in the United Kingdom",
       "date": "2024-06-18",
       "source_type": "press_release",
       "tags": [
         "distribution",
-        "beer",
+        "craft",
         "europe"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Copperline Amber Ale"
       ],
       "countries": [
         "United Kingdom"
@@ -217,17 +216,17 @@
     },
     {
       "doc_id": "DOC-012",
-      "title": "Internal Strategy Memo: Ironclad Stout UK Channel Mix",
+      "title": "Internal Strategy Memo: Copperline Amber Ale UK Channel Mix",
       "date": "2024-08-05",
       "source_type": "strategy_memo",
       "tags": [
         "strategy",
-        "beer",
+        "craft",
         "europe",
         "channel"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Copperline Amber Ale"
       ],
       "countries": [
         "United Kingdom"
@@ -236,16 +235,16 @@
     },
     {
       "doc_id": "DOC-013",
-      "title": "Competitor Intelligence: Craft Stout Entrants in the UK",
+      "title": "Competitor Intelligence: Craft Ale Entrants in the UK",
       "date": "2025-01-15",
       "source_type": "competitor_intel",
       "tags": [
-        "beer",
+        "craft",
         "competitor",
         "europe"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Copperline Amber Ale"
       ],
       "countries": [
         "United Kingdom"
@@ -254,66 +253,66 @@
     },
     {
       "doc_id": "DOC-014",
-      "title": "SweetPeak Commits to 100% Certified Sustainable Cocoa by 2027",
+      "title": "Ironclad Stout Brewery Commits to 20% Water Reduction by 2027",
       "date": "2024-03-01",
       "source_type": "sustainability",
       "tags": [
         "sustainability",
-        "confectionery",
-        "sourcing"
+        "water",
+        "craft"
       ],
       "brands": [
-        "SweetPeak"
+        "Ironclad Stout"
       ],
       "countries": [],
       "file": "DOC-014.md"
     },
     {
       "doc_id": "DOC-015",
-      "title": "Market Research Note: Ethical Sourcing and Confectionery Purchase Intent",
+      "title": "Market Research Note: Water Stewardship and Beer Purchase Intent",
       "date": "2024-09-10",
       "source_type": "market_research",
       "tags": [
-        "confectionery",
+        "craft",
         "sustainability",
         "consumer_trend"
       ],
       "brands": [
-        "SweetPeak",
-        "CocoNest"
+        "Ironclad Stout",
+        "Copperline Amber Ale"
       ],
       "countries": [],
       "file": "DOC-015.md"
     },
     {
       "doc_id": "DOC-016",
-      "title": "Press Release: SweetPeak Sourcing Progress Update",
+      "title": "Press Release: Ironclad Stout Water Efficiency Progress Update",
       "date": "2025-07-08",
       "source_type": "press_release",
       "tags": [
         "sustainability",
-        "confectionery",
-        "sourcing"
+        "water",
+        "craft"
       ],
       "brands": [
-        "SweetPeak"
+        "Ironclad Stout"
       ],
       "countries": [],
       "file": "DOC-016.md"
     },
     {
       "doc_id": "DOC-017",
-      "title": "Internal Strategy Memo: PureSpring LATAM E-commerce Acceleration",
+      "title": "Internal Strategy Memo: Kestrel Pilsner South America E-commerce Acceleration",
       "date": "2025-02-20",
       "source_type": "strategy_memo",
       "tags": [
         "strategy",
-        "non_alcoholic",
-        "latam",
+        "beer",
+        "south_america",
         "ecommerce"
       ],
       "brands": [
-        "PureSpring"
+        "Kestrel Pilsner"
       ],
       "countries": [
         "Brazil",
@@ -323,17 +322,17 @@
     },
     {
       "doc_id": "DOC-018",
-      "title": "Q4 2025 Earnings Commentary: PureSpring LATAM",
+      "title": "Q4 2025 Earnings Commentary: Kestrel Pilsner South America",
       "date": "2026-02-03",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "non_alcoholic",
-        "latam",
+        "beer",
+        "south_america",
         "ecommerce"
       ],
       "brands": [
-        "PureSpring"
+        "Kestrel Pilsner"
       ],
       "countries": [
         "Brazil",
@@ -343,16 +342,16 @@
     },
     {
       "doc_id": "DOC-019",
-      "title": "Market Research Note: E-commerce Grocery Growth in LATAM",
+      "title": "Market Research Note: E-commerce Grocery Growth in South America",
       "date": "2025-05-19",
       "source_type": "market_research",
       "tags": [
-        "latam",
+        "south_america",
         "ecommerce",
         "consumer_trend"
       ],
       "brands": [
-        "PureSpring"
+        "Kestrel Pilsner"
       ],
       "countries": [
         "Brazil",
@@ -362,65 +361,65 @@
     },
     {
       "doc_id": "DOC-020",
-      "title": "Internal Strategy Memo: Golden Harvest Pricing Action",
+      "title": "Internal Strategy Memo: Frostpeak Light Pricing Action",
       "date": "2024-11-12",
       "source_type": "strategy_memo",
       "tags": [
         "strategy",
         "pricing",
-        "salty_snacks"
+        "mainstream_lager"
       ],
       "brands": [
-        "Golden Harvest"
+        "Frostpeak Light"
       ],
       "countries": [],
       "file": "DOC-020.md"
     },
     {
       "doc_id": "DOC-021",
-      "title": "Q1 2025 Earnings Commentary: Golden Harvest Margin Recovery",
+      "title": "Q1 2025 Earnings Commentary: Frostpeak Light Margin Recovery",
       "date": "2025-05-02",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
         "pricing",
-        "salty_snacks",
+        "mainstream_lager",
         "margin"
       ],
       "brands": [
-        "Golden Harvest"
+        "Frostpeak Light"
       ],
       "countries": [],
       "file": "DOC-021.md"
     },
     {
       "doc_id": "DOC-022",
-      "title": "Competitor Intelligence: Blue Ridge Snacks Pricing Response",
+      "title": "Competitor Intelligence: Continental Lager Co. Pricing Response",
       "date": "2025-06-02",
       "source_type": "competitor_intel",
       "tags": [
-        "salty_snacks",
+        "mainstream_lager",
         "competitor",
         "pricing"
       ],
       "brands": [
-        "Golden Harvest"
+        "Frostpeak Light"
       ],
       "countries": [],
       "file": "DOC-022.md"
     },
     {
       "doc_id": "DOC-023",
-      "title": "Solara Enters the Australian Market with CocoNest",
+      "title": "Meridian Enters the Australian Market with Harborlight Gold",
       "date": "2023-09-05",
       "source_type": "press_release",
       "tags": [
         "market_entry",
-        "confectionery",
+        "mainstream_lager",
         "apac"
       ],
       "brands": [
-        "CocoNest"
+        "Harborlight Gold"
       ],
       "countries": [
         "Australia"
@@ -429,16 +428,16 @@
     },
     {
       "doc_id": "DOC-024",
-      "title": "Market Research Note: Premium Confectionery in Australia",
+      "title": "Market Research Note: Mainstream Lager Competitive Dynamics in Australia",
       "date": "2024-02-14",
       "source_type": "market_research",
       "tags": [
-        "confectionery",
+        "mainstream_lager",
         "apac",
         "consumer_trend"
       ],
       "brands": [
-        "CocoNest"
+        "Harborlight Gold"
       ],
       "countries": [
         "Australia"
@@ -447,16 +446,16 @@
     },
     {
       "doc_id": "DOC-025",
-      "title": "Q4 2024 Earnings Commentary: CocoNest Australia One-Year Update",
+      "title": "Q4 2024 Earnings Commentary: Harborlight Gold Australia One-Year Update",
       "date": "2025-02-04",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "confectionery",
+        "mainstream_lager",
         "apac"
       ],
       "brands": [
-        "CocoNest"
+        "Harborlight Gold"
       ],
       "countries": [
         "Australia"
@@ -465,7 +464,7 @@
     },
     {
       "doc_id": "DOC-026",
-      "title": "Solara FMCG Group FY2025 Annual Highlights",
+      "title": "Meridian Brewing Group FY2025 Annual Highlights",
       "date": "2026-02-20",
       "source_type": "earnings_commentary",
       "tags": [
@@ -479,7 +478,7 @@
     },
     {
       "doc_id": "DOC-027",
-      "title": "Solara Group Investor FAQ: Data and Reporting Scope",
+      "title": "Meridian Brewing Group Investor FAQ: Data and Reporting Scope",
       "date": "2026-01-10",
       "source_type": "metadata_note",
       "tags": [
@@ -493,7 +492,7 @@
     },
     {
       "doc_id": "DOC-028",
-      "title": "Competitive Landscape Overview: FMCG Beverages and Snacks",
+      "title": "Competitive Landscape Overview: Global Brewing Industry",
       "date": "2025-08-01",
       "source_type": "competitor_intel",
       "tags": [

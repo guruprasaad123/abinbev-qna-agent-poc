@@ -7,12 +7,15 @@ Read alongside `docs/ARCHITECTURE.md` (what was built) and
 
 ## 1. A fictional company, not a real one
 
-The assignment asks for "an FMCG company" — this project invents **Solara
-FMCG Group** rather than using a real company's name/brands. Fabricating
-financials and attributing them to a real, identifiable company would be
-misleading even in an obviously-synthetic exercise; a fictional company with
-a realistic multi-category portfolio (Beer, Non-Alcoholic, Salty Snacks,
-Confectionery) gives the same modeling challenges without that problem.
+The assignment asks for "an FMCG company" — this project invents **Meridian
+Brewing Group**, a fictional global brewer, rather than using a real
+company's name/brands. Fabricating financials and attributing them to a
+real, identifiable company would be misleading even in an obviously-
+synthetic exercise; a fictional company with a realistic brewing-industry
+portfolio structure (International Premium, Craft & Specialty, Mainstream
+Lager, and a "Beyond Beer" segment of Non-Alcoholic/Hard Seltzer — the same
+kind of segmentation a real global brewer reports) gives the same modeling
+challenges without that problem.
 
 ## 2. Generation-time overlap, not incidental overlap
 

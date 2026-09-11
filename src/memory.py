@@ -32,7 +32,7 @@ SUMMARIZE_TRIGGER_TURNS = 14   # once total turns exceed this, summarize the ove
 class ConversationMemory:
     raw_turns: list[dict] = field(default_factory=list)   # [{role, content}]
     rolling_summary: str = ""
-    active_filters: dict = field(default_factory=dict)     # e.g. {"brand": "Glacier Peak", "country": "United States", "kpi": "net_revenue_usd", "period": "2025"}
+    active_filters: dict = field(default_factory=dict)     # e.g. {"brand": "Northstar Lager", "country": "United States", "kpi": "net_revenue_usd", "period": "2025"}
     turn_count: int = 0
 
     def add_turn(self, role: str, content: str):
