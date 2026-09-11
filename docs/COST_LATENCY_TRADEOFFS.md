@@ -18,129 +18,230 @@ identical control flow to a real run) produced this call profile:
 
 | Caller | Calls | Share of total calls |
 |---|---|---|
-| `orchestrator_nlu` (router model) | 30 | 35% |
-| `orchestrator_synthesis` (router model) | 26 | 30% |
-| `structured_agent` (worker model, NL→SQL) | 24 | 28% |
-| `memory_summarizer` (worker model) | 5 | 6% |
-| `coding_agent` (worker model) | 1 | 1% |
-| **Total** | **86** | over 25 user turns → **~3.4 LLM calls/turn** |
+| `orchestrator_nlu` (classify tier) | 30 | 35% |
+| `orchestrator_synthesis` (synthesize tier) | 26 | 31% |
+| `structured_agent` (generate tier, NL→SQL) | 23 | 27% |
+| `memory_summarizer` (generate tier) | 5 | 6% |
+| `coding_agent` (generate tier) | 1 | 1% |
+| **Total** | **85** | over 25 user turns → **~3.4 LLM calls/turn** |
 
 This confirms the design's shape: **every** turn costs at least 1 call
-(NLU), a **data-bearing** turn costs ~3 (NLU + one worker retrieval call +
-synthesis), and only a minority of turns pay for anything extra (retry,
-summarization, coding). Notably, `unstructured_agent` and `websearch_agent`
-make **zero** LLM calls of their own (retrieval/search only) — hybrid
-retrieval is "free" on top of a structured query in terms of LLM cost.
+(NLU/classify), a **data-bearing** turn costs ~3 (classify + one generate-tier
+retrieval call + synthesize), and only a minority of turns pay for anything
+extra (retry, summarization, coding). Notably, `unstructured_agent` and
+`websearch_agent` make **zero** LLM calls of their own (retrieval/search
+only) — hybrid retrieval is "free" on top of a structured query in terms of
+LLM cost.
 
-## 2. Two-tier model routing: the actual cost lever
+## 2. Model-usage architecture: orchestrator + sub-agents + combinator
 
-`src/llm_client.py::get_llm_client(role=...)` splits calls into:
-- **`router`** (NLU, synthesis, validation-retry): needs reliable
-  instruction-following, JSON-mode compliance, multilingual handling, and
-  combining several evidence sources into coherent prose. This is where
-  answer quality is won or lost.
-- **`worker`** (NL→SQL generation, code-snippet generation, memory
-  summarization): narrow, close-to-templated tasks against a small, fixed
-  schema. A much cheaper/faster model does this reliably.
+The mental model the assignment asks for — "orchestrator + subagents +
+combinator" — maps onto this codebase as:
 
-Using illustrative public per-million-token pricing (`PRICING_PER_MTOK_USD`
-in `llm_client.py`; verify against current provider pricing pages before
-using this for a real budget):
+```
+                         ┌─────────────────────────────────────────┐
+ user turn  ──────────▶  │   ORCHESTRATOR  (src/orchestrator.py)    │
+                         │                                           │
+                         │  1. CLASSIFY  — NLU / intent / entities  │──▶ llm_classify
+                         │     (_run_nlu)                            │
+                         │                                           │
+                         │  2. ROUTE — decide which sub-agents fire │  (no LLM call —
+                         │     (needed_subagents from step 1)        │   deterministic)
+                         │                                           │
+                         │  3. dispatch to SUB-AGENTS (in parallel   │
+                         │     if implemented that way — see         │
+                         │     docs/DESIGN_DECISIONS.md §11):        │
+                         │     ┌─────────────┐ ┌───────────────┐    │
+                         │     │structured    │ │unstructured   │    │──▶ llm_generate
+                         │     │ NL→SQL       │ │ NL→retrieval  │    │    (each sub-agent's
+                         │     │ agent        │ │ query agent   │    │     own narrow call)
+                         │     └─────────────┘ └───────────────┘    │
+                         │     ┌─────────────┐ ┌───────────────┐    │
+                         │     │web search    │ │coding         │    │──▶ llm_generate
+                         │     │ agent (no    │ │ agent         │    │    (coding only;
+                         │     │ LLM call)    │ │               │    │     web has none)
+                         │     └─────────────┘ └───────────────┘    │
+                         │                                           │
+                         │  4. COMBINATOR — SYNTHESIZE the evidence  │──▶ llm_synthesize
+                         │     from every sub-agent that fired into  │
+                         │     one answer, cite sources, apply       │
+                         │     transparency rules (handle_turn's     │
+                         │     synth_prompt + SYNTHESIS_SYSTEM_PROMPT)│
+                         │                                           │
+                         │  5. VALIDATE — cheap deterministic number- │  (no LLM call unless
+                         │     overlap check; retry synthesize once  │   the check fails)
+                         │     if the draft looks like it hallucinated│──▶ llm_synthesize (retry)
+                         └─────────────────────────────────────────┘
+```
 
-| Role | Example tier | Input $/Mtok | Output $/Mtok |
+The "combinator" is not a separate model or agent — it's the synthesis step
+inside the orchestrator that combines whatever the sub-agents returned. It's
+called out as its own tier below because it has a distinct cost/quality
+profile from classify and generate.
+
+### The three-tier model split (`src/llm_client.py::get_llm_client(role=...)`)
+
+The system used to split calls two ways ("router" vs. "worker"). It's now
+split three ways because "router" was quietly bundling two very different
+jobs — cheap intent classification and expensive final-answer judgment —
+under one model choice:
+
+| Tier | Used by | Call volume | What it actually needs |
 |---|---|---|---|
-| router | "Sonnet-class" | $3.00 | $15.00 |
-| worker | "Haiku-class" | $0.80 | $4.00 |
+| **`classify`** | orchestrator NLU/intent (`_run_nlu`) | 35% of calls | Reliable structured JSON output against a small fixed schema (5 zones, 6 KPIs, one intent enum). No open-ended reasoning. |
+| **`generate`** | structured agent (NL→SQL), unstructured agent (retrieval query), coding agent, memory summarizer | ~34% of calls | Narrow, close-to-templated generation against a small fixed schema/vocabulary. |
+| **`synthesize`** | orchestrator combinator (final answer + validation retry) | ~31% of calls (but the *one* users actually read) | Combining multiple evidence sources into fluent, correctly-cited, multi-lingual prose; catching when evidence is thin/contradictory and saying so. This is where perceived answer quality is won or lost. |
 
-**Worked example — a single structured-data query** ("What was North
-America's revenue in Q1 2024?"), using representative token counts from the
-actual system prompts in this repo:
+**Why split at all, and why three instead of two:** `classify` + `generate`
+together are ~69% of call volume in the measured profile above, and neither
+needs frontier reasoning — they're bounded, schema-constrained tasks. Routing
+both of them to a cheap/fast model, and reserving spend for the ~31% of calls
+that are `synthesize`, is the single biggest lever in this system's cost
+structure. Splitting `classify` out from `generate` (rather than merging them,
+which is also defensible) mostly buys latency headroom and independent
+tuning — e.g. you could push `classify` to an even cheaper/faster model than
+`generate` if NLU accuracy holds up, without touching NL→SQL quality.
 
-| Call | Model tier | Input tok | Output tok | Cost |
-|---|---|---|---|---|
-| NLU | router | ~900 | ~150 | $0.0050 |
-| NL→SQL | worker | ~500 | ~50 | $0.0006 |
-| Synthesis | router | ~1,200 | ~300 | $0.0081 |
-| **Total** | | | | **≈ $0.014 / query** |
+Set independently via three environment variables, so provider/model choice
+never requires a code change: `LLM_MODEL_CLASSIFY`, `LLM_MODEL_GENERATE`,
+`LLM_MODEL_SYNTHESIZE` (see `src/llm_client.py` module docstring).
 
-If the worker call instead ran on the router tier (no two-tier split), that
-one call alone would cost ~3.75× more ($0.0023 vs $0.0006) — small in
-isolation, but it's ~28% of all calls in the measured profile above, so at
-volume (thousands of queries/day) the split is a real line item, not a
-rounding error, with no measured accuracy cost on a narrow templated task
-like NL→SQL against a fixed 4-table schema.
+## 3. Which APIs are affordable, and how they map onto the three tiers
+
+Public per-token API pricing changes fast (multiple vendors cut prices in
+2025-2026) — treat exact numbers as **directionally right, verify same-day
+before quoting a real budget**. `PRICING_PER_MTOK_USD` in `src/llm_client.py`
+is the single source of truth this doc's numbers are computed from; update
+it, don't hand-edit the numbers below.
+
+| Model (illustrative) | Input $/Mtok | Output $/Mtok | Tier fit |
+|---|---|---|---|
+| Claude Haiku | $1.00 | $5.00 | `classify`, `generate` — cheap, fast, easily good enough for schema-constrained JSON/SQL/summarization |
+| GPT-4o-mini / GPT-5-mini class | $0.15–$0.25 | $0.60–$2.00 | `classify`, `generate` — the cheapest tier available; a reasonable default if the OpenAI ecosystem is already in use |
+| Claude Sonnet | $2.00 | $10.00 | `synthesize` — the workhorse: strong instruction-following and multilingual fluency at a fraction of the top tier's cost |
+| GPT-4o | $2.50 | $10.00 | `synthesize` alternative in the OpenAI ecosystem |
+| Claude Opus / GPT-5 (frontier) | $15.00+ | $75.00+ | **Not recommended for any tier here.** The domain is bounded (6 KPIs, 5 zones, one schema) and doesn't need frontier multi-step reasoning. Revisit only if the domain grows to open-ended, ambiguous multi-hop reasoning that a Sonnet/GPT-4o-class model demonstrably gets wrong. |
+
+**Practical recommendation for this system**: Haiku-class (or GPT-4o-mini/
+GPT-5-mini-class) for `classify` and `generate`, Sonnet-class (or GPT-4o-class)
+for `synthesize`. That's the two real price points that matter — the
+frontier tier buys reasoning depth this task doesn't need, at 7-15× the cost.
+
+**Beyond model selection, two more levers reduce cost regardless of which
+API is used:**
+- **Prompt caching** (offered by both Anthropic and OpenAI): the static
+  portion of every system prompt in this repo — the zone/country/brand/KPI
+  catalog, the schema description, the instructions themselves — never
+  changes turn to turn. Cached input tokens typically price at **~10% of
+  standard input cost**. Since `classify` and `generate` prompts are 100%
+  cacheable (only the short "latest user message" + a few lines of context
+  actually change), this is close to a 90% discount on the *majority* of
+  input tokens this system sends. Not implemented here (see §5) but a
+  one-line addition through the existing `LLMClient` abstraction.
+- **Batch APIs** (offered by both providers, ~50% off list price): irrelevant
+  to this system's interactive chat use case (answers must return
+  synchronously), but relevant if this were extended to a nightly bulk job
+  (e.g. pre-generating a digest for every zone every morning).
+
+### Worked example — a single structured-data query
+
+("What was North America's revenue in Q1 2024?"), using representative token
+counts from the actual system prompts in this repo and the tier→model
+mapping above (Haiku for classify/generate, Sonnet for synthesize):
+
+| Call | Tier | Model | Input tok | Output tok | Cost |
+|---|---|---|---|---|---|
+| NLU | classify | Haiku-class | ~900 | ~150 | $0.0017 |
+| NL→SQL | generate | Haiku-class | ~500 | ~50 | $0.0008 |
+| Synthesis | synthesize | Sonnet-class | ~1,200 | ~300 | $0.0054 |
+| **Total** | | | | | **≈ $0.0078 / query** |
+
+If `classify` and `generate` instead ran on the `synthesize` tier (no split
+at all — one model everywhere), those same two calls would cost ~2-2.5×
+more (Sonnet-class pricing on Haiku-class work): the NLU call alone goes
+from $0.0017 to ~$0.0033, and NL→SQL from $0.0008 to ~$0.0016. That's a
+small absolute delta per query, but `classify`+`generate` are ~69% of all
+calls in the measured profile above — at volume (thousands of queries/day)
+the split is a real line item, not a rounding error, with no measured
+accuracy cost on tasks this narrow and schema-constrained.
+
+**With prompt caching added** (§ above) on the classify/generate system
+prompts, the NLU and NL→SQL rows would drop further still, since most of
+their ~900 and ~500 input tokens respectively are the static schema/catalog
+text, not the per-turn user message.
 
 **Recommendation**: do not default everything to the strongest available
-model. Reserve the top reasoning tier ("Opus-class") for neither role in
-this system — the domain is bounded (6 KPIs, 5 zones, one schema) and
-doesn't need frontier multi-step reasoning; spending there would inflate
-cost with little measurable quality gain for this task shape. Revisit if the
-domain grows to open-ended, ambiguous multi-hop reasoning.
+model. Reserve the top reasoning tier ("Opus-class"/GPT-5-frontier) for none
+of the three roles in this system — spending there would inflate cost with
+little measurable quality gain for this task shape.
 
-## 3. Latency: where the time actually goes
+## 4. Latency: where the time actually goes
 
 Sub-agent *tool* latency is negligible: SQLite queries and BM25 search both
 run in low single-digit milliseconds locally. **All meaningful latency is
 LLM round-trips**, executed **sequentially** in the current implementation:
 
 ```
-NLU (router, ~1-2s) → sub-agent LLM call(s) (worker, ~0.5-1s each) → synthesis (router, ~2-4s)
+classify (~1-2s) → sub-agent generate call(s) (~0.5-1s each) → synthesize (~2-4s)
 ```
 
-A simple structured query: **~4-7s end-to-end** (2 router calls + 1 worker
-call). A hybrid query (structured + unstructured) costs **the same LLM
-latency** as a plain structured query, because the unstructured sub-agent
-does no LLM call of its own — only the *synthesis* call gets a bigger prompt
-(more evidence to read), which adds output tokens but not another round-trip.
+A simple structured query: **~4-7s end-to-end** (1 classify call + 1 generate
+call + 1 synthesize call). A hybrid query (structured + unstructured) costs
+**the same LLM latency** as a plain structured query, because the
+unstructured sub-agent does no LLM call of its own — only the *synthesize*
+call gets a bigger prompt (more evidence to read), which adds output tokens
+but not another round-trip.
 
 **The one latency decision we'd change first with more time**: sub-agent
 calls are independent of each other (structured SQL-gen, unstructured
 retrieval, and web search don't depend on each other's output) but run
 sequentially in `Orchestrator.handle_turn()`. Parallelizing them
 (asyncio/threading) would collapse a 4-sub-agent hybrid query's latency down
-to roughly `NLU + max(sub-agent latencies) + synthesis` instead of `NLU +
-sum(sub-agent latencies) + synthesis` — for a worst-case 4-sub-agent turn,
-that's the difference between ~4 sequential legs and effectively 2. Not
-implemented here in the interest of keeping the control flow simple and
-reviewable under a hard deadline (see `docs/DESIGN_DECISIONS.md` §11).
+to roughly `classify + max(sub-agent latencies) + synthesize` instead of
+`classify + sum(sub-agent latencies) + synthesize` — for a worst-case
+4-sub-agent turn, that's the difference between ~4 sequential legs and
+effectively 2. Not implemented here in the interest of keeping the control
+flow simple and reviewable under a hard deadline (see
+`docs/DESIGN_DECISIONS.md` §11).
 
 **Retry path**: `_needs_retry` fires only when the numeric-overlap check
-fails (in practice, rare) and costs one extra router round-trip (~2-4s) when
-it does. **Memory summarization**: one extra worker round-trip (~0.5-1s),
-amortized over ~7-turn windows, not on every turn.
+fails (in practice, rare) and costs one extra `synthesize` round-trip
+(~2-4s) when it does. **Memory summarization**: one extra `generate`
+round-trip (~0.5-1s), amortized over ~7-turn windows, not on every turn.
 
-## 4. Conversation memory: cost/latency shape over a long session
+## 5. Conversation memory: cost/latency shape over a long session
 
 Without any memory optimization, a naive implementation resends the entire
 raw transcript as context on every turn: turn *N*'s prompt grows
 **O(N)**, and total tokens spent across an *N*-turn session grow **O(N²)**.
 `ConversationMemory.summarize_overflow()` (src/memory.py) caps the raw window
 at `RECENT_TURNS_KEPT` (6) and folds anything older into a single rolling
-summary, capping each turn's context contribution at roughly **O(1)** and
-total session cost at **O(N)** — linear instead of quadratic. This is the
-concrete reason "conversation memory optimization for long-running sessions"
-is a cost control, not just a UX nicety: on a 50-turn session the difference
-between O(N) and O(N²) context tokens is the difference between a
-predictable per-turn cost and one that keeps climbing.
+summary (a `generate`-tier call), capping each turn's context contribution at
+roughly **O(1)** and total session cost at **O(N)** — linear instead of
+quadratic. This is the concrete reason "conversation memory optimization for
+long-running sessions" is a cost control, not just a UX nicety: on a 50-turn
+session the difference between O(N) and O(N²) context tokens is the
+difference between a predictable per-turn cost and one that keeps climbing.
 
-## 5. Further optimizations we identified but did not implement
+## 6. Further optimizations we identified but did not implement
 
-- **Prompt caching** for the static portion of the NLU/synthesis system
-  prompts (the schema, KPI catalog, zone/country/brand lists never change
-  turn to turn) — most providers offer cache pricing well below standard input
-  pricing for a repeated prefix; this system prompt is 100% cacheable and
-  currently isn't cached. Straightforward to add through the same
-  `LLMClient` abstraction without touching the orchestrator.
-- **Parallel sub-agent execution** (§3 above).
+- **Prompt caching** for the static portion of the classify/generate/
+  synthesize system prompts (the schema, KPI catalog, zone/country/brand
+  lists never change turn to turn) — see §3 above. This system prompt is
+  100% cacheable and currently isn't cached. Straightforward to add through
+  the same `LLMClient` abstraction without touching the orchestrator.
+- **Parallel sub-agent execution** (§4 above).
 - **Streaming** the synthesis call's output to the user instead of waiting
   for the full response — doesn't reduce cost, but materially improves
   *perceived* latency, which matters more than raw latency for a chat UX.
+- **Batch APIs** for any future non-interactive/bulk use case (§3 above).
 
-## 6. Honest caveat
+## 7. Honest caveat
 
 Every dollar figure above is **illustrative** (public list pricing at time
-of writing, which will change) applied to **measured call-count/shape**
-data. The call-count structure (§1) is the durable finding; re-derive the
-dollar/second figures against current pricing and a real model's actual
-observed latency (via `GLOBAL_USAGE.summary()` after a real run) before
-citing this as a production budget.
+of writing, which will change fast in an actively competitive market)
+applied to **measured call-count/shape** data. The call-count structure
+(§1) and the three-tier architecture (§2) are the durable findings;
+re-derive the dollar/second figures against current pricing and a real
+model's actual observed latency (via `GLOBAL_USAGE.summary()` after a real
+run) before citing this as a production budget.

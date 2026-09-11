@@ -94,10 +94,14 @@ recorded. Consequences:
   network (`tests/test_pipeline.py`, 18 tests, all passing). This is what let
   us validate the architecture *before* burning any real API spend or
   needing credentials, and is what a CI pipeline would run on every commit.
-- Switching models/providers, or giving different sub-agents different
-  models, is a one-line environment-variable change (`LLM_MODEL_ROUTER` /
-  `LLM_MODEL_WORKER`), not a code change — directly relevant to the two-tier
-  cost strategy described in `docs/COST_LATENCY_TRADEOFFS.md`.
+- Switching models/providers, or giving different roles different models, is
+  a one-line environment-variable change (`LLM_MODEL_CLASSIFY` /
+  `LLM_MODEL_GENERATE` / `LLM_MODEL_SYNTHESIZE`), not a code change —
+  directly relevant to the three-tier cost strategy described in
+  `docs/COST_LATENCY_TRADEOFFS.md`. The orchestrator asks for a client by
+  *role* (`get_llm_client("classify"|"generate"|"synthesize")`), never by
+  model name, so the orchestrator/sub-agent code has zero knowledge of which
+  actual model answers a given role — only `llm_client.py` does.
 
 ## 5. SQL safety: whitelist, not blacklist
 

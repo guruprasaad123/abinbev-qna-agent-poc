@@ -110,9 +110,14 @@ Rules:
 
 
 class Orchestrator:
-    def __init__(self, llm_router=None, llm_worker=None):
-        self.llm_router = llm_router or get_llm_client("router")
-        self.llm_worker = llm_worker or get_llm_client("worker")
+    def __init__(self, llm_classify=None, llm_generate=None, llm_synthesize=None):
+        # Three-tier model routing (see docs/COST_LATENCY_TRADEOFFS.md §2):
+        # classify  -- cheap tier, NLU/intent only (high call volume, narrow task)
+        # generate  -- cheap tier, narrow sub-agent generation (NL->SQL, code, memory summary)
+        # synthesize -- workhorse tier, final answer composition + validation-retry
+        self.llm_classify = llm_classify or get_llm_client("classify")
+        self.llm_generate = llm_generate or get_llm_client("generate")
+        self.llm_synthesize = llm_synthesize or get_llm_client("synthesize")
         self.memory = ConversationMemory()
 
     # ------------------------------------------------------------------ NLU
@@ -120,8 +125,8 @@ class Orchestrator:
         context = self.memory.context_block()
         prompt = (f"{context}\n\nLatest user message: {user_message}" if context else
                   f"Latest user message: {user_message}")
-        raw = self.llm_router.generate(system=NLU_SYSTEM_PROMPT, user=prompt, json_mode=True,
-                                        max_tokens=600, caller="orchestrator_nlu")
+        raw = self.llm_classify.generate(system=NLU_SYSTEM_PROMPT, user=prompt, json_mode=True,
+                                          max_tokens=600, caller="orchestrator_nlu")
         try:
             data = json.loads(_strip_fences(raw))
         except json.JSONDecodeError:
@@ -167,7 +172,7 @@ class Orchestrator:
     def _call_structured(self, user_message: str, entities: dict) -> tuple[str, list[str]]:
         filt_desc = _entities_to_context_line(entities)
         ctx = (self._context_block_for_subagents() + "\n" + filt_desc).strip()
-        result = structured_agent.answer(self.llm_worker, user_message, context_block=ctx)
+        result = structured_agent.answer(self.llm_generate, user_message, context_block=ctx)
         evidence = []
         assumptions = list(result.notes)
         if result.ok:
@@ -180,7 +185,7 @@ class Orchestrator:
 
     def _call_unstructured(self, user_message: str) -> tuple[str, list[dict]]:
         ctx = self._context_block_for_subagents()
-        result = unstructured_agent.answer(self.llm_worker, user_message, context_block=ctx)
+        result = unstructured_agent.answer(self.llm_generate, user_message, context_block=ctx)
         citations = []
         if result.ok and result.documents:
             lines = ["RETRIEVED DOCUMENTS:"]
@@ -200,7 +205,7 @@ class Orchestrator:
         return "WEB SEARCH: unavailable.", [f"Web search was unavailable ({result.unavailable_reason})."]
 
     def _call_coding(self, user_message: str, prior_evidence: str) -> tuple[str, list[str]]:
-        result = coding_agent.answer(self.llm_worker, user_message, supporting_data=prior_evidence)
+        result = coding_agent.answer(self.llm_generate, user_message, supporting_data=prior_evidence)
         if result.ok:
             return f"CODE EXECUTION RESULT: {result.result} (code: {result.code_used})", []
         return "CODE EXECUTION: failed.", [f"Custom calculation failed: {result.error}"]
@@ -286,8 +291,8 @@ class Orchestrator:
         synth_prompt = (f"{self.memory.context_block()}\n\nUser question: {user_message}\n\n"
                          f"Evidence:\n{evidence_text}\n\n"
                          + (f"Known data limitations to mention: {'; '.join(assumptions)}\n" if assumptions else ""))
-        answer_text = self.llm_router.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=synth_prompt,
-                                                max_tokens=900, caller="orchestrator_synthesis")
+        answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=synth_prompt,
+                                                    max_tokens=900, caller="orchestrator_synthesis")
 
         retried = False
         if self._needs_retry(answer_text, evidence_numbers):
@@ -295,8 +300,8 @@ class Orchestrator:
             correction_prompt = (synth_prompt + "\n\nYour previous draft:\n" + answer_text +
                                   "\n\nThat draft used figures not found in the evidence above. "
                                   "Rewrite the answer using ONLY numbers present in the evidence.")
-            answer_text = self.llm_router.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=correction_prompt,
-                                                    max_tokens=900, caller="orchestrator_synthesis_retry")
+            answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=correction_prompt,
+                                                        max_tokens=900, caller="orchestrator_synthesis_retry")
 
         follow_ups = self._follow_up_suggestions(nlu)
         resp = self._finish(answer_text, intent, nlu, sub_agents_used=used, citations=citations,
@@ -307,7 +312,7 @@ class Orchestrator:
     def _finish(self, text, intent, nlu, sub_agents_used=None, citations=None, assumptions=None,
                 follow_up_suggestions=None, retried=False) -> AgentResponse:
         self.memory.add_turn("assistant", text)
-        self.memory.summarize_overflow(lambda s, u: self.llm_worker.generate(system=s, user=u, max_tokens=300, caller="memory_summarizer"))
+        self.memory.summarize_overflow(lambda s, u: self.llm_generate.generate(system=s, user=u, max_tokens=300, caller="memory_summarizer"))
         return AgentResponse(
             answer=text, intent=intent, sub_agents_used=sub_agents_used or [],
             citations=citations or [], assumptions=assumptions or [],

@@ -14,10 +14,19 @@ They call `LLMClient.generate(...)`. This means:
      numbers real rather than guessed.
 
 Environment variables:
-  LLM_PROVIDER      = "anthropic" | "openai" | "mock"   (default: mock if no key found)
+  LLM_PROVIDER         = "anthropic" | "openai" | "mock"   (default: mock if no key found)
   ANTHROPIC_API_KEY  or  OPENAI_API_KEY
-  LLM_MODEL_ROUTER    default model for orchestrator / routing / synthesis (needs strong reasoning)
-  LLM_MODEL_WORKER    default model for sub-agents (NL->SQL, retrieval query rewriting) -- can be cheaper/smaller
+  LLM_MODEL_CLASSIFY   model for orchestrator NLU/intent classification (cheap tier -- structured
+                       JSON output against a small fixed schema, no deep reasoning needed)
+  LLM_MODEL_GENERATE   model for sub-agent narrow generation: NL->SQL, code-snippet generation,
+                       memory summarization (cheap tier -- templated output against a fixed schema)
+  LLM_MODEL_SYNTHESIZE model for the final answer-synthesis + validation-retry pass (workhorse tier --
+                       this is the one place multilingual fluency and judgment actually matter)
+See docs/COST_LATENCY_TRADEOFFS.md for why these three are split rather than
+using one model everywhere, or the two-tier (router/worker) split this
+replaced: classify and generate together are the majority of call VOLUME in
+this system but need the least reasoning; synthesize is the minority of
+calls but is what the user actually judges answer quality by.
 """
 from __future__ import annotations
 import os
@@ -29,14 +38,16 @@ from typing import Optional
 
 
 # Illustrative per-million-token USD pricing. THESE ARE APPROXIMATE PUBLIC
-# LIST PRICES AND WILL DRIFT -- treat as configurable, not authoritative.
-# Update against the provider's current pricing page before using this for
-# a real budget decision. Kept here (not hardcoded in the cost doc) so the
-# usage tracker and the written analysis always agree.
+# LIST PRICES AND WILL DRIFT FAST (this market is in an active price war) --
+# treat as configurable and directionally-right, not authoritative. Verify
+# against the provider's current pricing page before using this for a real
+# budget decision. Kept here (not hardcoded in the cost doc) so the usage
+# tracker and the written analysis always agree.
 PRICING_PER_MTOK_USD = {
     "claude-opus":   {"input": 15.00, "output": 75.00},
-    "claude-sonnet": {"input": 3.00, "output": 15.00},
-    "claude-haiku":  {"input": 0.80, "output": 4.00},
+    "claude-sonnet": {"input": 2.00, "output": 10.00},
+    "claude-haiku":  {"input": 1.00, "output": 5.00},
+    "gpt-5-mini":    {"input": 0.25, "output": 2.00},
     "gpt-4o":        {"input": 2.50, "output": 10.00},
     "gpt-4o-mini":   {"input": 0.15, "output": 0.60},
     "mock":          {"input": 0.0, "output": 0.0},
@@ -254,13 +265,52 @@ class MockLLMClient(LLMClient):
         return "[mock-llm output]"
 
 
-def get_llm_client(role: str = "router") -> LLMClient:
+_ROLE_ENV_VAR = {
+    "classify": "LLM_MODEL_CLASSIFY",
+    "generate": "LLM_MODEL_GENERATE",
+    "synthesize": "LLM_MODEL_SYNTHESIZE",
+}
+_ROLE_DEFAULT_MODEL = {
+    "anthropic": {
+        "classify": "claude-haiku-4-5",       # cheap tier: JSON-mode intent/entity extraction
+        "generate": "claude-haiku-4-5",       # cheap tier: NL->SQL, code snippets, memory summaries
+        "synthesize": "claude-sonnet-5",      # workhorse tier: final multilingual answer
+    },
+    "openai": {
+        "classify": "gpt-5-mini",
+        "generate": "gpt-5-mini",
+        "synthesize": "gpt-5",
+    },
+}
+
+
+def get_llm_client(role: str = "synthesize") -> LLMClient:
     """
-    role: "router" (orchestrator: intent, clarification, synthesis, validation --
-          worth spending on a stronger model) or "worker" (sub-agents: NL->SQL,
-          query rewriting -- fine on a cheaper/faster model). See
-          docs/COST_LATENCY_TRADEOFFS.md for why we split these.
+    role is one of three tiers, matched to what each job actually needs
+    (see docs/COST_LATENCY_TRADEOFFS.md for the full reasoning and measured
+    call-volume split):
+      - "classify": orchestrator NLU/intent/entity extraction. Structured
+        JSON output against a small fixed schema, no deep reasoning --
+        cheapest tier.
+      - "generate": sub-agent narrow generation (NL->SQL, code snippets,
+        memory summarization). Templated output against a fixed schema --
+        also cheapest tier; kept as a separate env var from "classify" only
+        so the two can be tuned independently later, not because they need
+        different models today.
+      - "synthesize": the final answer-synthesis and validation-retry pass.
+        Needs multilingual fluency and judgment (what's an assumption, what's
+        a limitation) -- the one tier worth paying for a stronger model.
+    "classify"/"generate" together are the MAJORITY of call volume in this
+    system (~60%+, per the measured profile) but need the least reasoning;
+    "synthesize" is the minority of calls but the one the user judges answer
+    quality by. Model IDs and prices below are illustrative placeholders --
+    this space moves fast; pin the exact model string available on your
+    account and verify current pricing before treating PRICING_PER_MTOK_USD
+    as a real budget number.
     """
+    if role not in _ROLE_ENV_VAR:
+        raise ValueError(f"Unknown LLM role {role!r}; expected one of {sorted(_ROLE_ENV_VAR)}")
+
     provider = os.environ.get("LLM_PROVIDER", "").lower()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     openai_key = os.environ.get("OPENAI_API_KEY")
@@ -269,13 +319,9 @@ def get_llm_client(role: str = "router") -> LLMClient:
         provider = "anthropic" if anthropic_key else "openai" if openai_key else "mock"
 
     if provider == "anthropic" and anthropic_key:
-        model = os.environ.get("LLM_MODEL_ROUTER" if role == "router" else "LLM_MODEL_WORKER",
-                                "claude-opus-4-6-20260305" if role == "router" else "claude-sonnet-4-6-20260305")
-        # NOTE: pin the exact model string available on your account; the
-        # defaults above are illustrative placeholders -- see README.
+        model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["anthropic"][role])
         return AnthropicLLMClient(model=model, api_key=anthropic_key)
     if provider == "openai" and openai_key:
-        model = os.environ.get("LLM_MODEL_ROUTER" if role == "router" else "LLM_MODEL_WORKER",
-                                "gpt-4o" if role == "router" else "gpt-4o-mini")
+        model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["openai"][role])
         return OpenAILLMClient(model=model, api_key=openai_key)
     return MockLLMClient()

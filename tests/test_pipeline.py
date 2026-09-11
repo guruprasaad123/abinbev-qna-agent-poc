@@ -73,7 +73,8 @@ class TestCodeSandbox(unittest.TestCase):
 
 class TestOrchestrator(unittest.TestCase):
     def setUp(self):
-        self.orch = Orchestrator(llm_router=MockLLMClient(), llm_worker=MockLLMClient())
+        self.orch = Orchestrator(llm_classify=MockLLMClient(), llm_generate=MockLLMClient(),
+                                  llm_synthesize=MockLLMClient())
 
     def test_greeting(self):
         r = self.orch.handle_turn("hello")
