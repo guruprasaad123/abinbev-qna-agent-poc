@@ -18,7 +18,7 @@ llm_client.py -- same philosophy). So:
      unsupported or unavailable requests") instead of pretending it
      searched the web.
 
-This tool is intentionally scoped to questions OUTSIDE Solara's internal
+This tool is intentionally scoped to questions OUTSIDE AB InBev's own disclosed
 data (general industry context, public competitor news, commodity prices,
 etc.) -- the orchestrator only routes here when structured+unstructured
 retrieval can't answer, which keeps cost down (external search is the most

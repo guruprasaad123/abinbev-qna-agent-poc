@@ -1,131 +1,148 @@
 """
-Central business-domain configuration for the Solara FMCG Group synthetic universe.
+Central business-domain configuration for the real AB InBev dataset.
 
-This is the SINGLE SOURCE OF TRUTH for entities (company/category/brand/SKU,
-geography, channel), KPIs, and aliases. Both the structured-data generator and
-the unstructured-document generator import from here, which is what guarantees
-the two corpora share the same entities and themes (a requirement of the
-assignment) rather than being generated independently and only coincidentally
-overlapping.
+This is the SINGLE SOURCE OF TRUTH for entities (company/zone/country/brand),
+KPIs, and aliases. Both the structured-data curation script and the
+unstructured-document curation script import from here, which is what
+guarantees the two corpora share the same entities (a requirement of the
+assignment) rather than being built independently.
 
-NOTE ON REALISM: "Solara FMCG Group" and all brand names below are entirely
-fictional. We deliberately did NOT model this on a real company's actual
-financials/brands, even though the assignment domain is FMCG — fabricated
-numbers attributed to a real company would be misleading. The category mix
-(beer / non-alcoholic beverages / snacks / confectionery) mirrors a realistic
-multi-category FMCG portfolio so the retrieval and reasoning challenges
-(hierarchy, multi-KPI comparisons, temporal reasoning) are representative.
+NOTE ON REAL DATA (see docs/DESIGN_DECISIONS.md §1 for the full rationale):
+Every number reachable through the structured sub-agent in this build is a
+REAL, PUBLICLY DISCLOSED figure from Anheuser-Busch InBev SA/NV's own
+quarterly and full-year results press releases (BusinessWire / SEC EX-99.2
+filings), not a synthetic or estimated one. That constrains the schema to
+what AB InBev actually discloses:
+  - Financials are broken out by REPORTING ZONE (North America, Middle
+    Americas, South America, EMEA, Asia Pacific) and by QUARTER/YEAR --
+    AB InBev does not publicly disclose revenue/volume by individual
+    country, brand, or trade channel in a structured, queryable form.
+  - Country-level and brand-level detail exists only as QUALITATIVE
+    commentary in the source documents (e.g. "Brazil volumes declined 4.1%
+    in 2025"), which is why those live in the unstructured corpus and route
+    through document retrieval rather than SQL -- a real, not contrived,
+    illustration of "graceful handling of an unsupported request" and
+    "hierarchy-aware fallback" (country -> zone).
+  - There is no real, public trade-channel (on-premise vs. off-premise)
+    breakdown with numbers, so "channel" is not a structured dimension here
+    at all; it appears only as a document tag where a source discusses it
+    qualitatively.
+  - Historical depth varies by grain, exactly as real disclosure works:
+    quarterly zone-level detail is only available from FY2024 onward
+    (that's as far back as this build sourced it); FY2022-FY2023 exist only
+    as annual company-wide totals. This unevenness is left visible rather
+    than smoothed over.
+Every row in the structured database carries the exact source document and
+URL it was transcribed from (see data/db/ab_inbev.db `source_label` /
+`source_url` columns and scripts/generate_structured_data.py).
 """
 
 from __future__ import annotations
 from datetime import date
 
-COMPANY_NAME = "Solara FMCG Group"
+COMPANY_NAME = "Anheuser-Busch InBev (AB InBev)"
 
 # ---------------------------------------------------------------------------
-# Category hierarchy: Category -> Sub-category
+# Reporting zones -- AB InBev's actual disclosed segments -- and the real
+# countries publicly named (in FY2025 SEC filing EX-99.2 and earnings
+# releases) as belonging to each. This is not an exhaustive country list per
+# zone (AB InBev doesn't publish one); it's every country the company itself
+# names in its own disclosures.
 # ---------------------------------------------------------------------------
-CATEGORY_HIERARCHY = {
-    "Beverages": ["Beer", "Non-Alcoholic"],
-    "Food": ["Salty Snacks", "Confectionery"],
+ZONE_HIERARCHY = {
+    "North America": ["United States", "Canada"],
+    "Middle Americas": ["Mexico", "Colombia", "Peru", "Ecuador"],
+    "South America": ["Brazil", "Argentina"],
+    "EMEA": ["United Kingdom", "Netherlands", "France", "Italy", "South Africa", "Nigeria"],
+    "Asia Pacific": ["China", "South Korea"],
 }
+ALL_ZONES = list(ZONE_HIERARCHY.keys())
+ALL_COUNTRIES = [c for cs in ZONE_HIERARCHY.values() for c in cs]
+COUNTRY_TO_ZONE = {c: z for z, cs in ZONE_HIERARCHY.items() for c in cs}
 
 # ---------------------------------------------------------------------------
-# Brand hierarchy: Brand -> Category / Sub-category, plus SKUs
+# Brands -- real AB InBev-owned brands, used for entity recognition and
+# document tagging only. There is NO structured (SQL-queryable) brand-level
+# financial data anywhere in this build -- AB InBev doesn't publicly disclose
+# it -- so these exist purely so the agent can recognize a brand mention and
+# correctly route it to qualitative document retrieval / web search instead
+# of fabricating a SQL row for it.
+# (Note on Corona/Modelo: AB InBev owns Grupo Modelo -- and the Corona/Modelo
+# brand family -- everywhere except the United States, where Constellation
+# Brands holds a permanent license to those brands. Kept simple here since
+# this build never needs brand-level US-license nuance.)
 # ---------------------------------------------------------------------------
 BRANDS = {
-    "Glacier Peak":   {"category": "Beverages", "sub_category": "Beer",
-                        "skus": ["Glacier Peak 330ml Can 6-Pack", "Glacier Peak 500ml Bottle", "Glacier Peak 1L Multipack"]},
-    "Ironclad Stout": {"category": "Beverages", "sub_category": "Beer",
-                        "skus": ["Ironclad Stout 330ml Can 4-Pack", "Ironclad Stout 500ml Bottle"]},
-    "Vivo Splash":    {"category": "Beverages", "sub_category": "Non-Alcoholic",
-                        "skus": ["Vivo Splash 500ml Bottle", "Vivo Splash 1.5L Bottle", "Vivo Splash Zero 500ml Bottle"]},
-    "PureSpring":     {"category": "Beverages", "sub_category": "Non-Alcoholic",
-                        "skus": ["PureSpring 500ml Bottle", "PureSpring 1L Bottle"]},
-    "CrunchWave":     {"category": "Food", "sub_category": "Salty Snacks",
-                        "skus": ["CrunchWave 150g Bag", "CrunchWave Family Pack 300g"]},
-    "Golden Harvest": {"category": "Food", "sub_category": "Salty Snacks",
-                        "skus": ["Golden Harvest 120g Bag", "Golden Harvest Sharing Pack 250g"]},
-    "SweetPeak":      {"category": "Food", "sub_category": "Confectionery",
-                        "skus": ["SweetPeak Bar 45g", "SweetPeak Sharing Bag 180g"]},
-    "CocoNest":       {"category": "Food", "sub_category": "Confectionery",
-                        "skus": ["CocoNest Bar 40g", "CocoNest Gift Box 200g"]},
+    "Budweiser":     {"origin_market": "United States"},
+    "Corona":        {"origin_market": "Mexico"},
+    "Stella Artois": {"origin_market": "Belgium"},
+    "Michelob Ultra": {"origin_market": "United States"},
+    "Beck's":        {"origin_market": "Germany"},
+    "Brahma":        {"origin_market": "Brazil"},
+    "Skol":          {"origin_market": "Brazil"},
+    "Castle Lager":  {"origin_market": "South Africa"},
 }
 ALL_BRANDS = list(BRANDS.keys())
 
 # ---------------------------------------------------------------------------
-# Geography hierarchy: Region -> Country -> [Cities]
-# Structured facts are generated at COUNTRY grain. Cities exist only in
-# unstructured documents / metadata, which lets us demonstrate
-# hierarchy-aware fallback (user asks about a city; structured data can only
-# answer at country grain, so the agent rolls up and says so explicitly).
+# Real, named competitors that are deliberately OUTSIDE this build's tracked
+# entities -- AB InBev doesn't report on them, so any question about them
+# should be flagged as unsupported (no internal data) rather than answered
+# from fabricated figures. Real companies, used only to demonstrate correct
+# scope-boundary / graceful-unsupported-request handling -- never used to
+# invent numbers about them.
 # ---------------------------------------------------------------------------
-GEO_HIERARCHY = {
-    "North America": {"United States": ["New York", "Los Angeles"], "Canada": ["Toronto"]},
-    "Europe": {"United Kingdom": ["London"], "Germany": ["Berlin"]},
-    "APAC": {"India": ["Mumbai", "Delhi"], "Australia": ["Sydney"]},
-    "LATAM": {"Brazil": ["Sao Paulo"], "Mexico": ["Mexico City"]},
-}
-ALL_COUNTRIES = [c for region in GEO_HIERARCHY.values() for c in region]
-COUNTRY_TO_REGION = {c: r for r, cs in GEO_HIERARCHY.items() for c in cs}
-CITY_TO_COUNTRY = {city: c for r, cs in GEO_HIERARCHY.items() for c, cities in cs.items() for city in cities}
+KNOWN_COMPETITORS = ["Heineken", "Molson Coors", "Carlsberg", "Constellation Brands",
+                      "Diageo", "Asahi", "Kirin", "China Resources Snow Breweries"]
 
 # ---------------------------------------------------------------------------
-# Channels
+# Time range for structured facts.
+#   - Quarterly, zone-level detail: Q1 2024 - Q4 2025 (8 quarters, the range
+#     this build actually sourced cleanly from primary press releases).
+#   - Annual, company-wide totals: FY2022 - FY2025 (zone breakouts aren't
+#     available pre-2024 from the sources used here).
+# "Today" for this build is treated as shortly after AB InBev's FY2025
+# results (published Feb 2026) -- FY2025 / Q4 2025 is the latest closed
+# period reflected.
 # ---------------------------------------------------------------------------
-ALL_CHANNELS = ["Modern Trade", "Traditional Trade", "E-commerce", "On-Premise"]
+DATA_START = date(2022, 1, 1)
+DATA_END = date(2025, 12, 31)
 
 # ---------------------------------------------------------------------------
-# Time range for structured facts: monthly, Jan 2023 -> Aug 2026 (current YTD)
-# ---------------------------------------------------------------------------
-DATA_START = date(2023, 1, 1)
-DATA_END = date(2026, 8, 1)  # last fully-closed month before "today" 2026-09-11
-CURRENT_YEAR = 2026
-
-# ---------------------------------------------------------------------------
-# KPI catalog: canonical key -> metadata. Units matter for unit-aware
-# presentation; category_scope restricts which KPIs make sense for which
-# sub-categories (used for metadata discovery / graceful "not applicable").
+# KPI catalog -- every KPI here is one AB InBev actually discloses in its
+# results releases, except ebitda_margin_pct, which is COMPUTED (EBITDA /
+# revenue) from two disclosed figures rather than separately stated for
+# every row -- this is called out explicitly wherever it's used.
 # ---------------------------------------------------------------------------
 KPI_CATALOG = {
-    "net_revenue_usd": {
-        "label": "Net Revenue", "unit": "USD", "format": "currency",
-        "description": "Net sales revenue after trade discounts.",
+    "revenue_usd_m": {
+        "label": "Revenue", "unit": "USD million", "format": "currency",
+        "description": "Consolidated revenue, as reported.",
         "category_scope": "all",
     },
-    "volume": {
-        "label": "Volume", "unit": "varies by category", "format": "volume",
-        "description": "Sales volume. Reported in hectoliters (hL) for Beverages, thousand units (K units) for Food.",
+    "volume_k_hl": {
+        "label": "Volume", "unit": "thousand hL", "format": "volume",
+        "description": "Own beer + non-beer volume in thousand hectoliters, as reported.",
         "category_scope": "all",
     },
-    "market_share_pct": {
-        "label": "Market Share", "unit": "%", "format": "percent",
-        "description": "Estimated value share within the relevant category/country.",
+    "normalized_ebitda_usd_m": {
+        "label": "Normalized EBITDA", "unit": "USD million", "format": "currency",
+        "description": "EBITDA normalized for non-recurring items, as reported.",
         "category_scope": "all",
     },
-    "avg_selling_price_usd": {
-        "label": "Average Selling Price (ASP)", "unit": "USD", "format": "currency",
-        "description": "Net revenue divided by volume.",
+    "ebitda_margin_pct": {
+        "label": "EBITDA Margin", "unit": "% (computed)", "format": "percent",
+        "description": "Normalized EBITDA / Revenue -- computed from the two disclosed figures, not separately reported by AB InBev for every period.",
         "category_scope": "all",
     },
-    "distribution_acv_pct": {
-        "label": "Distribution (ACV)", "unit": "%", "format": "percent",
-        "description": "Percent of all-commodity-volume retail outlets stocking the brand.",
+    "organic_revenue_growth_pct": {
+        "label": "Organic Revenue Growth", "unit": "%", "format": "percent",
+        "description": "AB InBev's own non-GAAP organic growth metric (excludes FX translation and scope/M&A effects), as reported.",
         "category_scope": "all",
     },
-    "marketing_spend_usd": {
-        "label": "Marketing Spend", "unit": "USD", "format": "currency",
-        "description": "Above-the-line marketing investment.",
-        "category_scope": "all",
-    },
-    "promo_spend_usd": {
-        "label": "Promotion Spend", "unit": "USD", "format": "currency",
-        "description": "Trade/consumer promotion investment.",
-        "category_scope": "all",
-    },
-    "gross_margin_pct": {
-        "label": "Gross Margin", "unit": "%", "format": "percent",
-        "description": "Gross profit as a percent of net revenue.",
+    "net_profit_usd_m": {
+        "label": "Net Profit", "unit": "USD million", "format": "currency",
+        "description": "Profit attributable to equity holders of AB InBev, as reported. Disclosed at the total-company level only (not by zone) in this build's sources.",
         "category_scope": "all",
     },
 }
@@ -133,47 +150,43 @@ ALL_KPIS = list(KPI_CATALOG.keys())
 
 # ---------------------------------------------------------------------------
 # Entity aliases / abbreviations / common typos -> canonical entity.
-# This is a deterministic first-pass normalizer that runs BEFORE the LLM
-# sees the query (cheap, fast, auditable) — the LLM is the second-pass
-# fallback for anything not in this table (see src/nlu.py).
+# Deterministic first-pass normalizer that runs BEFORE the LLM sees the
+# query (cheap, fast, auditable) -- the LLM is the second-pass fallback for
+# anything not in this table.
 # ---------------------------------------------------------------------------
 ENTITY_ALIASES = {
-    # Brands: abbreviations & common typos
-    "gp": "Glacier Peak", "glacier": "Glacier Peak", "glacer peak": "Glacier Peak", "glacie peak": "Glacier Peak",
-    "ironclad": "Ironclad Stout", "stout": "Ironclad Stout",
-    "vivo": "Vivo Splash", "vivosplash": "Vivo Splash",
-    "purespring": "PureSpring", "pure spring": "PureSpring",
-    "crunchwave": "CrunchWave", "crunch wave": "CrunchWave", "cw": "CrunchWave",
-    "golden harvest": "Golden Harvest", "gh": "Golden Harvest",
-    "sweetpeak": "SweetPeak", "sweet peak": "SweetPeak",
-    "coconest": "CocoNest", "coco nest": "CocoNest",
-    # Geography
+    # Zones
+    "na": "North America", "n. america": "North America",
+    "ma": "Middle Americas", "middle america": "Middle Americas",
+    "sa": "South America", "s. america": "South America", "latam south": "South America",
+    "emea": "EMEA", "europe middle east africa": "EMEA",
+    "apac": "Asia Pacific", "asia": "Asia Pacific",
+    # Countries
     "us": "United States", "usa": "United States", "u.s.": "United States", "u.s.a.": "United States",
     "uk": "United Kingdom", "u.k.": "United Kingdom", "britain": "United Kingdom",
-    "de": "Germany", "deutschland": "Germany",
-    "nyc": "New York", "la": "Los Angeles",
-    "na": "North America", "apac": "APAC", "latam": "LATAM",
-    # Channels
-    "mt": "Modern Trade", "modern trade": "Modern Trade",
-    "tt": "Traditional Trade", "traditional trade": "Traditional Trade",
-    "ecom": "E-commerce", "e-comm": "E-commerce", "online": "E-commerce",
-    "on prem": "On-Premise", "on-prem": "On-Premise", "bars": "On-Premise",
+    "mx": "Mexico", "méxico": "Mexico",
+    "sk": "South Korea", "korea": "South Korea",
+    "sa (country)": "South Africa",  # disambiguation hint only, not auto-applied
+    # Brands
+    "bud": "Budweiser", "budweiser beer": "Budweiser",
+    "michelob": "Michelob Ultra", "ultra": "Michelob Ultra",
+    "stella": "Stella Artois",
+    "becks": "Beck's",
     # KPIs (incl. common non-English terms for multilingual support)
-    "revenue": "net_revenue_usd", "sales": "net_revenue_usd", "rev": "net_revenue_usd",
-    "ingresos": "net_revenue_usd", "chiffre d'affaires": "net_revenue_usd",
-    "vol": "volume", "volumen": "volume",
-    "share": "market_share_pct", "mkt share": "market_share_pct", "market share": "market_share_pct",
-    "asp": "avg_selling_price_usd", "price": "avg_selling_price_usd", "precio": "avg_selling_price_usd",
-    "acv": "distribution_acv_pct", "distribution": "distribution_acv_pct",
-    "marketing": "marketing_spend_usd", "a&p": "marketing_spend_usd",
-    "promo": "promo_spend_usd", "promotion": "promo_spend_usd",
-    "margin": "gross_margin_pct", "gm": "gross_margin_pct",
+    "revenue": "revenue_usd_m", "sales": "revenue_usd_m", "rev": "revenue_usd_m", "top line": "revenue_usd_m",
+    "ingresos": "revenue_usd_m", "chiffre d'affaires": "revenue_usd_m",
+    "vol": "volume_k_hl", "volumen": "volume_k_hl", "hectoliters": "volume_k_hl", "hectolitres": "volume_k_hl", "hls": "volume_k_hl",
+    "ebitda": "normalized_ebitda_usd_m", "normalised ebitda": "normalized_ebitda_usd_m",
+    "margin": "ebitda_margin_pct", "ebitda margin": "ebitda_margin_pct",
+    "growth": "organic_revenue_growth_pct", "organic growth": "organic_revenue_growth_pct", "organic": "organic_revenue_growth_pct",
+    "profit": "net_profit_usd_m", "net income": "net_profit_usd_m", "bottom line": "net_profit_usd_m",
 }
 
 # Business-domain scope statement, shown in greeting / used for out-of-scope detection
 DOMAIN_DESCRIPTION = (
-    f"{COMPANY_NAME} performance across its Beverages (Beer, Non-Alcoholic) and "
-    f"Food (Salty Snacks, Confectionery) portfolios — revenue, volume, market share, "
-    f"pricing, distribution, marketing/promotion spend and margin, by brand, market "
-    f"and channel, plus related company news, market research and competitive context."
+    f"{COMPANY_NAME}'s real, publicly disclosed financial performance -- revenue, volume, "
+    f"normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting "
+    f"zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter "
+    f"or year, plus qualitative country- and brand-level commentary, company news, and "
+    f"competitive context drawn from AB InBev's own results releases and filings."
 )

@@ -48,10 +48,13 @@
 └───────┬───────┘ └──────┬──────┘ └─────┬──────┘ └──────┬──────┘
         ▼                ▼               ▼                │
 ┌───────────────┐ ┌─────────────┐ ┌────────────┐          │
-│ SQLite:        │ │ 28 markdown │ │  public    │          │
-│ solara_fmcg.db │ │ documents + │ │  internet  │          │
-│ (fact_monthly_ │ │ manifest.   │ │ (optional) │          │
-│ kpi + dims)    │ │ json        │ │            │          │
+│ SQLite:        │ │ 15 real,    │ │  public    │          │
+│ ab_inbev.db    │ │ sourced     │ │  internet  │          │
+│ (real, cited   │ │ briefs +    │ │ (optional) │          │
+│ figures --     │ │ manifest.   │ │            │          │
+│ fact_kpi +     │ │ json        │ │            │          │
+│ dim_zone_      │ │             │ │            │          │
+│ country)       │ │             │ │            │          │
 └───────────────┘ └─────────────┘ └────────────┘          │
                                                     (no external data;
                                                      pure computation)
@@ -70,15 +73,17 @@ that records every call's tokens/latency/estimated cost — this is what makes
    entity catalogs plus the current `ConversationMemory.context_block()`
    (rolling summary + active filters). Returns intent, detected language,
    extracted/aliased entities, an explicit clarification flag+question when
-   needed, any entities that aren't in Solara's known lists, and which
+   needed, any entities that aren't in AB InBev's known lists, and which
    sub-agents are needed.
 3. **Fast paths** for `greeting` / `capability_intro` / `out_of_scope` /
    `metadata_discovery` / `clarification_needed` answer immediately without
    touching any sub-agent — cheap and instant.
-4. **Hierarchy fallback** (`_hierarchy_fallback_notes`): any city named by the
-   user is resolved to its country (structured data's actual grain) with an
-   explicit note; anything not in Solara's tracked brands/countries at all
-   (e.g. a competitor) is flagged as unsupported, also explicitly.
+4. **Hierarchy fallback** (`_hierarchy_fallback_notes`): any country named by
+   the user is resolved to its reporting zone (structured data's actual
+   grain -- AB InBev discloses no country-level structured financials) with
+   an explicit note; anything not in AB InBev's tracked zones/countries/
+   brands at all (e.g. a named competitor) is flagged as unsupported, also
+   explicitly.
 5. **Routing**: the NLU's `needed_subagents` list (which can contain more than
    one — this is what makes retrieval "hybrid") drives which of the four
    sub-agent calls below actually run. Each sub-agent call is given the
@@ -104,16 +109,19 @@ that records every call's tokens/latency/estimated cost — this is what makes
 
 ## Data model
 
-- **Structured**: one SQLite DB (`data/db/solara_fmcg.db`), one fact table
-  (`fact_monthly_kpi`, grain = brand × country × channel × month) plus three
-  dimension tables. See `scripts/generate_structured_data.py` and
-  `src/tools/sql_tool.py::schema_description()`.
-- **Unstructured**: 28 generated markdown documents across 6 source types
-  (press release, earnings commentary, market research, sustainability,
-  competitor intel, strategy memo), indexed by `data/unstructured/
-  manifest.json` with per-doc tags/brands/countries/date. See
-  `scripts/generate_documents.py`.
-- **Single source of truth**: `src/config.py` defines every brand, country,
-  channel, KPI, and alias exactly once; both generators import from it, which
-  is what guarantees the structured and unstructured corpora describe the
-  *same* entities rather than two independently-invented worlds.
+- **Structured**: one SQLite DB (`data/db/ab_inbev.db`) of REAL, cited AB InBev
+  figures, one fact table (`fact_kpi`, grain = zone × quarter-or-year) plus
+  a `dim_zone_country` table. Every row carries the exact source document
+  and URL it was transcribed from. See `scripts/generate_structured_data.py`
+  and `src/tools/sql_tool.py::schema_description()`.
+- **Unstructured**: 15 real, sourced analyst-brief documents across 4 source
+  types (earnings commentary, filing excerpt, market research, competitor
+  intel, metadata note), each ending in a citation to its real AB InBev
+  source, indexed by `data/unstructured/manifest.json` with per-doc tags/
+  brands/countries/date. See `scripts/generate_documents.py`.
+- **Single source of truth**: `src/config.py` defines every zone, country,
+  brand, KPI, and alias exactly once; both curator scripts import from it,
+  and the document curator reads the *same* numbers back out of
+  `ab_inbev.db` rather than retyping them, which is what guarantees the
+  structured and unstructured corpora describe the same real entities
+  rather than two independently-built views.

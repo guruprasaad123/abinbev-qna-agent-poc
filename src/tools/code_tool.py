@@ -2,8 +2,8 @@
 Sandboxed Python execution for the Coding Sub-Agent.
 
 Used for on-the-fly derived calculations the structured-data SQL layer isn't
-well suited to (e.g. "what CAGR would get CocoNest from its FY23 revenue to
-$5M by FY28?", custom multi-step arithmetic, ad-hoc aggregation of numbers
+well suited to (e.g. "what CAGR would take North America from its FY2024 revenue to
+$18B by FY2028?", custom multi-step arithmetic, ad-hoc aggregation of numbers
 already retrieved by other sub-agents, simple matplotlib charts).
 
 SANDBOXING APPROACH (documented trade-off in docs/DESIGN_DECISIONS.md):

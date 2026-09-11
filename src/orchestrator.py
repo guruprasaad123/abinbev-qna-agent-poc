@@ -19,9 +19,9 @@ from dataclasses import dataclass, field
 from src.llm_client import get_llm_client
 from src.memory import ConversationMemory
 from src.config import (
-    ALL_BRANDS, ALL_COUNTRIES, ALL_CHANNELS, ALL_KPIS, KPI_CATALOG, ENTITY_ALIASES,
-    DOMAIN_DESCRIPTION, COMPANY_NAME, GEO_HIERARCHY, CITY_TO_COUNTRY, COUNTRY_TO_REGION,
-    DATA_START, DATA_END, CATEGORY_HIERARCHY, BRANDS,
+    ALL_ZONES, ALL_COUNTRIES, ALL_BRANDS, ALL_KPIS, KPI_CATALOG, ENTITY_ALIASES,
+    DOMAIN_DESCRIPTION, COMPANY_NAME, ZONE_HIERARCHY, COUNTRY_TO_ZONE,
+    DATA_START, DATA_END, KNOWN_COMPETITORS,
 )
 from src.agents import structured_agent, unstructured_agent, websearch_agent, coding_agent
 from src.formatting import rows_to_markdown_table
@@ -41,17 +41,18 @@ class AgentResponse:
 
 
 NLU_SYSTEM_PROMPT = f"""You are the natural-language-understanding module for an enterprise
-Q&A agent over {COMPANY_NAME}'s FMCG business data. classify the user's latest message.
+Q&A agent over {COMPANY_NAME}'s REAL, publicly disclosed business data. classify the user's
+latest message.
 
-Known brands: {', '.join(ALL_BRANDS)}
-Known countries: {', '.join(ALL_COUNTRIES)}
-Known channels: {', '.join(ALL_CHANNELS)}
+Known zones (structured data grain): {', '.join(ALL_ZONES)}, or 'Global' for company-wide
+Known countries (map to a zone; NO country-grain structured data exists): {', '.join(ALL_COUNTRIES)}
+Known brands (NO structured data exists; qualitative/document mentions only): {', '.join(ALL_BRANDS)}
 Known KPIs: {', '.join(ALL_KPIS)}
 In-scope domain: {DOMAIN_DESCRIPTION}
 
-The user may write in any language, mix languages, use abbreviations (e.g. "GP" for
-Glacier Peak, "US" for United States), or make typos -- resolve these to the canonical
-names above wherever confident.
+The user may write in any language, mix languages, use abbreviations (e.g. "US" for
+United States, "EMEA" for Europe/Middle East/Africa), or make typos -- resolve these to the
+canonical names above wherever confident.
 
 Respond with ONLY a JSON object (no markdown fences) with this exact shape:
 {{
@@ -60,18 +61,19 @@ Respond with ONLY a JSON object (no markdown fences) with this exact shape:
   "needs_clarification": true|false,
   "clarification_question": "<question to ask the user, or null>",
   "entities": {{
-     "brands": [canonical brand names mentioned or implied],
+     "zones": [canonical zone names mentioned or implied],
      "countries": [canonical country names mentioned or implied],
-     "channels": [canonical channel names mentioned or implied],
+     "brands": [canonical brand names mentioned or implied],
      "kpis": [canonical KPI keys mentioned or implied],
      "period": "<e.g. '2025', 'Q3 2025', 'last 12 months', or null>",
      "comparison_period": "<a second period being compared against, or null>"
   }},
-  "unsupported_entities": [<any brand/country/city/competitor named by the user that is NOT in the known lists above>],
+  "unsupported_entities": [<any brand/country/competitor named by the user that is NOT in the known lists above>],
   "needed_subagents": [subset of "structured","unstructured","web","coding" needed to answer -- use "structured" for
-     numeric KPI questions, "unstructured" for news/context/why/press-release/strategy questions, "web" ONLY for
-     things clearly outside {COMPANY_NAME}'s own data (e.g. a public competitor's official financials, general
-     industry facts), "coding" for custom derived calculations like CAGR/projections]
+     numeric zone/company KPI questions, "unstructured" for brand-specific, country-specific-color, news/context/why/
+     press-release/strategy questions (since brand and country detail is only real in the documents, not in SQL),
+     "web" ONLY for things clearly outside {COMPANY_NAME}'s own data (e.g. a named competitor's official financials,
+     general industry facts), "coding" for custom derived calculations like CAGR/projections]
 }}
 
 Guidelines:
@@ -79,15 +81,17 @@ Guidelines:
 - "what can you do / help me with" -> intent "capability_intro".
 - Anything clearly unrelated to {COMPANY_NAME}'s business (weather, sports scores, general
   trivia, coding help unrelated to this data) -> intent "out_of_scope".
-- A question naming NO brand/country/KPI/period at all when one is clearly required, or that
-  is ambiguous between two reasonable readings -> needs_clarification true with a specific
+- A question naming NO zone/country/brand/KPI/period at all when one is clearly required, or
+  that is ambiguous between two reasonable readings -> needs_clarification true with a specific
   clarification_question. Do not ask for clarification if reasonable defaults exist or if
   conversation context (given to you separately) already supplies the missing piece.
-- "which KPIs / metrics / brands / countries / periods do you have" -> intent "metadata_discovery".
+- "which KPIs / metrics / zones / countries / periods do you have" -> intent "metadata_discovery".
+- A question about ONLY a brand (no zone/country) should still route to "unstructured" -- there
+  is no structured brand data, so don't route it to "structured" alone.
 """
 
 SYNTHESIS_SYSTEM_PROMPT = f"""You are the answer-synthesis module for an enterprise Q&A agent over
-{COMPANY_NAME}'s FMCG data. You are given retrieved evidence from up to four sources
+{COMPANY_NAME}'s REAL business data. You are given retrieved evidence from up to four sources
 (structured KPI data, internal documents with citations, web search, code execution) and
 must write ONE final answer for the user.
 
@@ -132,27 +136,28 @@ class Orchestrator:
 
     # ------------------------------------------------------- hierarchy fallback
     def _hierarchy_fallback_notes(self, nlu: dict) -> list[str]:
-        """Resolve a city to its country (roll-up) or flag a genuinely
-        unsupported entity (e.g. a competitor) with a plain-language note,
-        rather than silently returning nothing or an error."""
+        """Resolve a country to its zone (roll-up -- AB InBev doesn't disclose
+        country-grain structured data, only zone-grain) or flag a genuinely
+        unsupported entity (e.g. a named competitor) with a plain-language
+        note, rather than silently returning nothing or an error."""
         notes = []
-        resolved_countries = []
+        resolved_zones = []
+        for country in nlu.get("entities", {}).get("countries", []):
+            zone = COUNTRY_TO_ZONE.get(country)
+            if zone:
+                resolved_zones.append(zone)
+                notes.append(f"AB InBev doesn't publicly disclose structured financials by country; "
+                              f"showing the **{zone}** zone (which includes {country}) instead, plus any "
+                              f"{country}-specific commentary found in the documents.")
         for unsupported in nlu.get("unsupported_entities", []):
             key = unsupported.strip()
-            if key in CITY_TO_COUNTRY:
-                country = CITY_TO_COUNTRY[key]
-                resolved_countries.append(country)
-                notes.append(f"Structured data isn't broken out by city; showing **{country}** "
-                              f"(the country containing {key}) instead.")
-            elif key in COUNTRY_TO_REGION.values() if False else key in ["Beverages", "Food"]:
-                pass
-            else:
-                notes.append(f"'{key}' isn't part of Solara's tracked entities (brand/country/competitor), "
-                              f"so no internal data exists for it. Any answer about it, if given, is "
-                              f"qualitative/public information only, not internal reporting.")
-        if resolved_countries:
-            nlu["entities"].setdefault("countries", [])
-            nlu["entities"]["countries"] = list(set(nlu["entities"]["countries"] + resolved_countries))
+            notes.append(f"'{key}' isn't part of {COMPANY_NAME}'s tracked entities (brand/zone/country), "
+                          f"or is a different company entirely (e.g. a competitor), so no internal "
+                          f"structured data exists for it. Any answer about it, if given, is "
+                          f"qualitative/public information only, not internal reporting.")
+        if resolved_zones:
+            nlu["entities"].setdefault("zones", [])
+            nlu["entities"]["zones"] = list(set(nlu["entities"]["zones"] + resolved_zones))
         return notes
 
     # ------------------------------------------------------------- routing
@@ -166,13 +171,7 @@ class Orchestrator:
         evidence = []
         assumptions = list(result.notes)
         if result.ok:
-            vol_units = None
-            if "volume" in result.columns and "brand" in result.columns:
-                vol_units = [
-                    ("hL" if BRANDS.get(row[result.columns.index("brand")], {}).get("category") == "Beverages" else "K units")
-                    for row in result.rows
-                ]
-            table = rows_to_markdown_table(result.columns, result.rows, volume_unit_by_row=vol_units)
+            table = rows_to_markdown_table(result.columns, result.rows)
             evidence.append(f"STRUCTURED DATA (SQL: {result.sql_used}):\n{table}")
         else:
             assumptions.append(f"Structured data lookup failed: {result.error}")
@@ -228,9 +227,9 @@ class Orchestrator:
 
         if intent == "greeting":
             text = (f"Hello! I'm the {COMPANY_NAME} Q&A assistant. {DOMAIN_DESCRIPTION} "
-                     f"Ask me about revenue, volume, share, pricing, distribution, marketing/promo "
-                     f"spend or margin by brand/market/channel/period, or about related company news "
-                     f"and market context. What would you like to know?")
+                     f"Ask me about revenue, volume, EBITDA, margin, organic growth or net profit "
+                     f"by zone/period, or about brand and country context from our documents. "
+                     f"What would you like to know?")
             return self._finish(text, intent, nlu)
 
         if intent == "capability_intro":
@@ -317,29 +316,34 @@ class Orchestrator:
 
     def _capability_intro_text(self) -> str:
         kpi_list = ", ".join(v["label"] for v in KPI_CATALOG.values())
-        return (f"I'm the {COMPANY_NAME} Q&A assistant. I can:\n"
-                f"- Answer questions about {kpi_list}, by brand, country, channel and month/quarter/year\n"
-                f"- Compare KPIs across brands, markets, channels or time periods\n"
-                f"- Retrieve company news, market research, sustainability and strategy documents with citations\n"
-                f"- Pull in public/web context for things outside our internal data\n"
+        return (f"I'm the {COMPANY_NAME} Q&A assistant, built over AB InBev's real, publicly "
+                f"disclosed results. I can:\n"
+                f"- Answer questions about {kpi_list}, by reporting zone and quarter/year\n"
+                f"- Compare KPIs across zones or time periods (QoQ, YoY)\n"
+                f"- Roll a country up to its zone automatically when structured data doesn't go that granular\n"
+                f"- Retrieve real press releases, filing excerpts and brand/country commentary with citations\n"
+                f"- Pull in public/web context for named competitors or anything outside our own data\n"
                 f"- Do custom calculations (growth rates, projections) on the numbers\n\n"
-                f"Known brands: {', '.join(ALL_BRANDS)}\nKnown markets: {', '.join(ALL_COUNTRIES)}\n"
-                f"Data covers {DATA_START.strftime('%b %Y')} to {DATA_END.strftime('%b %Y')} (year-to-date).")
+                f"Known zones: {', '.join(ALL_ZONES)}\nKnown countries: {', '.join(ALL_COUNTRIES)}\n"
+                f"Known brands (document-level only): {', '.join(ALL_BRANDS)}\n"
+                f"Structured data covers Q1 2024-Q4 2025 (quarterly, by zone) and "
+                f"FY{DATA_START.year}-FY{DATA_END.year} (annual, company-wide).")
 
     def _metadata_discovery_text(self) -> str:
-        lines = [f"**Available data** ({DATA_START.strftime('%b %Y')}–{DATA_END.strftime('%b %Y')}):", ""]
+        lines = [f"**Available data**:", ""]
         lines.append("KPIs: " + ", ".join(f"{v['label']} ({v['unit']})" for v in KPI_CATALOG.values()))
         lines.append("")
-        lines.append("Brands & categories:")
-        for cat, subs in CATEGORY_HIERARCHY.items():
-            brands_in_cat = [b for b, m in BRANDS.items() if m["category"] == cat]
-            lines.append(f"- {cat} ({', '.join(subs)}): {', '.join(brands_in_cat)}")
+        lines.append("Structured (SQL) grain: zone x quarter, Q1 2024-Q4 2025; zone x year and "
+                      f"company-wide (Global) x year, FY{DATA_START.year}-FY{DATA_END.year}. "
+                      "No brand-level or country-level structured rows -- AB InBev doesn't disclose "
+                      "that granularity publicly.")
         lines.append("")
-        lines.append("Markets: " + ", ".join(f"{c} ({r})" for r, cs in GEO_HIERARCHY.items() for c in cs))
-        lines.append("Channels: " + ", ".join(ALL_CHANNELS))
+        lines.append("Zones: " + ", ".join(ALL_ZONES))
+        lines.append("Countries (roll up to their zone): " + ", ".join(f"{c} ({z})" for z, cs in ZONE_HIERARCHY.items() for c in cs))
+        lines.append("Brands (document/qualitative mentions only, not structured rows): " + ", ".join(ALL_BRANDS))
         lines.append("")
-        lines.append("Document types: press releases, earnings commentary, market research notes, "
-                      "sustainability updates, competitor intelligence, strategy memos.")
+        lines.append("Document types: real press releases and filing excerpts, summarized with citations "
+                      "to the original AB InBev source and URL.")
         return "\n".join(lines)
 
     def _follow_up_suggestions(self, nlu: dict) -> list[str]:
@@ -351,8 +355,8 @@ class Orchestrator:
                 suggestions.append(f"Compare against {KPI_CATALOG[other[0]]['label']}?")
         if entities.get("period") and not entities.get("comparison_period"):
             suggestions.append("Compare this to the same period last year?")
-        if entities.get("brands") and not entities.get("channels"):
-            suggestions.append("Break this down by channel?")
+        if entities.get("zones") and len(entities["zones"]) == 1:
+            suggestions.append("Compare this across all zones?")
         return suggestions[:2]
 
 
@@ -365,12 +369,12 @@ def _strip_fences(text: str) -> str:
 
 def _flatten_entities(entities: dict) -> dict:
     flat = {}
-    if entities.get("brands"):
-        flat["brand"] = entities["brands"][0] if len(entities["brands"]) == 1 else ", ".join(entities["brands"])
+    if entities.get("zones"):
+        flat["zone"] = entities["zones"][0] if len(entities["zones"]) == 1 else ", ".join(entities["zones"])
     if entities.get("countries"):
         flat["country"] = entities["countries"][0] if len(entities["countries"]) == 1 else ", ".join(entities["countries"])
-    if entities.get("channels"):
-        flat["channel"] = ", ".join(entities["channels"])
+    if entities.get("brands"):
+        flat["brand"] = entities["brands"][0] if len(entities["brands"]) == 1 else ", ".join(entities["brands"])
     if entities.get("kpis"):
         flat["kpi"] = ", ".join(entities["kpis"])
     if entities.get("period"):
@@ -380,7 +384,7 @@ def _flatten_entities(entities: dict) -> dict:
 
 def _entities_to_context_line(entities: dict) -> str:
     parts = []
-    for key in ("brands", "countries", "channels", "kpis"):
+    for key in ("zones", "countries", "brands", "kpis"):
         if entities.get(key):
             parts.append(f"{key}: {', '.join(entities[key])}")
     if entities.get("period"):

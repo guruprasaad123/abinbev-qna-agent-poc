@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass, field
 
 from src.tools.sql_tool import run_query, SQLSafetyError, schema_description
-from src.config import KPI_CATALOG, ALL_BRANDS, ALL_COUNTRIES, ALL_CHANNELS
+from src.config import KPI_CATALOG, ALL_ZONES, ALL_COUNTRIES, ALL_BRANDS
 
 MAX_RETRIES = 1
 
@@ -29,26 +29,27 @@ class StructuredResult:
     notes: list[str] = field(default_factory=list)
 
 
-SYSTEM_PROMPT = f"""You are a SQL generation assistant for a read-only FMCG analytics database.
-Given a user question (possibly with resolved context filters), output ONE single
-SQLite SELECT statement and nothing else -- no markdown fences, no commentary.
+SYSTEM_PROMPT = f"""You are a SQL generation assistant for a read-only database of AB InBev's
+REAL, publicly disclosed financial results. Given a user question (possibly with resolved
+context filters), output ONE single SQLite SELECT statement and nothing else -- no markdown
+fences, no commentary.
 
 {schema_description()}
 
 KPI column reference:
 {chr(10).join(f"  {k}: {v['label']} ({v['unit']})" for k, v in KPI_CATALOG.items())}
 
-Known brands: {', '.join(ALL_BRANDS)}
-Known countries: {', '.join(ALL_COUNTRIES)}
-Known channels: {', '.join(ALL_CHANNELS)}
+Known zones: {', '.join(ALL_ZONES)}, or 'Global' for company-wide
+Known countries (map to a zone via dim_zone_country; there is no country-grain data): {', '.join(ALL_COUNTRIES)}
+Known brands (NO structured data exists for these -- select nothing, do not guess a zone): {', '.join(ALL_BRANDS)}
 
 Rules:
 - Only reference the tables/columns above.
+- If the question names a country, JOIN dim_zone_country to resolve it to its zone and query at
+  zone grain -- never invent a country-level row.
+- If the question names a brand, return no SQL rows for it (route to documents instead).
 - If the question implies a time comparison (YoY, QoQ, "vs last year"), compute
   it with conditional aggregation (e.g. SUM(CASE WHEN year=2025 THEN ... END)).
-- If a brand/country/channel named by the user is not in the known lists above,
-  do NOT invent a row for it -- instead select nothing for it (the caller
-  handles reporting unsupported entities).
 - Always GROUP BY the non-aggregated dimensions requested.
 - Output raw SQL only.
 """

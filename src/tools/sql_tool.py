@@ -32,9 +32,9 @@ import sqlite3
 from pathlib import Path
 from dataclasses import dataclass
 
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "solara_fmcg.db"
+DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "ab_inbev.db"
 
-ALLOWED_TABLES = {"fact_monthly_kpi", "dim_brand", "dim_geo", "dim_channel"}
+ALLOWED_TABLES = {"fact_kpi", "dim_zone_country"}
 BLOCKED_KEYWORDS = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|ATTACH|DETACH|PRAGMA|REPLACE|"
     r"TRUNCATE|VACUUM|REINDEX|GRANT|EXEC|EXECUTE)\b", re.IGNORECASE,
@@ -124,17 +124,27 @@ def run_query(sql: str) -> SQLResult:
 def schema_description() -> str:
     """Human/LLM-readable schema, used in the NL->SQL prompt."""
     return """
-Tables (read-only):
-  fact_monthly_kpi(brand TEXT, country TEXT, channel TEXT, year INT, month INT,
-                    net_revenue_usd REAL, volume REAL, volume_unit TEXT,
-                    market_share_pct REAL, avg_selling_price_usd REAL,
-                    distribution_acv_pct REAL, marketing_spend_usd REAL,
-                    promo_spend_usd REAL, gross_margin_pct REAL)
-  dim_brand(brand TEXT PRIMARY KEY, category TEXT, sub_category TEXT)
-  dim_geo(country TEXT PRIMARY KEY, region TEXT)
-  dim_channel(channel TEXT PRIMARY KEY)
+Tables (read-only), built from AB InBev's own real, publicly disclosed results:
+  fact_kpi(grain TEXT,               -- 'quarterly' or 'annual'
+           zone TEXT,                 -- one of: North America, Middle Americas, South America,
+                                       --   EMEA, Asia Pacific, or 'Global' (company-wide total)
+           year INTEGER, quarter INTEGER,     -- quarter is 1-4, NULL for annual rows
+           period_label TEXT,         -- e.g. 'Q1 2024', 'FY2023'
+           revenue_usd_m REAL, volume_k_hl REAL, normalized_ebitda_usd_m REAL,
+           ebitda_margin_pct REAL,    -- COMPUTED (ebitda/revenue), not separately disclosed
+           organic_revenue_growth_pct REAL,   -- AB InBev's own non-GAAP metric; NULL if not disclosed
+           net_profit_usd_m REAL,     -- only populated for zone='Global' rows
+           source_label TEXT, source_url TEXT)
+  dim_zone_country(zone TEXT, country TEXT)   -- which real countries AB InBev names within each zone
 
-Grain of fact_monthly_kpi is one row per (brand, country, channel, year, month).
-Data covers Jan 2023 through Aug 2026 (year-to-date). volume_unit is 'hL' for
-Beverages brands and 'K units' for Food brands -- always report volume with its unit.
+Grain of fact_kpi is one row per (zone, year, quarter-or-null). There is NO brand-level or
+country-level row in this table -- AB InBev does not publicly disclose financials at that
+granularity, only zone/company level. A question about a specific country (e.g. "Brazil") should
+resolve the country to its zone via dim_zone_country and query at zone grain, making the
+country -> zone substitution explicit rather than silently answering as if it were country-level.
+A question about a specific brand (e.g. "Budweiser") has NO structured answer at all -- return
+no rows for it; the caller will route it to document retrieval instead.
+Quarterly zone-level data covers Q1 2024 - Q4 2025. Annual Global totals cover FY2022-FY2025.
+Some FY2022/FY2023 fields are NULL where AB InBev's own release didn't state that figure --
+NULL means "not disclosed", never "zero".
 """.strip()

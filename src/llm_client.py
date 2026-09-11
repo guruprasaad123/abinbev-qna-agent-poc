@@ -210,36 +210,42 @@ class MockLLMClient(LLMClient):
             # lists) purely so the OFFLINE smoke test exercises routing,
             # hierarchy-fallback and hybrid-retrieval logic realistically.
             # A real LLM does this far more robustly via the NLU prompt.
-            from src.config import ALL_BRANDS, ALL_COUNTRIES, ALL_CHANNELS, ALL_KPIS, CITY_TO_COUNTRY
-            brands = [b for b in ALL_BRANDS if b.lower() in u]
+            from src.config import ALL_ZONES, ALL_COUNTRIES, ALL_BRANDS, KNOWN_COMPETITORS
+            zones = [z for z in ALL_ZONES if z.lower() in u]
             countries = [c for c in ALL_COUNTRIES if c.lower() in u]
-            channels = [c for c in ALL_CHANNELS if c.lower() in u]
-            kpis = [k for k in ALL_KPIS if k.replace("_", " ") in u]
-            unsupported = [city for city in CITY_TO_COUNTRY if city.lower() in u]
-            for fake_competitor in ("northern lager", "blue ridge", "meridian beverages", "alpine confectionery"):
-                if fake_competitor in u:
-                    unsupported.append(fake_competitor.title())
+            brands = [b for b in ALL_BRANDS if b.lower() in u]
+            KPI_KEYWORDS = {
+                "revenue": "revenue_usd_m", "sales": "revenue_usd_m",
+                "volume": "volume_k_hl",
+                "ebitda margin": "ebitda_margin_pct", "margin": "ebitda_margin_pct",
+                "ebitda": "normalized_ebitda_usd_m",
+                "organic growth": "organic_revenue_growth_pct", "growth": "organic_revenue_growth_pct",
+                "net profit": "net_profit_usd_m", "profit": "net_profit_usd_m",
+            }
+            kpis = list(dict.fromkeys(v for k, v in KPI_KEYWORDS.items() if k in u))
+            unsupported = [c for c in KNOWN_COMPETITORS if c.lower() in u]
 
             needed = []
             if any(w in u for w in ("news", "press release", "announce", "sustainab", "strategy",
-                                      "why", "market research", "trend")):
+                                      "why", "market research", "trend", "earnings", "commentary",
+                                      "filing", "document", "glossary")) or brands:
                 needed.append("unstructured")
-            if any(w in u for w in ("competitor", "industry", "public")) and not brands:
+            if any(w in u for w in ("competitor", "industry", "public")) or unsupported:
                 needed.append("web")
             if any(w in u for w in ("cagr", "projection", "if it grew", "calculate")):
                 needed.append("coding")
-            if not needed or brands or countries or kpis:
+            if not needed or zones or countries or kpis:
                 needed.insert(0, "structured")
 
             return json.dumps({
                 "language": "en", "intent": intent, "needs_clarification": False,
                 "clarification_question": None,
-                "entities": {"brands": brands, "countries": countries, "channels": channels,
+                "entities": {"zones": zones, "countries": countries, "brands": brands,
                              "kpis": kpis, "period": None, "comparison_period": None},
                 "unsupported_entities": unsupported, "needed_subagents": needed or ["structured"],
             })
         if "sql generation" in s:
-            return "SELECT brand, country, SUM(net_revenue_usd) AS net_revenue_usd FROM fact_monthly_kpi GROUP BY brand, country LIMIT 20;"
+            return "SELECT zone, period_label, revenue_usd_m FROM fact_kpi WHERE grain='quarterly' ORDER BY year, quarter LIMIT 20;"
         if "answer-synthesis" in s:
             return ("[mock-llm placeholder answer] The retrieved data is summarized above. "
                     "Swap in a real ANTHROPIC_API_KEY / OPENAI_API_KEY to get an actual synthesized answer here.")

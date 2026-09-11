@@ -22,17 +22,17 @@ from src.llm_client import MockLLMClient
 
 class TestSQLSafety(unittest.TestCase):
     def test_valid_select_executes(self):
-        r = run_query("SELECT brand, SUM(net_revenue_usd) AS rev FROM fact_monthly_kpi GROUP BY brand")
+        r = run_query("SELECT zone, SUM(revenue_usd_m) AS rev FROM fact_kpi WHERE grain='quarterly' GROUP BY zone")
         self.assertGreater(r.row_count, 0)
-        self.assertIn("brand", r.columns)
+        self.assertIn("zone", r.columns)
 
     def test_blocks_stacked_statements(self):
         with self.assertRaises(SQLSafetyError):
-            validate_sql("SELECT * FROM fact_monthly_kpi; DROP TABLE fact_monthly_kpi;")
+            validate_sql("SELECT * FROM fact_kpi; DROP TABLE fact_kpi;")
 
     def test_blocks_write_statements(self):
-        for bad in ["DROP TABLE fact_monthly_kpi", "DELETE FROM fact_monthly_kpi",
-                    "UPDATE fact_monthly_kpi SET net_revenue_usd=0", "PRAGMA table_info(dim_brand)"]:
+        for bad in ["DROP TABLE fact_kpi", "DELETE FROM fact_kpi",
+                    "UPDATE fact_kpi SET revenue_usd_m=0", "PRAGMA table_info(dim_zone_country)"]:
             with self.assertRaises(SQLSafetyError):
                 validate_sql(bad)
 
@@ -41,18 +41,18 @@ class TestSQLSafety(unittest.TestCase):
             validate_sql("SELECT * FROM sqlite_master")
 
     def test_enforces_row_cap(self):
-        safe = validate_sql("SELECT * FROM fact_monthly_kpi LIMIT 999999")
+        safe = validate_sql("SELECT * FROM fact_kpi LIMIT 999999")
         self.assertIn("LIMIT 500", safe)
 
 
 class TestRetrieval(unittest.TestCase):
     def test_finds_relevant_document(self):
-        results = get_index().search("sustainable cocoa sourcing SweetPeak", k=3)
-        self.assertTrue(any(d.doc_id == "DOC-014" for d in results))
+        results = get_index().search("Corona Michelob Ultra megabrand revenue growth", k=3)
+        self.assertTrue(any(d.doc_id == "DOC-012" for d in results))
 
     def test_metadata_filter_by_brand(self):
-        results = get_index().search("launch", k=10, brands=["Vivo Splash"])
-        self.assertTrue(all("Vivo Splash" in d.brands or d.score > 0 for d in results))
+        results = get_index().search("brand performance", k=10, brands=["Corona"])
+        self.assertTrue(all("Corona" in d.brands or d.score > 0 for d in results))
         self.assertTrue(len(results) > 0)
 
 
@@ -86,32 +86,32 @@ class TestOrchestrator(unittest.TestCase):
     def test_metadata_discovery(self):
         r = self.orch.handle_turn("what kpis do you have?")
         self.assertEqual(r.intent, "metadata_discovery")
-        self.assertIn("Net Revenue", r.answer)
+        self.assertIn("Revenue", r.answer)
 
     def test_data_query_routes_to_structured(self):
-        r = self.orch.handle_turn("What was Glacier Peak revenue in the United States?")
+        r = self.orch.handle_turn("What was North America revenue in Q1 2024?")
         self.assertIn("structured", r.sub_agents_used)
 
     def test_hybrid_routes_both_structured_and_unstructured(self):
-        r = self.orch.handle_turn("Why did Vivo Splash grow in Germany, any press releases?")
+        r = self.orch.handle_turn("Why did Corona grow in Mexico, any press releases?")
         self.assertIn("structured", r.sub_agents_used)
         self.assertIn("unstructured", r.sub_agents_used)
         self.assertTrue(len(r.citations) > 0)
 
-    def test_hierarchy_fallback_city_to_country(self):
-        r = self.orch.handle_turn("How is Glacier Peak doing in New York?")
-        self.assertTrue(any("United States" in a for a in r.assumptions))
+    def test_hierarchy_fallback_country_to_zone(self):
+        r = self.orch.handle_turn("How is revenue in Brazil doing?")
+        self.assertTrue(any("South America" in a for a in r.assumptions))
 
     def test_unsupported_competitor_flagged(self):
-        r = self.orch.handle_turn("How is Northern Lager Co performing?")
+        r = self.orch.handle_turn("How is Heineken performing?")
         self.assertTrue(any("tracked entities" in a for a in r.assumptions))
 
     def test_conversation_memory_persists_filters(self):
-        self.orch.handle_turn("What was Glacier Peak revenue in the United States in 2025?")
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Glacier Peak")
-        self.orch.handle_turn("Sales figure question with no new entity")
-        # brand should still be remembered from the previous turn
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Glacier Peak")
+        self.orch.handle_turn("What was North America revenue in 2025?")
+        self.assertEqual(self.orch.memory.active_filters.get("zone"), "North America")
+        self.orch.handle_turn("Revenue figure question with no new entity")
+        # zone should still be remembered from the previous turn
+        self.assertEqual(self.orch.memory.active_filters.get("zone"), "North America")
 
 
 if __name__ == "__main__":

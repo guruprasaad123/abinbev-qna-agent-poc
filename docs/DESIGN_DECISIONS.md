@@ -5,31 +5,71 @@ constraints that shaped it and what a production version would change.
 Read alongside `docs/ARCHITECTURE.md` (what was built) and
 `docs/COST_LATENCY_TRADEOFFS.md` (the cost/latency/model POV).
 
-## 1. A fictional company, not a real one
+## 1. Real AB InBev data, not a synthetic company — and what that trades away
 
-The assignment asks for "an FMCG company" — this project invents **Solara
-FMCG Group** rather than using a real company's name/brands. Fabricating
-financials and attributing them to a real, identifiable company would be
-misleading even in an obviously-synthetic exercise; a fictional company with
-a realistic multi-category portfolio (Beer, Non-Alcoholic, Salty Snacks,
-Confectionery) gives the same modeling challenges without that problem.
+Earlier drafts of this project used a fully synthetic, fictional brewer
+("Meridian Brewing Group") specifically to avoid attributing invented
+numbers to a real company. We rebuilt it around AB InBev's own **real,
+publicly disclosed** results instead, at the cost of some data richness.
+Concretely:
 
-## 2. Generation-time overlap, not incidental overlap
+- **Every number reachable via the structured sub-agent is real and
+  sourced.** `data/db/ab_inbev.db` is built by
+  `scripts/generate_structured_data.py`, which loads figures transcribed
+  directly from AB InBev's quarterly/full-year BusinessWire results
+  releases and SEC EX-99.2 filings — nothing is randomly generated. Every
+  row carries the exact source document title and URL it came from
+  (`source_label`/`source_url` columns).
+- **This constrains the schema to what's actually public.** AB InBev
+  discloses revenue/volume/EBITDA by **reporting zone** (North America,
+  Middle Americas, South America, EMEA, Asia Pacific) and by
+  **quarter/year** — not by individual country, brand, or trade channel.
+  So the structured database has NO country-grain, brand-grain, or
+  channel-grain rows at all. A question about "Brazil" or "Budweiser"
+  genuinely has no SQL answer — it's answered from the document corpus
+  instead, with an explicit note about the substitution
+  (`_hierarchy_fallback_notes` in `src/orchestrator.py`). This is a real
+  constraint, not a contrived one for the demo — and it happens to make the
+  hierarchy-fallback and "graceful handling of unsupported requests"
+  capabilities more honest than a synthetic dataset could, since there's a
+  genuine reason (not just a scripted gap) why the data doesn't go that deep.
+- **Historical depth varies by grain, exactly as real disclosure does.**
+  Quarterly zone-level detail only exists from Q1 2024 onward (that's as
+  far back as this build sourced it cleanly from primary releases);
+  FY2022–FY2023 exist only as annual company-wide totals, because the
+  zone-level breakouts for those years weren't cleanly available in the
+  sources used (see the docstring in `generate_structured_data.py` for the
+  specific gaps). We left this unevenness visible (`NULL` where a figure
+  isn't disclosed) rather than estimating a number to smooth it over —
+  fabricating a plausible-looking fill-in would have defeated the entire
+  point of moving to real data.
+- **Trade-off, stated plainly:** a synthetic dataset can be *any* shape you
+  want (brand x country x channel x month, with clean overlap everywhere).
+  Real data gives you authenticity but only the shape the company actually
+  discloses — coarser dimensionally (5 zones instead of dozens of brand/
+  country/channel combinations), but real. For an assignment whose graders
+  can independently check the numbers against AB InBev's actual public
+  filings, we judged that trade worth making. In production, this gap would
+  close with a **licensed data source** (e.g. Nielsen/IRI retail panel data,
+  or the company's own internal systems) that legitimately has brand/
+  country/channel granularity — see §12.
+
+## 2. Overlap by construction, now grounded in real sourcing
 
 The assignment specifically requires overlapping entities/themes across
-datasets and documents. Rather than generate the structured data and the
-document corpus independently and hope they happen to reference the same
-things, both generators import their entities from one file
-(`src/config.py`), and the document generator is organized into ~10
-**storylines** (e.g. a product launch, a pricing decision, a sustainability
-initiative), each producing 3–4 documents of *different types* that all
-reference the same brand/country/KPI facts — several of them pulling the
-**actual computed number** live from the structured DB at generation time
-(see `scripts/generate_documents.py::yoy_growth`), so a qualitative claim in
-a document ("strong growth in Germany") is numerically consistent with the
-quantitative fact table an agent would separately query. This is also what
-makes the hybrid-retrieval and answer-validation capabilities meaningfully
-testable rather than cosmetic.
+datasets and documents. Both the structured curator and the document
+curator import their entities from one file (`src/config.py`), and
+`scripts/generate_documents.py` pulls the **same real numbers** live out of
+`data/db/ab_inbev.db` when writing each document's body (see
+`quarterly_brief()` / `global_annual()` in that script) — so a document's
+claim ("North America's Q1 2024 revenue was $3,593M") is guaranteed to
+match what a SQL query against the same database would return, because it's
+transcribed from the same source and read from the same table, not
+independently retyped. Country- and brand-level color (Brazil's volume
+trend, Corona's growth outside Mexico) exists **only** in the documents —
+there is no structured row to duplicate it against — which is what makes a
+hybrid query ("how did Brazil do, and why?") genuinely require both
+sub-agents rather than being answerable by either alone.
 
 ## 3. Custom lightweight orchestration, not a heavy agent framework
 
@@ -157,3 +197,23 @@ transparent limitation rather than pretending it searched.
 - **Multi-turn clarification loops**: today, clarification is a single
   question-then-answer; a fuller implementation would let the user answer
   partially and let the orchestrator re-ask about only what's still missing.
+
+## 12. Closing the real-data granularity gap in production
+
+Given §1's trade-off, a production version of this system at an actual
+brewer would sit *inside* the company, not outside it looking at press
+releases — so the granularity constraint mostly disappears. It would read
+from the company's own internal systems (a data warehouse fed by retail
+panel data such as Nielsen/IRI, direct POS/distributor feeds, and internal
+finance systems) instead of public filings, which genuinely do carry brand
+x country x channel x month detail. The architecture here doesn't change
+for that: `src/tools/sql_tool.py`'s whitelist-based safety model, the
+zone/country hierarchy-fallback pattern, and the document-citation approach
+for qualitative context all carry over unchanged — only `ALLOWED_TABLES`,
+`schema_description()`, and `src/config.py`'s entity lists would be
+re-pointed at the richer internal schema. The public-data version built
+here is best read as a demonstration of the *pattern* (safe SQL generation,
+hierarchy fallback, hybrid retrieval, transparent scope-limitation
+reporting) against the most realistic data actually obtainable outside the
+company, not as a claim that AB InBev's own internal reporting is this
+coarse.

@@ -52,9 +52,9 @@ using this for a real budget):
 | router | "Sonnet-class" | $3.00 | $15.00 |
 | worker | "Haiku-class" | $0.80 | $4.00 |
 
-**Worked example — a single structured-data query** ("What was Glacier
-Peak's net revenue in the United States in 2025?"), using representative
-token counts from the actual system prompts in this repo:
+**Worked example — a single structured-data query** ("What was North
+America's revenue in Q1 2024?"), using representative token counts from the
+actual system prompts in this repo:
 
 | Call | Model tier | Input tok | Output tok | Cost |
 |---|---|---|---|---|
@@ -72,10 +72,10 @@ like NL→SQL against a fixed 4-table schema.
 
 **Recommendation**: do not default everything to the strongest available
 model. Reserve the top reasoning tier ("Opus-class") for neither role in
-this system — the domain is bounded (8 KPIs, 8 brands, 8 countries, one
-schema) and doesn't need frontier multi-step reasoning; spending there would
-inflate cost with little measurable quality gain for this task shape. Revisit
-if the domain grows to open-ended, ambiguous multi-hop reasoning.
+this system — the domain is bounded (6 KPIs, 5 zones, one schema) and
+doesn't need frontier multi-step reasoning; spending there would inflate
+cost with little measurable quality gain for this task shape. Revisit if the
+domain grows to open-ended, ambiguous multi-hop reasoning.
 
 ## 3. Latency: where the time actually goes
 
@@ -126,8 +126,8 @@ predictable per-turn cost and one that keeps climbing.
 ## 5. Further optimizations we identified but did not implement
 
 - **Prompt caching** for the static portion of the NLU/synthesis system
-  prompts (the schema, KPI catalog, brand/country lists never change turn to
-  turn) — most providers offer cache pricing well below standard input
+  prompts (the schema, KPI catalog, zone/country/brand lists never change
+  turn to turn) — most providers offer cache pricing well below standard input
   pricing for a repeated prefix; this system prompt is 100% cacheable and
   currently isn't cached. Straightforward to add through the same
   `LLMClient` abstraction without touching the orchestrator.

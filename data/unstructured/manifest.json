@@ -1,499 +1,269 @@
 {
-  "company": "Solara FMCG Group",
+  "company": "Anheuser-Busch InBev (AB InBev)",
   "generated": "2026-09-11",
   "documents": [
     {
       "doc_id": "DOC-001",
-      "title": "Solara Launches Vivo Splash Zero in Germany and the UK",
-      "date": "2025-03-10",
-      "source_type": "press_release",
+      "title": "Q1 2024 Results: Zone-by-Zone Summary",
+      "date": "2024-05-07",
+      "source_type": "earnings_commentary",
       "tags": [
-        "product_launch",
-        "non_alcoholic",
-        "sugar_free"
+        "earnings",
+        "quarterly",
+        "Q1 2024",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Vivo Splash"
-      ],
-      "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-001.md"
     },
     {
       "doc_id": "DOC-002",
-      "title": "Q1 2025 Earnings Commentary: Non-Alcoholic Momentum in Europe",
-      "date": "2025-05-02",
+      "title": "Q2 2024 Results: Zone-by-Zone Summary",
+      "date": "2024-07-31",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "non_alcoholic",
-        "europe"
+        "quarterly",
+        "Q2 2024",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Vivo Splash"
-      ],
-      "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-002.md"
     },
     {
       "doc_id": "DOC-003",
-      "title": "Market Research Note: Sugar-Free Positioning in Western Europe",
-      "date": "2025-06-15",
-      "source_type": "market_research",
+      "title": "Q3 2024 Results: Zone-by-Zone Summary",
+      "date": "2024-10-30",
+      "source_type": "earnings_commentary",
       "tags": [
-        "non_alcoholic",
-        "sugar_free",
-        "europe",
-        "consumer_trend"
+        "earnings",
+        "quarterly",
+        "Q3 2024",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Vivo Splash",
-        "PureSpring"
-      ],
-      "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-003.md"
     },
     {
       "doc_id": "DOC-004",
-      "title": "Sustainability Update: Recyclable Packaging for Vivo Splash Zero",
-      "date": "2025-04-22",
-      "source_type": "sustainability",
+      "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+      "date": "2025-02-26",
+      "source_type": "earnings_commentary",
       "tags": [
-        "packaging",
-        "sustainability",
-        "non_alcoholic"
+        "earnings",
+        "annual",
+        "FY2024",
+        "Q4 2024",
+        "megabrands",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
       "brands": [
-        "Vivo Splash"
+        "Budweiser",
+        "Corona",
+        "Stella Artois",
+        "Michelob Ultra"
       ],
       "countries": [
-        "Germany",
-        "United Kingdom"
+        "China",
+        "Mexico"
       ],
       "file": "DOC-004.md"
     },
     {
       "doc_id": "DOC-005",
-      "title": "Q3 2025 Earnings Commentary: Glacier Peak On-Premise Recovery",
-      "date": "2025-11-04",
+      "title": "Q1 2025 Results: Zone-by-Zone Summary",
+      "date": "2025-05-07",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "beer",
-        "on_premise",
-        "north_america"
+        "quarterly",
+        "Q1 2025",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Glacier Peak"
-      ],
+      "brands": [],
       "countries": [
-        "United States"
+        "Brazil"
       ],
       "file": "DOC-005.md"
     },
     {
       "doc_id": "DOC-006",
-      "title": "Market Research Note: Craft and Premium Beer Trends, USA",
-      "date": "2025-09-01",
-      "source_type": "market_research",
+      "title": "Q2 2025 Results: Zone-by-Zone Summary",
+      "date": "2025-07-31",
+      "source_type": "earnings_commentary",
       "tags": [
-        "beer",
-        "premiumization",
-        "north_america",
-        "consumer_trend"
+        "earnings",
+        "quarterly",
+        "Q2 2025",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Glacier Peak",
-        "Ironclad Stout"
-      ],
-      "countries": [
-        "United States"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-006.md"
     },
     {
       "doc_id": "DOC-007",
-      "title": "Competitor Intelligence: Northern Lager Co. On-Premise Push",
-      "date": "2025-10-12",
-      "source_type": "competitor_intel",
+      "title": "Q3 2025 Results: Zone-by-Zone Summary",
+      "date": "2025-10-30",
+      "source_type": "earnings_commentary",
       "tags": [
-        "beer",
-        "on_premise",
-        "competitor",
-        "north_america"
+        "earnings",
+        "quarterly",
+        "Q3 2025",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
-      "brands": [
-        "Glacier Peak"
-      ],
-      "countries": [
-        "United States"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-007.md"
     },
     {
       "doc_id": "DOC-008",
-      "title": "Solara Launches 'Share the Crunch' Campaign in India",
-      "date": "2025-10-20",
-      "source_type": "press_release",
+      "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+      "date": "2026-02-11",
+      "source_type": "earnings_commentary",
       "tags": [
-        "product_launch",
-        "campaign",
-        "salty_snacks",
-        "apac"
+        "earnings",
+        "annual",
+        "FY2025",
+        "Q4 2025",
+        "megabrands",
+        "North America",
+        "Middle Americas",
+        "South America",
+        "EMEA",
+        "Asia Pacific"
       ],
       "brands": [
-        "CrunchWave"
+        "Corona",
+        "Michelob Ultra"
       ],
       "countries": [
-        "India"
+        "Mexico",
+        "United States"
       ],
       "file": "DOC-008.md"
     },
     {
       "doc_id": "DOC-009",
-      "title": "Q4 2025 Earnings Commentary: CrunchWave India Holiday Performance",
-      "date": "2026-02-03",
+      "title": "FY2022 Full-Year Results: Company Totals",
+      "date": "2023-03-01",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "salty_snacks",
-        "apac",
-        "seasonality"
+        "annual",
+        "FY2022"
       ],
-      "brands": [
-        "CrunchWave"
-      ],
-      "countries": [
-        "India"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-009.md"
     },
     {
       "doc_id": "DOC-010",
-      "title": "Market Research Note: Festive Snacking Trends in APAC",
-      "date": "2025-12-01",
-      "source_type": "market_research",
+      "title": "FY2023 Full-Year Results: Company Totals",
+      "date": "2024-02-28",
+      "source_type": "earnings_commentary",
       "tags": [
-        "salty_snacks",
-        "apac",
-        "seasonality",
-        "consumer_trend"
+        "earnings",
+        "annual",
+        "FY2023"
       ],
-      "brands": [
-        "CrunchWave",
-        "Golden Harvest"
-      ],
-      "countries": [
-        "India",
-        "Australia"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-010.md"
     },
     {
       "doc_id": "DOC-011",
-      "title": "Ironclad Stout Expands Distribution in the United Kingdom",
-      "date": "2024-06-18",
-      "source_type": "press_release",
+      "title": "FY2025 Country-Level Commentary (Selected Markets)",
+      "date": "2026-02-12",
+      "source_type": "filing_excerpt",
       "tags": [
-        "distribution",
-        "beer",
-        "europe"
+        "country color",
+        "FY2025",
+        "volumes"
       ],
-      "brands": [
-        "Ironclad Stout"
-      ],
+      "brands": [],
       "countries": [
-        "United Kingdom"
+        "United States",
+        "Brazil",
+        "Mexico",
+        "China",
+        "Colombia",
+        "Argentina",
+        "South Korea"
       ],
       "file": "DOC-011.md"
     },
     {
       "doc_id": "DOC-012",
-      "title": "Internal Strategy Memo: Ironclad Stout UK Channel Mix",
-      "date": "2024-08-05",
-      "source_type": "strategy_memo",
+      "title": "Megabrand Performance Summary, FY2024-FY2025",
+      "date": "2026-02-12",
+      "source_type": "market_research",
       "tags": [
-        "strategy",
-        "beer",
-        "europe",
-        "channel"
+        "brands",
+        "megabrands",
+        "FY2024",
+        "FY2025"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Budweiser",
+        "Corona",
+        "Stella Artois",
+        "Michelob Ultra"
       ],
       "countries": [
-        "United Kingdom"
+        "Mexico",
+        "United States"
       ],
       "file": "DOC-012.md"
     },
     {
       "doc_id": "DOC-013",
-      "title": "Competitor Intelligence: Craft Stout Entrants in the UK",
-      "date": "2025-01-15",
-      "source_type": "competitor_intel",
+      "title": "Glossary: Organic Growth and Normalized EBITDA",
+      "date": "2026-02-11",
+      "source_type": "metadata_note",
       "tags": [
-        "beer",
-        "competitor",
-        "europe"
+        "glossary",
+        "definitions",
+        "non-gaap"
       ],
-      "brands": [
-        "Ironclad Stout"
-      ],
-      "countries": [
-        "United Kingdom"
-      ],
+      "brands": [],
+      "countries": [],
       "file": "DOC-013.md"
     },
     {
       "doc_id": "DOC-014",
-      "title": "SweetPeak Commits to 100% Certified Sustainable Cocoa by 2027",
-      "date": "2024-03-01",
-      "source_type": "sustainability",
-      "tags": [
-        "sustainability",
-        "confectionery",
-        "sourcing"
-      ],
-      "brands": [
-        "SweetPeak"
-      ],
-      "countries": [],
-      "file": "DOC-014.md"
-    },
-    {
-      "doc_id": "DOC-015",
-      "title": "Market Research Note: Ethical Sourcing and Confectionery Purchase Intent",
-      "date": "2024-09-10",
-      "source_type": "market_research",
-      "tags": [
-        "confectionery",
-        "sustainability",
-        "consumer_trend"
-      ],
-      "brands": [
-        "SweetPeak",
-        "CocoNest"
-      ],
-      "countries": [],
-      "file": "DOC-015.md"
-    },
-    {
-      "doc_id": "DOC-016",
-      "title": "Press Release: SweetPeak Sourcing Progress Update",
-      "date": "2025-07-08",
-      "source_type": "press_release",
-      "tags": [
-        "sustainability",
-        "confectionery",
-        "sourcing"
-      ],
-      "brands": [
-        "SweetPeak"
-      ],
-      "countries": [],
-      "file": "DOC-016.md"
-    },
-    {
-      "doc_id": "DOC-017",
-      "title": "Internal Strategy Memo: PureSpring LATAM E-commerce Acceleration",
-      "date": "2025-02-20",
-      "source_type": "strategy_memo",
-      "tags": [
-        "strategy",
-        "non_alcoholic",
-        "latam",
-        "ecommerce"
-      ],
-      "brands": [
-        "PureSpring"
-      ],
-      "countries": [
-        "Brazil",
-        "Mexico"
-      ],
-      "file": "DOC-017.md"
-    },
-    {
-      "doc_id": "DOC-018",
-      "title": "Q4 2025 Earnings Commentary: PureSpring LATAM",
-      "date": "2026-02-03",
-      "source_type": "earnings_commentary",
-      "tags": [
-        "earnings",
-        "non_alcoholic",
-        "latam",
-        "ecommerce"
-      ],
-      "brands": [
-        "PureSpring"
-      ],
-      "countries": [
-        "Brazil",
-        "Mexico"
-      ],
-      "file": "DOC-018.md"
-    },
-    {
-      "doc_id": "DOC-019",
-      "title": "Market Research Note: E-commerce Grocery Growth in LATAM",
-      "date": "2025-05-19",
-      "source_type": "market_research",
-      "tags": [
-        "latam",
-        "ecommerce",
-        "consumer_trend"
-      ],
-      "brands": [
-        "PureSpring"
-      ],
-      "countries": [
-        "Brazil",
-        "Mexico"
-      ],
-      "file": "DOC-019.md"
-    },
-    {
-      "doc_id": "DOC-020",
-      "title": "Internal Strategy Memo: Golden Harvest Pricing Action",
-      "date": "2024-11-12",
-      "source_type": "strategy_memo",
-      "tags": [
-        "strategy",
-        "pricing",
-        "salty_snacks"
-      ],
-      "brands": [
-        "Golden Harvest"
-      ],
-      "countries": [],
-      "file": "DOC-020.md"
-    },
-    {
-      "doc_id": "DOC-021",
-      "title": "Q1 2025 Earnings Commentary: Golden Harvest Margin Recovery",
-      "date": "2025-05-02",
-      "source_type": "earnings_commentary",
-      "tags": [
-        "earnings",
-        "pricing",
-        "salty_snacks",
-        "margin"
-      ],
-      "brands": [
-        "Golden Harvest"
-      ],
-      "countries": [],
-      "file": "DOC-021.md"
-    },
-    {
-      "doc_id": "DOC-022",
-      "title": "Competitor Intelligence: Blue Ridge Snacks Pricing Response",
-      "date": "2025-06-02",
-      "source_type": "competitor_intel",
-      "tags": [
-        "salty_snacks",
-        "competitor",
-        "pricing"
-      ],
-      "brands": [
-        "Golden Harvest"
-      ],
-      "countries": [],
-      "file": "DOC-022.md"
-    },
-    {
-      "doc_id": "DOC-023",
-      "title": "Solara Enters the Australian Market with CocoNest",
-      "date": "2023-09-05",
-      "source_type": "press_release",
-      "tags": [
-        "market_entry",
-        "confectionery",
-        "apac"
-      ],
-      "brands": [
-        "CocoNest"
-      ],
-      "countries": [
-        "Australia"
-      ],
-      "file": "DOC-023.md"
-    },
-    {
-      "doc_id": "DOC-024",
-      "title": "Market Research Note: Premium Confectionery in Australia",
-      "date": "2024-02-14",
-      "source_type": "market_research",
-      "tags": [
-        "confectionery",
-        "apac",
-        "consumer_trend"
-      ],
-      "brands": [
-        "CocoNest"
-      ],
-      "countries": [
-        "Australia"
-      ],
-      "file": "DOC-024.md"
-    },
-    {
-      "doc_id": "DOC-025",
-      "title": "Q4 2024 Earnings Commentary: CocoNest Australia One-Year Update",
-      "date": "2025-02-04",
-      "source_type": "earnings_commentary",
-      "tags": [
-        "earnings",
-        "confectionery",
-        "apac"
-      ],
-      "brands": [
-        "CocoNest"
-      ],
-      "countries": [
-        "Australia"
-      ],
-      "file": "DOC-025.md"
-    },
-    {
-      "doc_id": "DOC-026",
-      "title": "Solara FMCG Group FY2025 Annual Highlights",
-      "date": "2026-02-20",
-      "source_type": "earnings_commentary",
-      "tags": [
-        "earnings",
-        "company_wide",
-        "annual"
-      ],
-      "brands": [],
-      "countries": [],
-      "file": "DOC-026.md"
-    },
-    {
-      "doc_id": "DOC-027",
-      "title": "Solara Group Investor FAQ: Data and Reporting Scope",
-      "date": "2026-01-10",
-      "source_type": "metadata_note",
-      "tags": [
-        "reporting",
-        "company_wide",
-        "scope"
-      ],
-      "brands": [],
-      "countries": [],
-      "file": "DOC-027.md"
-    },
-    {
-      "doc_id": "DOC-028",
-      "title": "Competitive Landscape Overview: FMCG Beverages and Snacks",
+      "title": "Competitive Landscape Overview: Global Brewing Industry",
       "date": "2025-08-01",
       "source_type": "competitor_intel",
       "tags": [
@@ -502,7 +272,20 @@
       ],
       "brands": [],
       "countries": [],
-      "file": "DOC-028.md"
+      "file": "DOC-014.md"
+    },
+    {
+      "doc_id": "DOC-015",
+      "title": "Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes",
+      "date": "2026-02-12",
+      "source_type": "metadata_note",
+      "tags": [
+        "reporting",
+        "scope"
+      ],
+      "brands": [],
+      "countries": [],
+      "file": "DOC-015.md"
     }
   ]
 }

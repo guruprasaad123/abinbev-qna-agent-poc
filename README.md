@@ -1,22 +1,31 @@
-# Solara FMCG Group — Enterprise Q&A Agent (Prototype)
+# AB InBev Q&A Agent (Prototype)
 
-A multi-agent enterprise Q&A prototype over a synthetic FMCG business: one
-orchestrator agent backed by four specialist sub-agents (structured data,
-unstructured documents, internet search, coding), answering natural-language
-questions with citations, safety controls, and transparent limitations.
+A multi-agent enterprise Q&A prototype over Anheuser-Busch InBev's **real,
+publicly disclosed** financial results: one orchestrator agent backed by
+four specialist sub-agents (structured data, unstructured documents,
+internet search, coding), answering natural-language questions with
+citations, safety controls, and transparent limitations.
 
 Built as a take-home assignment. See `docs/` for the full design writeup and
 `notebooks/demo.ipynb` for a prerun demo covering every required capability.
 
 ## What's here
 
-- **A synthetic FMCG company** — Solara FMCG Group — with 8 brands across 4
-  categories, 8 markets, 4 channels, and 8 KPIs, generated as a SQLite fact
-  table (`data/db/solara_fmcg.db`, ~11k rows, Jan 2023–Aug 2026).
-- **28 unstructured documents** (press releases, earnings commentary, market
-  research, sustainability updates, competitor intel, strategy memos)
-  deliberately overlapping in entities and themes with each other and with
-  the structured data (`data/unstructured/`).
+- **AB InBev's real results, not synthetic data.** Every figure in
+  `data/db/ab_inbev.db` is transcribed from AB InBev's own quarterly/annual
+  BusinessWire results releases and SEC filings, cited by source and URL —
+  see `docs/DESIGN_DECISIONS.md` §1 for the full rationale and what real
+  disclosure limits versus a synthetic dataset. Structured grain: 5 real
+  reporting zones (North America, Middle Americas, South America, EMEA,
+  Asia Pacific) × quarter (Q1 2024–Q4 2025) or year (FY2022–FY2025), across
+  6 KPIs (revenue, volume, normalized EBITDA, EBITDA margin, organic revenue
+  growth, net profit). There is deliberately NO brand-level or country-level
+  structured data — AB InBev doesn't disclose that granularity publicly.
+- **15 real, sourced documents** (earnings commentary, filing excerpts,
+  brand/country color, competitor landscape) — each a short analyst brief
+  citing its real AB InBev source, carrying the country- and brand-level
+  detail (e.g. Brazil's volume trend, Corona's growth outside Mexico) that
+  has no structured-data equivalent (`data/unstructured/`).
 - **One orchestrator agent** (`src/orchestrator.py`) that understands intent,
   maintains conversation memory, routes to sub-agents, validates/retries, and
   synthesizes a final formatted answer.
@@ -27,9 +36,9 @@ Built as a take-home assignment. See `docs/` for the full design writeup and
 - **18 offline tests** (`tests/test_pipeline.py`) that run against a
   zero-cost, zero-network mock LLM — no API key required to verify the
   system's plumbing.
-- **Full documentation** in `docs/`: architecture, design decisions/trade-offs,
-  a capability-by-capability mapping to code, and a cost/latency/model-usage
-  point of view.
+- **Full documentation** in `docs/`: architecture, design decisions/trade-offs
+  (including the real-vs-synthetic-data decision), a capability-by-capability
+  mapping to code, and a cost/latency/model-usage point of view.
 
 ## Quickstart
 
@@ -37,7 +46,8 @@ Built as a take-home assignment. See `docs/` for the full design writeup and
 git clone <this-repo-url>
 cd fmcg-qna-agent
 
-# (Re)generate the datasets — deterministic, no dependencies needed.
+# (Re)build the datasets from the curated real figures/documents —
+# deterministic, no network needed, no dependencies needed.
 python3 scripts/generate_structured_data.py
 python3 scripts/generate_documents.py
 
@@ -67,7 +77,7 @@ for the web-search sub-agent, are needed beyond that.
 
 ```
 src/
-  config.py              # single source of truth: brands, geo, channels, KPIs, aliases
+  config.py              # single source of truth: zones, countries, brands, KPIs, aliases
   llm_client.py          # pluggable LLM client (Anthropic/OpenAI/Mock) + usage tracker
   memory.py              # conversation memory: active filters + rolling summary
   formatting.py          # markdown tables, unit-aware number formatting
@@ -84,18 +94,18 @@ src/
     websearch_agent.py     # NL -> web search results
     coding_agent.py         # NL -> sandboxed calculation
 scripts/
-  generate_structured_data.py  # builds data/db/solara_fmcg.db
-  generate_documents.py        # builds data/unstructured/*.md + manifest.json
+  generate_structured_data.py  # builds data/db/ab_inbev.db from real, cited figures
+  generate_documents.py        # builds data/unstructured/*.md + manifest.json (real, cited)
   build_notebook.py            # builds notebooks/demo.ipynb
   chat_cli.py                  # interactive terminal chat
 data/
-  db/solara_fmcg.db           # generated structured dataset
-  unstructured/*.md            # generated document corpus + manifest.json
+  db/ab_inbev.db                # real, cited structured dataset
+  unstructured/*.md            # real, cited document corpus + manifest.json
 notebooks/demo.ipynb           # prerun demo covering every required capability
 tests/test_pipeline.py         # offline test suite (mock LLM, no API key needed)
 docs/
   ARCHITECTURE.md              # system diagram + request flow
-  DESIGN_DECISIONS.md          # why it's built this way, and what we'd change
+  DESIGN_DECISIONS.md          # why it's built this way (incl. real-vs-synthetic data), and what we'd change
   CAPABILITY_MAPPING.md        # every required capability -> exact code location
   COST_LATENCY_TRADEOFFS.md    # cost / latency / model-usage point of view
 ```
@@ -109,9 +119,15 @@ table mapping each one to its exact implementation, and
 
 ## Known limitations
 
-Documented candidly, not hidden — see
+Documented candidly, not hidden. The biggest one: **structured data has no
+brand-level, country-level, or channel-level rows** — AB InBev doesn't
+publicly disclose that granularity, so those questions route to document
+retrieval instead, with an explicit note (see
+[`docs/DESIGN_DECISIONS.md` §1](docs/DESIGN_DECISIONS.md#1-real-ab-inbev-data-not-a-synthetic-company--and-what-that-trades-away)
+for the full trade-off, and §12 for how this closes in production with
+licensed/internal data). Beyond that, see
 [`docs/DESIGN_DECISIONS.md` §11](docs/DESIGN_DECISIONS.md#11-what-we-would-change-with-more-time-explicit-not-hidden)
-for the full list: sub-agent calls run sequentially rather than in parallel;
+for the rest: sub-agent calls run sequentially rather than in parallel;
 retrieval is lexical (BM25) + metadata, not embedding-based semantic search;
 the code sandbox is prototype-grade, not hardened for untrusted multi-tenant
 use; and the web-search sub-agent depends on an optional external
