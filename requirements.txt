@@ -19,3 +19,7 @@ duckduckgo-search>=6.0
 # --- Notebook ---
 jupyter>=1.0.0
 notebook>=7.0.0
+
+# --- Developer-mode UI (optional) ---
+# only needed to run `streamlit run ui/app.py`
+streamlit>=1.38.0

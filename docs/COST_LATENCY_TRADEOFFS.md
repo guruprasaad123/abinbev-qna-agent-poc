@@ -106,6 +106,41 @@ Set independently via three environment variables, so provider/model choice
 never requires a code change: `LLM_MODEL_CLASSIFY`, `LLM_MODEL_GENERATE`,
 `LLM_MODEL_SYNTHESIZE` (see `src/llm_client.py` module docstring).
 
+### Worked example: spending a quota-limited model where it actually matters
+
+Some free-tier model marketplaces offer a smarter model alongside a regular
+one, gated as "limited" (a hard rate/quota cap) — e.g. `deepseek-v4.1-flash`
+(higher benchmark intelligence) vs. the always-available `deepseek-v4-flash`.
+The three-tier split above makes the placement decision straightforward
+rather than a guess: `classify` fires on *every* turn (including greetings)
+and only needs reliable schema-following, so it stays on the unlimited
+model; `synthesize` fires once or twice per turn but is where answer
+*quality* — multilingual fluency, correctly flagging thin/contradictory
+evidence, avoiding hallucination — is actually won or lost. That's the one
+role worth spending a limited-quota smarter model on:
+
+```
+LLM_MODEL_CLASSIFY=deepseek-v4-flash:free      # unlimited, high call volume, low reasoning need
+LLM_MODEL_GENERATE=deepseek-v4-flash:free      # unlimited, high call volume, low reasoning need
+LLM_MODEL_SYNTHESIZE=deepseek-v4.1-flash:free  # limited quota, spent on the role that most benefits
+```
+
+**The risk this creates, and how it's guarded:** a hard quota cap means the
+`synthesize` call can legitimately get rate-limited mid-session in a way the
+unlimited `classify`/`generate` calls won't. Without a guard, that would
+surface as an unhandled exception crashing the turn — the same class of
+failure this system already hardened against for token-truncation (§1
+above). `AnthropicLLMClient`/`OpenAILLMClient` (`src/llm_client.py`) both
+catch a rate-limit error on the primary model and retry once against a
+configured `fallback_model` — for the `synthesize` role, that fallback is
+whatever `generate` is configured to use (the always-available baseline),
+wired automatically in `get_llm_client()`. `classify`/`generate` themselves
+have no fallback configured, since they're already the baseline tier —
+there's nowhere cheaper/more-available to fall back to. Usage/cost is
+recorded against whichever model actually served the request, not the
+one originally requested, so `GLOBAL_USAGE.summary()` stays accurate even
+when a fallback fires.
+
 ## 3. Which APIs are affordable, and how they map onto the three tiers
 
 Public per-token API pricing changes fast (multiple vendors cut prices in

@@ -27,6 +27,14 @@ using one model everywhere, or the two-tier (router/worker) split this
 replaced: classify and generate together are the majority of call VOLUME in
 this system but need the least reasoning; synthesize is the minority of
 calls but is what the user actually judges answer quality by.
+
+If LLM_MODEL_SYNTHESIZE points at a quota-limited model (e.g. a "free,
+limited" tier model worth using for its extra quality), get_llm_client()
+automatically wires LLM_MODEL_GENERATE's model as its rate-limit fallback --
+a RateLimitError on the synthesize call retries once against that model
+rather than crashing the turn. See docs/COST_LATENCY_TRADEOFFS.md §2 for the
+worked example. classify/generate have no fallback of their own; they're
+already the always-available baseline tier.
 """
 from __future__ import annotations
 import os
@@ -131,18 +139,34 @@ class LLMClient:
 
 
 class AnthropicLLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None,
+                 fallback_model: Optional[str] = None):
         import anthropic  # lazy import: only required if this provider is actually selected
         self._client = anthropic.Anthropic(api_key=api_key, base_url=base_url)
+        self._anthropic = anthropic
         self.model_name = model
+        # A quota-limited model (e.g. a "free tier, limited" model on a
+        # gateway) can legitimately run out of budget mid-session -- rather
+        # than let that crash the turn, fall back once to a known-unlimited
+        # model. None means no fallback is configured for this role.
+        self._fallback_model = fallback_model
 
     def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
         messages = list(history or [])
         messages.append({"role": "user", "content": user})
         t0 = time.time()
-        resp = self._client.messages.create(
-            model=self.model_name, system=system, messages=messages, max_tokens=max_tokens,
-        )
+        model_used = self.model_name
+        try:
+            resp = self._client.messages.create(
+                model=model_used, system=system, messages=messages, max_tokens=max_tokens,
+            )
+        except self._anthropic.RateLimitError:
+            if not self._fallback_model:
+                raise
+            model_used = self._fallback_model
+            resp = self._client.messages.create(
+                model=model_used, system=system, messages=messages, max_tokens=max_tokens,
+            )
         # A response cut off by the token cap (rather than a natural stop) is
         # unusable -- this happens in practice with reasoning-style models that
         # spend part of the budget thinking before writing the actual answer.
@@ -150,20 +174,26 @@ class AnthropicLLMClient(LLMClient):
         # (sometimes still-mid-thought) fragment as if it were the final answer.
         if resp.stop_reason == "max_tokens" and max_tokens < 4000:
             resp = self._client.messages.create(
-                model=self.model_name, system=system, messages=messages,
+                model=model_used, system=system, messages=messages,
                 max_tokens=min(max_tokens * 2, 4000),
             )
         latency_ms = (time.time() - t0) * 1000
         text = "".join(block.text for block in resp.content if getattr(block, "type", None) == "text")
-        GLOBAL_USAGE.record(caller, self.model_name, resp.usage.input_tokens, resp.usage.output_tokens, latency_ms)
+        GLOBAL_USAGE.record(caller, model_used, resp.usage.input_tokens, resp.usage.output_tokens, latency_ms)
         return text
 
 
 class OpenAILLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None,
+                 fallback_model: Optional[str] = None):
         import openai  # lazy import
         self._client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        self._openai = openai
         self.model_name = model
+        # See AnthropicLLMClient.__init__ for why: fall back once to a
+        # known-unlimited model if the primary (possibly quota-limited) one
+        # is rate-limited, instead of crashing the turn.
+        self._fallback_model = fallback_model
 
     def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
         messages = [{"role": "system", "content": system}]
@@ -173,21 +203,30 @@ class OpenAILLMClient(LLMClient):
         kwargs = {}
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
-        resp = self._client.chat.completions.create(
-            model=self.model_name, messages=messages, max_tokens=max_tokens, **kwargs,
-        )
+        model_used = self.model_name
+        try:
+            resp = self._client.chat.completions.create(
+                model=model_used, messages=messages, max_tokens=max_tokens, **kwargs,
+            )
+        except self._openai.RateLimitError:
+            if not self._fallback_model:
+                raise
+            model_used = self._fallback_model
+            resp = self._client.chat.completions.create(
+                model=model_used, messages=messages, max_tokens=max_tokens, **kwargs,
+            )
         # See AnthropicLLMClient.generate for why: a response truncated by the
         # token cap (finish_reason "length") rather than a natural stop can be
         # an unfinished reasoning fragment, not a usable answer -- retry once
         # with more room instead of returning it as-is.
         if resp.choices[0].finish_reason == "length" and max_tokens < 4000:
             resp = self._client.chat.completions.create(
-                model=self.model_name, messages=messages, max_tokens=min(max_tokens * 2, 4000), **kwargs,
+                model=model_used, messages=messages, max_tokens=min(max_tokens * 2, 4000), **kwargs,
             )
         latency_ms = (time.time() - t0) * 1000
         text = resp.choices[0].message.content or ""
         usage = resp.usage
-        GLOBAL_USAGE.record(caller, self.model_name, usage.prompt_tokens, usage.completion_tokens, latency_ms)
+        GLOBAL_USAGE.record(caller, model_used, usage.prompt_tokens, usage.completion_tokens, latency_ms)
         return text
 
 
@@ -340,10 +379,24 @@ def get_llm_client(role: str = "synthesize") -> LLMClient:
     if not provider:
         provider = "anthropic" if anthropic_key else "openai" if openai_key else "mock"
 
+    # "synthesize" is the one role worth pointing at a stronger (and, in
+    # practice, more likely to be quota-limited -- e.g. a "free, limited"
+    # tier model) model; if that role hits a rate limit, fall back once to
+    # whatever "generate" is configured to use, since that tier is meant to
+    # be the always-available baseline. "classify"/"generate" have no
+    # fallback of their own -- they're already the baseline.
+    fallback_env_var = _ROLE_ENV_VAR["generate"] if role == "synthesize" else None
+
     if provider == "anthropic" and anthropic_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["anthropic"][role])
-        return AnthropicLLMClient(model=model, api_key=anthropic_key, base_url=base_url)
+        fallback_model = (os.environ.get(fallback_env_var, _ROLE_DEFAULT_MODEL["anthropic"]["generate"])
+                           if fallback_env_var else None)
+        return AnthropicLLMClient(model=model, api_key=anthropic_key, base_url=base_url,
+                                   fallback_model=fallback_model)
     if provider == "openai" and openai_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["openai"][role])
-        return OpenAILLMClient(model=model, api_key=openai_key, base_url=base_url)
+        fallback_model = (os.environ.get(fallback_env_var, _ROLE_DEFAULT_MODEL["openai"]["generate"])
+                           if fallback_env_var else None)
+        return OpenAILLMClient(model=model, api_key=openai_key, base_url=base_url,
+                                fallback_model=fallback_model)
     return MockLLMClient()

@@ -233,10 +233,22 @@ class Orchestrator:
         return len(overlap) < 0.5 * len(answer_numbers)
 
     # ------------------------------------------------------------- main
-    def handle_turn(self, user_message: str) -> AgentResponse:
+    def handle_turn(self, user_message: str, on_step=None) -> AgentResponse:
+        """`on_step`, if given, is called as `on_step(phase: str, detail: dict)` at each
+        major milestone (nlu, routing, subagent, synthesis) -- purely observational,
+        never affects behavior. Built for a UI (see ui/app.py) to show a live trace of
+        the orchestrator/sub-agent workflow; every other caller (CLI, notebook, tests)
+        omits it and behaves exactly as before."""
+        emit = on_step or (lambda phase, detail: None)
         self.memory.add_turn("user", user_message)
         nlu = self._run_nlu(user_message)
         intent = nlu.get("intent", "data_query")
+        emit("nlu", {
+            "intent": intent, "language": nlu.get("language", "en"),
+            "entities": nlu.get("entities", {}),
+            "needs_clarification": bool(nlu.get("needs_clarification")),
+            "corrections": _detect_corrections(user_message, nlu.get("entities", {})),
+        })
 
         if intent == "greeting":
             text = (f"Hello! I'm the {COMPANY_NAME} Q&A assistant. {DOMAIN_DESCRIPTION} "
@@ -284,27 +296,32 @@ class Orchestrator:
         evidence_blocks = []
         citations = []
         used = []
+        emit("routing", {"needed_subagents": needed})
 
         if "structured" in needed:
             block, notes = self._call_structured(user_message, nlu.get("entities", {}))
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("structured")
+            emit("subagent", {"name": "structured", "evidence": block, "notes": notes})
         if "unstructured" in needed:
             block, cites = self._call_unstructured(user_message)
             evidence_blocks.append(block)
             citations.extend(cites)
             used.append("unstructured")
+            emit("subagent", {"name": "unstructured", "evidence": block, "citations": cites})
         if "web" in needed:
             block, notes = self._call_web(user_message)
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("web")
+            emit("subagent", {"name": "web", "evidence": block, "notes": notes})
         if "coding" in needed:
             block, notes = self._call_coding(user_message, "\n".join(evidence_blocks))
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("coding")
+            emit("subagent", {"name": "coding", "evidence": block, "notes": notes})
 
         evidence_text = "\n\n".join(evidence_blocks) if evidence_blocks else "No evidence retrieved."
         evidence_numbers = set(re.findall(r"\d[\d,]*\.?\d*", evidence_text))
@@ -312,6 +329,7 @@ class Orchestrator:
         synth_prompt = (f"{self.memory.context_block()}\n\nUser question: {user_message}\n\n"
                          f"Evidence:\n{evidence_text}\n\n"
                          + (f"Known data limitations to mention: {'; '.join(assumptions)}\n" if assumptions else ""))
+        emit("synthesis", {"status": "start"})
         # max_tokens is generous (not just the length of the expected prose answer)
         # because some models spend a chunk of the budget on internal reasoning
         # before writing the final answer -- too tight a cap risks the response
@@ -322,11 +340,13 @@ class Orchestrator:
         retried = False
         if self._needs_retry(answer_text, evidence_numbers):
             retried = True
+            emit("synthesis", {"status": "retry", "reason": "drafted answer used numbers not found in evidence"})
             correction_prompt = (synth_prompt + "\n\nYour previous draft:\n" + answer_text +
                                   "\n\nThat draft used figures not found in the evidence above. "
                                   "Rewrite the answer using ONLY numbers present in the evidence.")
             answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=correction_prompt,
                                                         max_tokens=1600, caller="orchestrator_synthesis_retry")
+        emit("synthesis", {"status": "done", "retried": retried})
 
         follow_ups = self._follow_up_suggestions(nlu)
         resp = self._finish(answer_text, intent, nlu, sub_agents_used=used, citations=citations,
@@ -395,6 +415,27 @@ def _strip_fences(text: str) -> str:
     text = re.sub(r"^```(json)?", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"```$", "", text).strip()
     return text
+
+
+def _detect_corrections(user_message: str, entities: dict) -> list[dict]:
+    """Best-effort, purely observational check for the UI's dev-mode trace: a
+    canonical entity the NLU extracted that doesn't appear verbatim (case-
+    insensitively) in the raw user message was likely resolved from an
+    abbreviation, alias, or typo (e.g. "NA" / "Norht America" -> "North
+    America"). We don't know the exact raw token that was corrected -- only
+    that *something* in the message was normalized to this canonical value --
+    so this is reported as "normalized", not a precise before/after diff."""
+    corrections = []
+    msg_lower = user_message.lower()
+    for dim, key in (("zone", "zones"), ("country", "countries"), ("brand", "brands")):
+        for canonical in entities.get(key) or []:
+            if canonical and canonical.lower() not in msg_lower:
+                corrections.append({"dimension": dim, "resolved_to": canonical})
+    for kpi_key in entities.get("kpis") or []:
+        label = KPI_CATALOG.get(kpi_key, {}).get("label", kpi_key)
+        if label.lower() not in msg_lower and kpi_key.lower() not in msg_lower:
+            corrections.append({"dimension": "kpi", "resolved_to": label})
+    return corrections
 
 
 def _flatten_entities(entities: dict) -> dict:
