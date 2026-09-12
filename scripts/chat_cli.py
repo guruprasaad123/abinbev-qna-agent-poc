@@ -12,6 +12,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import os
 import json
+
+try:
+    from dotenv import load_dotenv  # optional: picks up a .env file if python-dotenv is installed
+    load_dotenv()
+except ImportError:
+    pass
+
 from src.orchestrator import Orchestrator
 from src.llm_client import GLOBAL_USAGE
 

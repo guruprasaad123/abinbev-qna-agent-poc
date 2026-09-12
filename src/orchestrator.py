@@ -128,8 +128,16 @@ class Orchestrator:
         raw = self.llm_classify.generate(system=NLU_SYSTEM_PROMPT, user=prompt, json_mode=True,
                                           max_tokens=600, caller="orchestrator_nlu")
         try:
-            data = json.loads(_strip_fences(raw))
-        except json.JSONDecodeError:
+            parsed = json.loads(_strip_fences(raw))
+            # Some models occasionally wrap the object in a single-element array
+            # even when asked for a bare object -- unwrap it rather than treating
+            # it as a parse failure.
+            if isinstance(parsed, list) and len(parsed) == 1 and isinstance(parsed[0], dict):
+                parsed = parsed[0]
+            if not isinstance(parsed, dict):
+                raise ValueError("NLU response was not a JSON object")
+            data = parsed
+        except (json.JSONDecodeError, ValueError):
             # Graceful degradation: fall back to a permissive default rather than crashing.
             data = {"language": "en", "intent": "data_query", "needs_clarification": False,
                      "clarification_question": None, "entities": {}, "unsupported_entities": [],
@@ -256,6 +264,19 @@ class Orchestrator:
             return self._finish(question, intent, nlu)
 
         # --- data_query / comparison: route to sub-agents ---
+        if intent == "comparison":
+            # A comparison follow-up ("how does that compare to X?") reliably
+            # names the NEW entity but the model doesn't always re-state the
+            # one already in focus -- inject it explicitly from the prior
+            # active filter rather than trusting the model to resolve "that"
+            # correctly from prose context alone (this was observed to fail:
+            # the comparison silently dropped the entity under discussion).
+            entities = nlu.setdefault("entities", {})
+            for dim, key in (("zone", "zones"), ("country", "countries"), ("brand", "brands")):
+                prior_val = self.memory.active_filters.get(dim, "")
+                for v in prior_val.split(", "):
+                    if v and entities.get(key) and v not in entities[key]:
+                        entities[key].append(v)
         self.memory.update_filters(_flatten_entities(nlu.get("entities", {})))
         assumptions = self._hierarchy_fallback_notes(nlu)
 
@@ -291,8 +312,12 @@ class Orchestrator:
         synth_prompt = (f"{self.memory.context_block()}\n\nUser question: {user_message}\n\n"
                          f"Evidence:\n{evidence_text}\n\n"
                          + (f"Known data limitations to mention: {'; '.join(assumptions)}\n" if assumptions else ""))
+        # max_tokens is generous (not just the length of the expected prose answer)
+        # because some models spend a chunk of the budget on internal reasoning
+        # before writing the final answer -- too tight a cap risks the response
+        # getting cut off mid-reasoning, before the actual answer is ever written.
         answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=synth_prompt,
-                                                    max_tokens=900, caller="orchestrator_synthesis")
+                                                    max_tokens=1600, caller="orchestrator_synthesis")
 
         retried = False
         if self._needs_retry(answer_text, evidence_numbers):
@@ -301,7 +326,7 @@ class Orchestrator:
                                   "\n\nThat draft used figures not found in the evidence above. "
                                   "Rewrite the answer using ONLY numbers present in the evidence.")
             answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=correction_prompt,
-                                                        max_tokens=900, caller="orchestrator_synthesis_retry")
+                                                        max_tokens=1600, caller="orchestrator_synthesis_retry")
 
         follow_ups = self._follow_up_suggestions(nlu)
         resp = self._finish(answer_text, intent, nlu, sub_agents_used=used, citations=citations,

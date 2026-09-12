@@ -131,9 +131,9 @@ class LLMClient:
 
 
 class AnthropicLLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None):
         import anthropic  # lazy import: only required if this provider is actually selected
-        self._client = anthropic.Anthropic(api_key=api_key)
+        self._client = anthropic.Anthropic(api_key=api_key, base_url=base_url)
         self.model_name = model
 
     def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
@@ -143,6 +143,16 @@ class AnthropicLLMClient(LLMClient):
         resp = self._client.messages.create(
             model=self.model_name, system=system, messages=messages, max_tokens=max_tokens,
         )
+        # A response cut off by the token cap (rather than a natural stop) is
+        # unusable -- this happens in practice with reasoning-style models that
+        # spend part of the budget thinking before writing the actual answer.
+        # Retry once with more room rather than silently returning a truncated
+        # (sometimes still-mid-thought) fragment as if it were the final answer.
+        if resp.stop_reason == "max_tokens" and max_tokens < 4000:
+            resp = self._client.messages.create(
+                model=self.model_name, system=system, messages=messages,
+                max_tokens=min(max_tokens * 2, 4000),
+            )
         latency_ms = (time.time() - t0) * 1000
         text = "".join(block.text for block in resp.content if getattr(block, "type", None) == "text")
         GLOBAL_USAGE.record(caller, self.model_name, resp.usage.input_tokens, resp.usage.output_tokens, latency_ms)
@@ -150,9 +160,9 @@ class AnthropicLLMClient(LLMClient):
 
 
 class OpenAILLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None):
         import openai  # lazy import
-        self._client = openai.OpenAI(api_key=api_key)
+        self._client = openai.OpenAI(api_key=api_key, base_url=base_url)
         self.model_name = model
 
     def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
@@ -166,6 +176,14 @@ class OpenAILLMClient(LLMClient):
         resp = self._client.chat.completions.create(
             model=self.model_name, messages=messages, max_tokens=max_tokens, **kwargs,
         )
+        # See AnthropicLLMClient.generate for why: a response truncated by the
+        # token cap (finish_reason "length") rather than a natural stop can be
+        # an unfinished reasoning fragment, not a usable answer -- retry once
+        # with more room instead of returning it as-is.
+        if resp.choices[0].finish_reason == "length" and max_tokens < 4000:
+            resp = self._client.chat.completions.create(
+                model=self.model_name, messages=messages, max_tokens=min(max_tokens * 2, 4000), **kwargs,
+            )
         latency_ms = (time.time() - t0) * 1000
         text = resp.choices[0].message.content or ""
         usage = resp.usage
@@ -314,14 +332,18 @@ def get_llm_client(role: str = "synthesize") -> LLMClient:
     provider = os.environ.get("LLM_PROVIDER", "").lower()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     openai_key = os.environ.get("OPENAI_API_KEY")
+    # Generic override so an OpenAI/Anthropic-SDK-compatible gateway (e.g. a
+    # third-party model router) can be swapped in without code changes --
+    # same idea as the provider/model env vars above.
+    base_url = os.environ.get("LLM_BASE_URL") or None
 
     if not provider:
         provider = "anthropic" if anthropic_key else "openai" if openai_key else "mock"
 
     if provider == "anthropic" and anthropic_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["anthropic"][role])
-        return AnthropicLLMClient(model=model, api_key=anthropic_key)
+        return AnthropicLLMClient(model=model, api_key=anthropic_key, base_url=base_url)
     if provider == "openai" and openai_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["openai"][role])
-        return OpenAILLMClient(model=model, api_key=openai_key)
+        return OpenAILLMClient(model=model, api_key=openai_key, base_url=base_url)
     return MockLLMClient()
