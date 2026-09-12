@@ -52,8 +52,8 @@ using this for a real budget):
 | router | "Sonnet-class" | $3.00 | $15.00 |
 | worker | "Haiku-class" | $0.80 | $4.00 |
 
-**Worked example — a single structured-data query** ("What was Northstar
-Lager's net revenue in the United States in 2025?"), using representative
+**Worked example — a single structured-data query** ("What was Corona's
+net revenue in the United States in 2025?"), using representative
 token counts from the actual system prompts in this repo:
 
 | Call | Model tier | Input tok | Output tok | Cost |

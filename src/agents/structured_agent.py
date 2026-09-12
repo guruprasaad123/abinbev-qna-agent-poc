@@ -72,6 +72,7 @@ def _strip_fences(text: str) -> str:
 def answer(llm_client, question: str, context_block: str = "") -> StructuredResult:
     user_prompt = _build_user_prompt(question, context_block)
     last_error = None
+    sql = ""
 
     for attempt in range(MAX_RETRIES + 1):
         prompt = user_prompt if attempt == 0 else (

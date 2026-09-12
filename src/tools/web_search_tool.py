@@ -53,7 +53,7 @@ def _search_tavily(query: str, max_results: int) -> list[dict]:
 
 def _search_duckduckgo(query: str, max_results: int) -> list[dict]:
     from duckduckgo_search import DDGS  # optional dependency, only imported if reached
-    with DDGS() as ddgs:
+    with DDGS(timeout=5) as ddgs:
         hits = list(ddgs.text(query, max_results=max_results))
     return [{"title": h.get("title", ""), "url": h.get("href", ""), "snippet": h.get("body", "")}
             for h in hits]

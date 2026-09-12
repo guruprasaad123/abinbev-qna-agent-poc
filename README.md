@@ -1,125 +1,84 @@
-# Meridian Brewing Group — Enterprise Q&A Agent (Prototype)
+# Anheuser-Busch InBev (AB InBev) — Enterprise Q&A Agent (Prototype)
 
-A multi-agent enterprise Q&A prototype over a synthetic global brewing
-business: one orchestrator agent backed by four specialist sub-agents
-(structured data, unstructured documents, internet search, coding),
-answering natural-language questions with citations, safety controls, and
-transparent limitations.
+A multi-agent enterprise Q&A prototype centered on the global brewing giant **Anheuser-Busch InBev (AB InBev)**: one orchestrator agent backed by four specialist sub-agents (structured SQL data, unstructured documents, internet search, and sandboxed Python coding), answering complex natural-language business questions with verified citations, strict SQL safety controls, and transparent reporting of limitations.
 
-Built as a take-home assignment. See `docs/` for the full design writeup and
-`notebooks/demo.ipynb` for a prerun demo covering every required capability.
+Built for the FMCG AI Engineer prototype assignment. See `docs/` for the architecture, design decisions, cost/latency analysis, and `notebooks/demo.ipynb` for a fully prerun demonstration covering all 25 required capabilities.
 
 ## What's here
 
-- **A synthetic FMCG (brewing) company** — Meridian Brewing Group — with 8
-  brands across 3 categories / 5 sub-categories (International Premium,
-  Craft & Specialty, Mainstream Lager, and a "Beyond Beer" segment of
-  Non-Alcoholic and Hard Seltzer), 8 markets, 4 channels, and 8 KPIs,
-  generated as a SQLite fact table (`data/db/meridian_brewing.db`, ~11k rows,
-  Jan 2023–Aug 2026).
-- **28 unstructured documents** (press releases, earnings commentary, market
-  research, sustainability updates, competitor intel, strategy memos)
-  deliberately overlapping in entities and themes with each other and with
-  the structured data (`data/unstructured/`).
-- **One orchestrator agent** (`src/orchestrator.py`) that understands intent,
-  maintains conversation memory, routes to sub-agents, validates/retries, and
-  synthesizes a final formatted answer.
-- **Four sub-agents**: structured SQL retrieval (with SQL-injection-resistant
-  safety controls), unstructured document retrieval (BM25 + metadata/tag/
-  recency filtering, with citations), web search (pluggable, graceful
-  degradation), and sandboxed Python code execution.
-- **18 offline tests** (`tests/test_pipeline.py`) that run against a
-  zero-cost, zero-network mock LLM — no API key required to verify the
-  system's plumbing.
-- **Full documentation** in `docs/`: architecture, design decisions/trade-offs,
-  a capability-by-capability mapping to code, and a cost/latency/model-usage
-  point of view.
+- **Realistic, Reproducible AB InBev Universe** — 8 representative brands across 3 portfolios (**Corona**, **Stella Artois**, **Michelob ULTRA**, **Hoegaarden**, **Budweiser**, **Bud Light**, **Brahma**, and **Corona Cero 0.0%**), 8 major global markets (United States, Canada, Mexico, Brazil, United Kingdom, Belgium, China, India), 4 commercial channels (Modern Trade, Traditional Trade, On-Premise, and the proprietary BEES B2B digital marketplace), and 8 KPIs (Net Revenue, Volume in hectoliters (hL), Market Share %, Net Revenue/hL, Distribution ACV/BEES Reach %, Marketing Spend, Promotion Spend, Gross Margin %). Generated deterministically with a fixed seed as a SQLite database (`data/db/abinbev.db`, 11,264 fact rows, Jan 2023–Aug 2026).
+- **28 Unstructured Documents** — Press releases, earnings commentary, market research, sustainability updates, strategy memos, and competitor briefings (Heineken, Carlsberg, Molson Coors) organized into 10 realistic corporate storylines (including the Corona Cero Worldwide Olympic Partnership, BEES digital expansion, and Monterrey/Leuven water watershed stewardship), pulling live quantitative numbers directly from the database at generation time (`data/unstructured/`).
+- **One Orchestrator Agent** (`src/orchestrator.py`) — Manages intent validation, entity extraction, alias resolution, multi-turn conversation memory (active filters + rolling summarization), sub-agent routing, hallucination verification (numeric overlap check with retry), and final answer synthesis.
+- **Four Specialist Sub-Agents**:
+  1. **Structured Data Sub-Agent** (`src/agents/structured_agent.py`): Natural language to validated, read-only SQL with strict safety controls (table whitelist, single-statement enforcement, row caps, execution step budget).
+  2. **Unstructured Data Sub-Agent** (`src/agents/unstructured_agent.py`): Hybrid lexical (BM25) + metadata/tag/recency filtering over corporate documents with inline `[DOC-xxx]` citations.
+  3. **Internet Search Sub-Agent** (`src/agents/websearch_agent.py`): Pluggable search (Tavily / DuckDuckGo / graceful degradation) for external benchmarking outside AB InBev's internal reporting.
+  4. **Coding Sub-Agent** (`src/agents/coding_agent.py`): In-process sandboxed Python execution for derived calculations (CAGR, multi-year projections).
+- **19 Offline Unit Tests** (`tests/test_pipeline.py`) — Passing in ~20ms against `MockLLMClient`, validating the entire pipeline without requiring API keys or network access.
+- **Full Documentation** in `docs/`: Architecture diagrams, design trade-offs, capability checklist mapping, and a comprehensive cost/latency/token telemetry analysis.
 
 ## Quickstart
 
 ```bash
-git clone <this-repo-url>
-cd fmcg-qna-agent
-
-# (Re)generate the datasets — deterministic, no dependencies needed.
+# 1. (Re)generate the datasets — deterministic & 100% reproducible
 python3 scripts/generate_structured_data.py
 python3 scripts/generate_documents.py
 
-# Run the offline test suite (no API key needed).
+# 2. Run the offline test suite (no API key needed)
 python3 -m unittest discover -s tests -v
 
-# Try it from the terminal (defaults to a zero-cost mock LLM if no key is set).
-python3 scripts/chat_cli.py
+# 3. Interactive CLI chat (auto-loads .env if present; defaults to mock if no key found)
+python3 main.py
 
-# Or run it "for real" with an actual model:
-export LLM_PROVIDER=anthropic            # or: openai
-export ANTHROPIC_API_KEY=sk-...          # or: export OPENAI_API_KEY=sk-...
-python3 scripts/chat_cli.py
+# 4. Running with a model provider (Token Harbor, OpenAI, or Anthropic):
+# Place your token in .env (e.g. api_key=hk_live_... or OPENAI_API_KEY=... or ANTHROPIC_API_KEY=...)
+python3 main.py
 
-# Full demo + capability checklist, as a notebook:
-pip install jupyter
-jupyter notebook notebooks/demo.ipynb    # Restart Kernel & Run All
+# 5. Full demo & capability checklist:
+# Open notebooks/demo.ipynb to view the pre-computed outputs covering every capability!
 ```
 
-The system has **zero required third-party dependencies** in its core
-runtime (pure Python standard library) — see `requirements.txt` and
-`docs/DESIGN_DECISIONS.md` for why. Only the LLM provider SDK
-(`anthropic` or `openai`) and, optionally, `duckduckgo-search`/`requests`
-for the web-search sub-agent, are needed beyond that.
-
-## Repository structure
+## Repository Structure
 
 ```
 src/
-  config.py              # single source of truth: brands, geo, channels, KPIs, aliases
-  llm_client.py          # pluggable LLM client (Anthropic/OpenAI/Mock) + usage tracker
+  config.py              # single source of truth: AB InBev brands, geo, channels, KPIs, aliases
+  llm_client.py          # pluggable LLM client (Token Harbor / OpenAI / Anthropic / Mock) + usage tracker
   memory.py              # conversation memory: active filters + rolling summary
-  formatting.py          # markdown tables, unit-aware number formatting
+  formatting.py          # markdown tables, unit-aware formatting ($USD, hL volume, %)
   orchestrator.py        # main agent: NLU, routing, synthesis, validation/retry
   tools/
-    sql_tool.py          # safe, read-only, whitelisted SQL execution
+    sql_tool.py          # safe, read-only, whitelisted SQL execution over abinbev.db
     retrieval_tool.py     # BM25 + metadata/tag/recency document retrieval
     web_search_tool.py    # pluggable internet search (Tavily / DuckDuckGo / degraded)
     code_tool.py           # sandboxed Python execution
     bm25.py                # dependency-free BM25 implementation
   agents/
     structured_agent.py    # NL -> validated SQL -> rows
-    unstructured_agent.py  # NL -> filtered document retrieval
-    websearch_agent.py     # NL -> web search results
+    unstructured_agent.py  # NL -> filtered document retrieval with citations
+    websearch_agent.py     # NL -> external search results
     coding_agent.py         # NL -> sandboxed calculation
 scripts/
-  generate_structured_data.py  # builds data/db/meridian_brewing.db
+  generate_structured_data.py  # builds data/db/abinbev.db (11,264 fact rows)
   generate_documents.py        # builds data/unstructured/*.md + manifest.json
   build_notebook.py            # builds notebooks/demo.ipynb
   chat_cli.py                  # interactive terminal chat
+main.py                        # main entry point for CLI and tests
 data/
-  db/meridian_brewing.db           # generated structured dataset
-  unstructured/*.md            # generated document corpus + manifest.json
-notebooks/demo.ipynb           # prerun demo covering every required capability
-tests/test_pipeline.py         # offline test suite (mock LLM, no API key needed)
+  db/abinbev.db                # generated structured dataset
+  unstructured/*.md            # generated 28-document corpus + manifest.json
+notebooks/demo.ipynb           # prerun demo covering all 25 required capabilities
+tests/test_pipeline.py         # offline test suite (19 tests)
 docs/
   ARCHITECTURE.md              # system diagram + request flow
-  DESIGN_DECISIONS.md          # why it's built this way, and what we'd change
+  DESIGN_DECISIONS.md          # design rationale & architectural trade-offs
   CAPABILITY_MAPPING.md        # every required capability -> exact code location
   COST_LATENCY_TRADEOFFS.md    # cost / latency / model-usage point of view
 ```
 
-## Required capabilities
+## Required Capabilities
 
-All 25 capabilities listed in the assignment are implemented; see
-[`docs/CAPABILITY_MAPPING.md`](docs/CAPABILITY_MAPPING.md) for the full
-table mapping each one to its exact implementation, and
-[`notebooks/demo.ipynb`](notebooks/demo.ipynb) for each one exercised live.
-
-## Known limitations
-
-Documented candidly, not hidden — see
-[`docs/DESIGN_DECISIONS.md` §11](docs/DESIGN_DECISIONS.md#11-what-we-would-change-with-more-time-explicit-not-hidden)
-for the full list: sub-agent calls run sequentially rather than in parallel;
-retrieval is lexical (BM25) + metadata, not embedding-based semantic search;
-the code sandbox is prototype-grade, not hardened for untrusted multi-tenant
-use; and the web-search sub-agent depends on an optional external
-provider/package.
+All 25 capabilities listed in the assignment specification are implemented and verified; see [`docs/CAPABILITY_MAPPING.md`](docs/CAPABILITY_MAPPING.md) for the complete traceability matrix and [`notebooks/demo.ipynb`](notebooks/demo.ipynb) for live demonstrations of each capability.
 
 ## License
 

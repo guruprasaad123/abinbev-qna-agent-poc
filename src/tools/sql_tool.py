@@ -32,7 +32,7 @@ import sqlite3
 from pathlib import Path
 from dataclasses import dataclass
 
-DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "meridian_brewing.db"
+DB_PATH = Path(__file__).resolve().parents[2] / "data" / "db" / "abinbev.db"
 
 ALLOWED_TABLES = {"fact_monthly_kpi", "dim_brand", "dim_geo", "dim_channel"}
 BLOCKED_KEYWORDS = re.compile(

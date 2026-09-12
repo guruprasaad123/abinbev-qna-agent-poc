@@ -1,7 +1,6 @@
 """
 Lightweight test suite using only the standard library `unittest` (no pytest
-dependency, since this needs to run in any environment including offline
-ones with a restricted package mirror -- see docs/DESIGN_DECISIONS.md).
+dependency, ensuring portability across offline environments).
 
 Run with:  python3 -m unittest discover -s tests -v
 These all run with MockLLMClient -- zero cost, zero network, no API key
@@ -47,12 +46,12 @@ class TestSQLSafety(unittest.TestCase):
 
 class TestRetrieval(unittest.TestCase):
     def test_finds_relevant_document(self):
-        results = get_index().search("water stewardship Ironclad Stout brewery", k=3)
-        self.assertTrue(any(d.doc_id == "DOC-014" for d in results))
+        results = get_index().search("water stewardship watershed Monterrey Corona", k=3)
+        self.assertTrue(any(d.doc_id == "DOC-013" for d in results))
 
     def test_metadata_filter_by_brand(self):
-        results = get_index().search("launch", k=10, brands=["Clearwater Zero"])
-        self.assertTrue(all("Clearwater Zero" in d.brands or d.score > 0 for d in results))
+        results = get_index().search("olympic", k=10, brands=["Corona Cero"])
+        self.assertTrue(all("Corona Cero" in d.brands or d.score > 0 for d in results))
         self.assertTrue(len(results) > 0)
 
 
@@ -83,35 +82,40 @@ class TestOrchestrator(unittest.TestCase):
         r = self.orch.handle_turn("what is the weather today?")
         self.assertEqual(r.intent, "out_of_scope")
 
+    def test_clarification_for_ambiguous_request(self):
+        r = self.orch.handle_turn("Tell me about performance.")
+        self.assertEqual(r.intent, "clarification_needed")
+        self.assertIn("clarify", r.answer.lower())
+
     def test_metadata_discovery(self):
         r = self.orch.handle_turn("what kpis do you have?")
         self.assertEqual(r.intent, "metadata_discovery")
         self.assertIn("Net Revenue", r.answer)
 
     def test_data_query_routes_to_structured(self):
-        r = self.orch.handle_turn("What was Northstar Lager revenue in the United States?")
+        r = self.orch.handle_turn("What was Corona revenue in the United States in 2025?")
         self.assertIn("structured", r.sub_agents_used)
 
     def test_hybrid_routes_both_structured_and_unstructured(self):
-        r = self.orch.handle_turn("Why did Clearwater Zero grow in Germany, any press releases?")
+        r = self.orch.handle_turn("Why did Corona Cero grow in the United Kingdom, any press releases?")
         self.assertIn("structured", r.sub_agents_used)
         self.assertIn("unstructured", r.sub_agents_used)
         self.assertTrue(len(r.citations) > 0)
 
     def test_hierarchy_fallback_city_to_country(self):
-        r = self.orch.handle_turn("How is Northstar Lager doing in New York?")
+        r = self.orch.handle_turn("How is Budweiser doing in St. Louis?")
         self.assertTrue(any("United States" in a for a in r.assumptions))
 
     def test_unsupported_competitor_flagged(self):
-        r = self.orch.handle_turn("How is Highland Brewing Collective performing?")
+        r = self.orch.handle_turn("How is Heineken performing in Europe?")
         self.assertTrue(any("tracked entities" in a for a in r.assumptions))
 
     def test_conversation_memory_persists_filters(self):
-        self.orch.handle_turn("What was Northstar Lager revenue in the United States in 2025?")
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Northstar Lager")
+        self.orch.handle_turn("What was Budweiser revenue in the United States in 2025?")
+        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Budweiser")
         self.orch.handle_turn("Sales figure question with no new entity")
         # brand should still be remembered from the previous turn
-        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Northstar Lager")
+        self.assertEqual(self.orch.memory.active_filters.get("brand"), "Budweiser")
 
 
 if __name__ == "__main__":

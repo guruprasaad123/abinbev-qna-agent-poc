@@ -1,507 +1,606 @@
 {
-  "company": "Meridian Brewing Group",
-  "generated": "2026-09-11",
   "documents": [
     {
       "doc_id": "DOC-001",
-      "title": "Meridian Launches Clearwater Zero in Germany and the UK",
-      "date": "2025-03-10",
+      "file": "DOC-001.md",
+      "title": "AB InBev Announces Corona Cero as Worldwide Olympic Partner",
+      "date": "2025-01-15",
       "source_type": "press_release",
       "tags": [
-        "product_launch",
+        "olympics",
         "non_alcoholic",
-        "beyond_beer"
+        "beyond_beer",
+        "global_partnership"
       ],
       "brands": [
-        "Clearwater Zero"
+        "Corona Cero",
+        "Corona"
       ],
       "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
-      "file": "DOC-001.md"
+        "United Kingdom",
+        "Belgium",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-002",
-      "title": "Q1 2025 Earnings Commentary: Beyond Beer Momentum in Europe",
-      "date": "2025-05-02",
+      "file": "DOC-002.md",
+      "title": "Q1 2025 Earnings Commentary: Corona Cero Acceleration in Europe and Mexico",
+      "date": "2025-04-30",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
         "non_alcoholic",
         "beyond_beer",
-        "europe"
+        "growth"
       ],
       "brands": [
-        "Clearwater Zero"
+        "Corona Cero"
       ],
       "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
-      "file": "DOC-002.md"
+        "United Kingdom",
+        "Mexico",
+        "Belgium"
+      ]
     },
     {
       "doc_id": "DOC-003",
-      "title": "Market Research Note: Non-Alcoholic Beer Positioning in Western Europe",
-      "date": "2025-06-15",
+      "file": "DOC-003.md",
+      "title": "Market Research Note: The Moderation Mega-Trend and No/Low Alcohol Beer",
+      "date": "2025-06-20",
       "source_type": "market_research",
       "tags": [
+        "consumer_trend",
         "non_alcoholic",
-        "beyond_beer",
-        "europe",
-        "consumer_trend"
+        "moderation",
+        "gen_z"
       ],
       "brands": [
-        "Clearwater Zero"
+        "Corona Cero"
       ],
       "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
-      "file": "DOC-003.md"
+        "United Kingdom",
+        "United States",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-004",
-      "title": "Sustainability Update: Recyclable Packaging for Clearwater Zero",
-      "date": "2025-04-22",
-      "source_type": "sustainability",
+      "file": "DOC-004.md",
+      "title": "AB InBev's BEES Platform Surpasses $35 Billion in Annualized Gross Merchandise Value",
+      "date": "2025-02-18",
+      "source_type": "press_release",
       "tags": [
-        "packaging",
-        "sustainability",
-        "non_alcoholic"
+        "bees",
+        "digital_transformation",
+        "b2b_platform",
+        "traditional_trade"
       ],
       "brands": [
-        "Clearwater Zero"
+        "Brahma",
+        "Corona",
+        "Budweiser"
       ],
       "countries": [
-        "Germany",
-        "United Kingdom"
-      ],
-      "file": "DOC-004.md"
+        "Brazil",
+        "Mexico",
+        "China"
+      ]
     },
     {
       "doc_id": "DOC-005",
-      "title": "Q3 2025 Earnings Commentary: Northstar Lager On-Premise Recovery",
-      "date": "2025-11-04",
-      "source_type": "earnings_commentary",
+      "file": "DOC-005.md",
+      "title": "Strategy Memo: Modernizing the Traditional Trade via the BEES Ecosystem",
+      "date": "2025-05-12",
+      "source_type": "strategy_memo",
       "tags": [
-        "earnings",
-        "beer",
-        "on_premise",
-        "north_america"
+        "bees",
+        "traditional_trade",
+        "route_to_market",
+        "digital"
       ],
       "brands": [
-        "Northstar Lager"
+        "Brahma",
+        "Bud Light"
       ],
       "countries": [
-        "United States"
-      ],
-      "file": "DOC-005.md"
+        "Brazil",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-006",
-      "title": "Market Research Note: Premiumization Trends in US Beer",
-      "date": "2025-09-01",
-      "source_type": "market_research",
+      "file": "DOC-006.md",
+      "title": "Q2 2025 Earnings Commentary: Digital Route-to-Market Highlights",
+      "date": "2025-07-28",
+      "source_type": "earnings_commentary",
       "tags": [
-        "beer",
-        "premiumization",
-        "north_america",
-        "consumer_trend"
+        "earnings",
+        "bees",
+        "digital_sales",
+        "traditional_trade"
       ],
       "brands": [
-        "Northstar Lager",
-        "Ironclad Stout"
+        "Brahma",
+        "Corona"
       ],
       "countries": [
-        "United States"
-      ],
-      "file": "DOC-006.md"
+        "Brazil",
+        "Mexico",
+        "India"
+      ]
     },
     {
       "doc_id": "DOC-007",
-      "title": "Competitor Intelligence: Highland Brewing Collective On-Premise Push",
-      "date": "2025-10-12",
-      "source_type": "competitor_intel",
+      "file": "DOC-007.md",
+      "title": "Michelob ULTRA Expands Premium Active Footprint into Mexico and Canada",
+      "date": "2025-03-22",
+      "source_type": "press_release",
       "tags": [
-        "beer",
-        "on_premise",
-        "competitor",
-        "north_america"
+        "michelob_ultra",
+        "premiumization",
+        "active_lifestyle"
       ],
       "brands": [
-        "Northstar Lager"
+        "Michelob ULTRA"
       ],
       "countries": [
-        "United States"
-      ],
-      "file": "DOC-007.md"
+        "United States",
+        "Mexico",
+        "Canada"
+      ]
     },
     {
       "doc_id": "DOC-008",
-      "title": "Meridian Launches 'Brighter Days' Havenbrook Seltzer Campaign in Australia",
-      "date": "2025-10-20",
-      "source_type": "press_release",
+      "file": "DOC-008.md",
+      "title": "Market Research Note: Premium Light & Wellness Positioning in North America",
+      "date": "2025-06-08",
+      "source_type": "market_research",
       "tags": [
-        "product_launch",
-        "campaign",
-        "hard_seltzer",
-        "apac"
+        "consumer_trend",
+        "wellness",
+        "premium_light"
       ],
       "brands": [
-        "Havenbrook Seltzer"
+        "Michelob ULTRA",
+        "Bud Light"
       ],
       "countries": [
-        "Australia"
-      ],
-      "file": "DOC-008.md"
+        "United States",
+        "Canada"
+      ]
     },
     {
       "doc_id": "DOC-009",
-      "title": "Q4 2025 Earnings Commentary: Havenbrook Seltzer Australia Summer Performance",
-      "date": "2026-02-03",
+      "file": "DOC-009.md",
+      "title": "Q3 2025 Earnings Commentary: Michelob ULTRA Profitability and Volume Surge",
+      "date": "2025-10-29",
       "source_type": "earnings_commentary",
       "tags": [
         "earnings",
-        "hard_seltzer",
-        "apac",
-        "seasonality"
+        "michelob_ultra",
+        "margin_expansion"
       ],
       "brands": [
-        "Havenbrook Seltzer"
+        "Michelob ULTRA"
       ],
       "countries": [
-        "Australia"
-      ],
-      "file": "DOC-009.md"
+        "United States",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-010",
-      "title": "Market Research Note: Hard Seltzer Trends in APAC",
-      "date": "2025-12-01",
-      "source_type": "market_research",
+      "file": "DOC-010.md",
+      "title": "TaDa Delivery Reaches 25 Million Annual Orders in South America",
+      "date": "2025-04-14",
+      "source_type": "press_release",
       "tags": [
-        "hard_seltzer",
-        "apac",
-        "seasonality",
-        "consumer_trend"
+        "tada_delivery",
+        "d2c",
+        "e_commerce",
+        "cold_beer"
       ],
       "brands": [
-        "Havenbrook Seltzer"
+        "Brahma",
+        "Corona",
+        "Budweiser"
       ],
       "countries": [
-        "Australia",
-        "India"
-      ],
-      "file": "DOC-010.md"
+        "Brazil",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-011",
-      "title": "Copperline Amber Ale Expands Distribution in the United Kingdom",
-      "date": "2024-06-18",
-      "source_type": "press_release",
+      "file": "DOC-011.md",
+      "title": "Earnings Call Commentary: Direct-to-Consumer Insights & Occasion Capture",
+      "date": "2025-08-05",
+      "source_type": "earnings_commentary",
       "tags": [
-        "distribution",
-        "craft",
-        "europe"
+        "earnings",
+        "d2c",
+        "tada_delivery",
+        "consumer_insights"
       ],
       "brands": [
-        "Copperline Amber Ale"
+        "Corona",
+        "Brahma"
       ],
       "countries": [
-        "United Kingdom"
-      ],
-      "file": "DOC-011.md"
+        "Brazil",
+        "Mexico"
+      ]
     },
     {
       "doc_id": "DOC-012",
-      "title": "Internal Strategy Memo: Copperline Amber Ale UK Channel Mix",
-      "date": "2024-08-05",
-      "source_type": "strategy_memo",
-      "tags": [
-        "strategy",
-        "craft",
-        "europe",
-        "channel"
-      ],
-      "brands": [
-        "Copperline Amber Ale"
-      ],
-      "countries": [
-        "United Kingdom"
-      ],
-      "file": "DOC-012.md"
-    },
-    {
-      "doc_id": "DOC-013",
-      "title": "Competitor Intelligence: Craft Ale Entrants in the UK",
-      "date": "2025-01-15",
-      "source_type": "competitor_intel",
-      "tags": [
-        "craft",
-        "competitor",
-        "europe"
-      ],
-      "brands": [
-        "Copperline Amber Ale"
-      ],
-      "countries": [
-        "United Kingdom"
-      ],
-      "file": "DOC-013.md"
-    },
-    {
-      "doc_id": "DOC-014",
-      "title": "Ironclad Stout Brewery Commits to 20% Water Reduction by 2027",
-      "date": "2024-03-01",
+      "file": "DOC-012.md",
+      "title": "AB InBev Reaches 100% Renewable Electricity at Key Breweries in Belgium and Brazil",
+      "date": "2025-02-25",
       "source_type": "sustainability",
       "tags": [
         "sustainability",
-        "water",
-        "craft"
+        "esg",
+        "renewable_energy",
+        "net_zero"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Stella Artois",
+        "Brahma"
       ],
-      "countries": [],
-      "file": "DOC-014.md"
+      "countries": [
+        "Belgium",
+        "Brazil"
+      ]
+    },
+    {
+      "doc_id": "DOC-013",
+      "file": "DOC-013.md",
+      "title": "Sustainability Update: Watershed Protection and Water Stewardship in Mexico",
+      "date": "2025-05-20",
+      "source_type": "sustainability",
+      "tags": [
+        "sustainability",
+        "esg",
+        "water_stewardship",
+        "watershed"
+      ],
+      "brands": [
+        "Corona"
+      ],
+      "countries": [
+        "Mexico",
+        "United States"
+      ]
+    },
+    {
+      "doc_id": "DOC-014",
+      "file": "DOC-014.md",
+      "title": "Strategy Memo: Circular Packaging and Net-Zero Carbon Brewery Roadmap",
+      "date": "2025-09-14",
+      "source_type": "strategy_memo",
+      "tags": [
+        "sustainability",
+        "esg",
+        "packaging",
+        "circular_economy"
+      ],
+      "brands": [
+        "Corona",
+        "Stella Artois"
+      ],
+      "countries": [
+        "Belgium",
+        "United Kingdom",
+        "United States"
+      ]
     },
     {
       "doc_id": "DOC-015",
-      "title": "Market Research Note: Water Stewardship and Beer Purchase Intent",
-      "date": "2024-09-10",
-      "source_type": "market_research",
+      "file": "DOC-015.md",
+      "title": "Budweiser Renews Official Sponsorship for the 2026 FIFA World Cup in North America",
+      "date": "2024-11-10",
+      "source_type": "press_release",
       "tags": [
-        "craft",
-        "sustainability",
-        "consumer_trend"
+        "budweiser",
+        "sponsorship",
+        "fifa_world_cup",
+        "sports_marketing"
       ],
       "brands": [
-        "Ironclad Stout",
-        "Copperline Amber Ale"
+        "Budweiser",
+        "Bud Light"
       ],
-      "countries": [],
-      "file": "DOC-015.md"
+      "countries": [
+        "United States",
+        "Mexico",
+        "Canada"
+      ]
     },
     {
       "doc_id": "DOC-016",
-      "title": "Press Release: Ironclad Stout Water Efficiency Progress Update",
-      "date": "2025-07-08",
-      "source_type": "press_release",
+      "file": "DOC-016.md",
+      "title": "Earnings Commentary: Brand Equity and Sponsorship ROI Across Global Megabrands",
+      "date": "2025-08-22",
+      "source_type": "earnings_commentary",
       "tags": [
-        "sustainability",
-        "water",
-        "craft"
+        "earnings",
+        "marketing_spend",
+        "brand_equity",
+        "roi"
       ],
       "brands": [
-        "Ironclad Stout"
+        "Budweiser",
+        "Corona"
       ],
-      "countries": [],
-      "file": "DOC-016.md"
+      "countries": [
+        "United States",
+        "China",
+        "United Kingdom"
+      ]
     },
     {
       "doc_id": "DOC-017",
-      "title": "Internal Strategy Memo: Kestrel Pilsner South America E-commerce Acceleration",
-      "date": "2025-02-20",
-      "source_type": "strategy_memo",
+      "file": "DOC-017.md",
+      "title": "Earnings Review: Disciplined Revenue Management Drives Net Revenue per Hectoliter Growth",
+      "date": "2025-04-18",
+      "source_type": "earnings_commentary",
       "tags": [
-        "strategy",
-        "beer",
-        "south_america",
-        "ecommerce"
+        "earnings",
+        "pricing",
+        "asp",
+        "revenue_management"
       ],
       "brands": [
-        "Kestrel Pilsner"
+        "Budweiser",
+        "Stella Artois",
+        "Corona"
       ],
       "countries": [
+        "United States",
         "Brazil",
-        "Mexico"
-      ],
-      "file": "DOC-017.md"
+        "Belgium"
+      ]
     },
     {
       "doc_id": "DOC-018",
-      "title": "Q4 2025 Earnings Commentary: Kestrel Pilsner South America",
-      "date": "2026-02-03",
-      "source_type": "earnings_commentary",
+      "file": "DOC-018.md",
+      "title": "Strategy Memo: Pack-Price Architecture and Promo Spend Effectiveness",
+      "date": "2025-07-10",
+      "source_type": "strategy_memo",
       "tags": [
-        "earnings",
-        "beer",
-        "south_america",
-        "ecommerce"
+        "pricing",
+        "pack_price_architecture",
+        "promo_spend",
+        "profitability"
       ],
       "brands": [
-        "Kestrel Pilsner"
+        "Corona",
+        "Bud Light"
       ],
       "countries": [
-        "Brazil",
+        "United States",
         "Mexico"
-      ],
-      "file": "DOC-018.md"
+      ]
     },
     {
       "doc_id": "DOC-019",
-      "title": "Market Research Note: E-commerce Grocery Growth in South America",
-      "date": "2025-05-19",
-      "source_type": "market_research",
+      "file": "DOC-019.md",
+      "title": "Competitive Intelligence: Heineken NV Expansion in European Premium and 0.0%",
+      "date": "2025-03-14",
+      "source_type": "competitor_intel",
       "tags": [
-        "south_america",
-        "ecommerce",
-        "consumer_trend"
+        "competitor",
+        "heineken",
+        "europe",
+        "market_intelligence"
       ],
       "brands": [
-        "Kestrel Pilsner"
+        "Corona",
+        "Corona Cero",
+        "Stella Artois"
+      ],
+      "countries": [
+        "United Kingdom",
+        "Belgium"
+      ]
+    },
+    {
+      "doc_id": "DOC-020",
+      "file": "DOC-020.md",
+      "title": "Competitive Intelligence: Carlsberg Group European and Asian Footprint",
+      "date": "2025-05-29",
+      "source_type": "competitor_intel",
+      "tags": [
+        "competitor",
+        "carlsberg",
+        "asia",
+        "market_intelligence"
+      ],
+      "brands": [
+        "Budweiser",
+        "Hoegaarden"
+      ],
+      "countries": [
+        "China",
+        "India"
+      ]
+    },
+    {
+      "doc_id": "DOC-021",
+      "file": "DOC-021.md",
+      "title": "Competitive Intelligence: Molson Coors and US Light Beer Dynamics",
+      "date": "2025-09-18",
+      "source_type": "competitor_intel",
+      "tags": [
+        "competitor",
+        "molson_coors",
+        "united_states",
+        "market_intelligence"
+      ],
+      "brands": [
+        "Bud Light",
+        "Michelob ULTRA"
+      ],
+      "countries": [
+        "United States",
+        "Canada"
+      ]
+    },
+    {
+      "doc_id": "DOC-022",
+      "file": "DOC-022.md",
+      "title": "Returnable Glass Bottle Initiative Expands Across Latin America",
+      "date": "2025-06-25",
+      "source_type": "sustainability",
+      "tags": [
+        "sustainability",
+        "packaging",
+        "circular_economy",
+        "latin_america"
+      ],
+      "brands": [
+        "Brahma",
+        "Corona"
       ],
       "countries": [
         "Brazil",
         "Mexico"
-      ],
-      "file": "DOC-019.md"
-    },
-    {
-      "doc_id": "DOC-020",
-      "title": "Internal Strategy Memo: Frostpeak Light Pricing Action",
-      "date": "2024-11-12",
-      "source_type": "strategy_memo",
-      "tags": [
-        "strategy",
-        "pricing",
-        "mainstream_lager"
-      ],
-      "brands": [
-        "Frostpeak Light"
-      ],
-      "countries": [],
-      "file": "DOC-020.md"
-    },
-    {
-      "doc_id": "DOC-021",
-      "title": "Q1 2025 Earnings Commentary: Frostpeak Light Margin Recovery",
-      "date": "2025-05-02",
-      "source_type": "earnings_commentary",
-      "tags": [
-        "earnings",
-        "pricing",
-        "mainstream_lager",
-        "margin"
-      ],
-      "brands": [
-        "Frostpeak Light"
-      ],
-      "countries": [],
-      "file": "DOC-021.md"
-    },
-    {
-      "doc_id": "DOC-022",
-      "title": "Competitor Intelligence: Continental Lager Co. Pricing Response",
-      "date": "2025-06-02",
-      "source_type": "competitor_intel",
-      "tags": [
-        "mainstream_lager",
-        "competitor",
-        "pricing"
-      ],
-      "brands": [
-        "Frostpeak Light"
-      ],
-      "countries": [],
-      "file": "DOC-022.md"
+      ]
     },
     {
       "doc_id": "DOC-023",
-      "title": "Meridian Enters the Australian Market with Harborlight Gold",
-      "date": "2023-09-05",
-      "source_type": "press_release",
+      "file": "DOC-023.md",
+      "title": "Market Research Note: Consumer Economics of Returnable Packaging in Brazil",
+      "date": "2025-08-12",
+      "source_type": "market_research",
       "tags": [
-        "market_entry",
-        "mainstream_lager",
-        "apac"
+        "consumer_insights",
+        "returnable_glass",
+        "traditional_trade"
       ],
       "brands": [
-        "Harborlight Gold"
+        "Brahma"
       ],
       "countries": [
-        "Australia"
-      ],
-      "file": "DOC-023.md"
+        "Brazil"
+      ]
     },
     {
       "doc_id": "DOC-024",
-      "title": "Market Research Note: Mainstream Lager Competitive Dynamics in Australia",
-      "date": "2024-02-14",
-      "source_type": "market_research",
+      "file": "DOC-024.md",
+      "title": "Hoegaarden Wheat Beer Accelerates Premium Venue Growth Across China and India",
+      "date": "2025-04-08",
+      "source_type": "press_release",
       "tags": [
-        "mainstream_lager",
-        "apac",
-        "consumer_trend"
+        "hoegaarden",
+        "craft_specialty",
+        "asia",
+        "premiumization"
       ],
       "brands": [
-        "Harborlight Gold"
+        "Hoegaarden"
       ],
       "countries": [
-        "Australia"
-      ],
-      "file": "DOC-024.md"
+        "China",
+        "India"
+      ]
     },
     {
       "doc_id": "DOC-025",
-      "title": "Q4 2024 Earnings Commentary: Harborlight Gold Australia One-Year Update",
-      "date": "2025-02-04",
-      "source_type": "earnings_commentary",
+      "file": "DOC-025.md",
+      "title": "Market Research: Craft & Specialty Beer Pairing Trends in APAC",
+      "date": "2025-07-18",
+      "source_type": "market_research",
       "tags": [
-        "earnings",
-        "mainstream_lager",
-        "apac"
+        "craft_specialty",
+        "dining",
+        "pairing",
+        "asia"
       ],
       "brands": [
-        "Harborlight Gold"
+        "Hoegaarden",
+        "Corona"
       ],
       "countries": [
-        "Australia"
-      ],
-      "file": "DOC-025.md"
+        "China",
+        "India"
+      ]
     },
     {
       "doc_id": "DOC-026",
-      "title": "Meridian Brewing Group FY2025 Annual Highlights",
-      "date": "2026-02-20",
+      "file": "DOC-026.md",
+      "title": "Stella Artois Draught Expansion and On-Premise Recovery in the UK",
+      "date": "2025-09-30",
       "source_type": "earnings_commentary",
       "tags": [
-        "earnings",
-        "company_wide",
-        "annual"
+        "stella_artois",
+        "on_premise",
+        "draught",
+        "united_kingdom"
       ],
-      "brands": [],
-      "countries": [],
-      "file": "DOC-026.md"
+      "brands": [
+        "Stella Artois"
+      ],
+      "countries": [
+        "United Kingdom",
+        "Belgium"
+      ]
     },
     {
       "doc_id": "DOC-027",
-      "title": "Meridian Brewing Group Investor FAQ: Data and Reporting Scope",
-      "date": "2026-01-10",
-      "source_type": "metadata_note",
+      "file": "DOC-027.md",
+      "title": "Strategy Memo: Global Megabrands as the Engine of Margin Expansion",
+      "date": "2025-10-15",
+      "source_type": "strategy_memo",
       "tags": [
-        "reporting",
-        "company_wide",
-        "scope"
+        "global_megabrands",
+        "premiumization",
+        "ebitda_growth"
       ],
-      "brands": [],
-      "countries": [],
-      "file": "DOC-027.md"
+      "brands": [
+        "Budweiser",
+        "Stella Artois",
+        "Corona",
+        "Michelob ULTRA"
+      ],
+      "countries": [
+        "United States",
+        "Mexico",
+        "Brazil",
+        "China",
+        "United Kingdom"
+      ]
     },
     {
       "doc_id": "DOC-028",
-      "title": "Competitive Landscape Overview: Global Brewing Industry",
-      "date": "2025-08-01",
-      "source_type": "competitor_intel",
+      "file": "DOC-028.md",
+      "title": "Annual Corporate Summary: Full-Year Operational and Financial Highlights",
+      "date": "2025-12-10",
+      "source_type": "earnings_commentary",
       "tags": [
-        "competitor",
-        "market_overview"
+        "annual_review",
+        "global_performance",
+        "summary"
       ],
-      "brands": [],
-      "countries": [],
-      "file": "DOC-028.md"
+      "brands": [
+        "Corona",
+        "Budweiser",
+        "Brahma",
+        "Michelob ULTRA",
+        "Stella Artois",
+        "Corona Cero"
+      ],
+      "countries": [
+        "United States",
+        "Mexico",
+        "Brazil",
+        "China",
+        "United Kingdom",
+        "Belgium",
+        "Canada",
+        "India"
+      ]
     }
   ]
 }

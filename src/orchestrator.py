@@ -21,7 +21,7 @@ from src.memory import ConversationMemory
 from src.config import (
     ALL_BRANDS, ALL_COUNTRIES, ALL_CHANNELS, ALL_KPIS, KPI_CATALOG, ENTITY_ALIASES,
     DOMAIN_DESCRIPTION, COMPANY_NAME, GEO_HIERARCHY, CITY_TO_COUNTRY, COUNTRY_TO_REGION,
-    DATA_START, DATA_END, CATEGORY_HIERARCHY, BRANDS,
+    DATA_START, DATA_END, CATEGORY_HIERARCHY, BRANDS, KNOWN_COMPETITORS,
 )
 from src.agents import structured_agent, unstructured_agent, websearch_agent, coding_agent
 from src.formatting import rows_to_markdown_table
@@ -111,6 +111,38 @@ class Orchestrator:
         self.llm_worker = llm_worker or get_llm_client("worker")
         self.memory = ConversationMemory()
 
+    def _resolve_entity_aliases(self, text: str) -> dict[str, list[str]]:
+        """
+        Deterministic first-pass scan for entity aliases, abbreviations, and typos
+        defined in ENTITY_ALIASES (e.g. 'coron' -> Corona, 'mexco' -> Mexico, 'revenu' -> net_revenue_usd).
+        """
+        cleaned = re.sub(r"[^\w\s\.-]", " ", f" {text.lower()} ")
+        brands, countries, channels, kpis, unsupported = [], [], [], [], []
+
+        for alias, canonical in sorted(ENTITY_ALIASES.items(), key=lambda x: len(x[0]), reverse=True):
+            pattern = r"(?:\b|_)" + re.escape(alias) + r"(?:\b|_)"
+            if re.search(pattern, cleaned):
+                if canonical in ALL_BRANDS and canonical not in brands:
+                    brands.append(canonical)
+                elif canonical in ALL_COUNTRIES and canonical not in countries:
+                    countries.append(canonical)
+                elif canonical in ALL_CHANNELS and canonical not in channels:
+                    channels.append(canonical)
+                elif canonical in ALL_KPIS and canonical not in kpis:
+                    kpis.append(canonical)
+                elif canonical in CITY_TO_COUNTRY and canonical not in unsupported:
+                    unsupported.append(canonical)
+                elif canonical in KNOWN_COMPETITORS and canonical not in unsupported:
+                    unsupported.append(canonical)
+
+        return {
+            "brands": brands,
+            "countries": countries,
+            "channels": channels,
+            "kpis": kpis,
+            "unsupported_entities": unsupported,
+        }
+
     # ------------------------------------------------------------------ NLU
     def _run_nlu(self, user_message: str) -> dict:
         context = self.memory.context_block()
@@ -128,6 +160,18 @@ class Orchestrator:
         data.setdefault("entities", {})
         data.setdefault("unsupported_entities", [])
         data.setdefault("needed_subagents", ["structured"])
+
+        # Augment/correct entities using deterministic entity alias resolution
+        norm = self._resolve_entity_aliases(user_message)
+        for cat in ("brands", "countries", "channels", "kpis"):
+            target = data["entities"].setdefault(cat, [])
+            for item in norm.get(cat, []):
+                if item not in target:
+                    target.append(item)
+        for item in norm.get("unsupported_entities", []):
+            if item not in data["unsupported_entities"]:
+                data["unsupported_entities"].append(item)
+
         return data
 
     # ------------------------------------------------------- hierarchy fallback
