@@ -42,6 +42,8 @@ Built as a take-home assignment. See `docs/` for the full design writeup and
 
 ## Quickstart
 
+### Option A: plain Python
+
 ```bash
 git clone <this-repo-url>
 cd fmcg-qna-agent
@@ -57,7 +59,8 @@ python3 -m unittest discover -s tests -v
 # Try it from the terminal (defaults to a zero-cost mock LLM if no key is set).
 python3 scripts/chat_cli.py
 
-# Or run it "for real" with an actual model:
+# Or run it "for real" with an actual model -- export the vars, or put them
+# in a .env file (auto-loaded if python-dotenv is installed):
 export LLM_PROVIDER=anthropic            # or: openai
 export ANTHROPIC_API_KEY=sk-...          # or: export OPENAI_API_KEY=sk-...
 python3 scripts/chat_cli.py
@@ -67,11 +70,33 @@ pip install jupyter
 jupyter notebook notebooks/demo.ipynb    # Restart Kernel & Run All
 ```
 
-The system has **zero required third-party dependencies** in its core
-runtime (pure Python standard library) — see `requirements.txt` and
-`docs/DESIGN_DECISIONS.md` for why. Only the LLM provider SDK
-(`anthropic` or `openai`) and, optionally, `duckduckgo-search`/`requests`
-for the web-search sub-agent, are needed beyond that.
+Install only the extras you actually need — see `requirements.txt` for exactly which
+package each capability requires and why.
+
+### Option B: uv (one command, no manual installs)
+
+`pyproject.toml`/`uv.lock` pin every optional dependency (LLM SDKs, notebook, web search) as a
+dev-convenience group, so [uv](https://docs.astral.sh/uv/) installs everything automatically:
+
+```bash
+git clone <this-repo-url>
+cd fmcg-qna-agent
+
+uv run python3 scripts/generate_structured_data.py
+uv run python3 scripts/generate_documents.py
+uv run python3 -m unittest discover -s tests -v
+uv run python3 scripts/chat_cli.py        # set LLM_PROVIDER/*_API_KEY (or .env) first for real answers
+uv run jupyter notebook notebooks/demo.ipynb
+```
+
+---
+
+Either way, the core runtime (`src/`) has **zero required third-party dependencies** (pure
+Python standard library) — see `docs/DESIGN_DECISIONS.md` for why. Only the LLM provider SDK
+(`anthropic` or `openai`) and, optionally, `duckduckgo-search`/`requests` for the web-search
+sub-agent, are needed beyond that — `pyproject.toml`'s base `dependencies` list is empty for
+exactly this reason; everything else lives in `[project.optional-dependencies]` / the `dev`
+dependency group.
 
 ## Repository structure
 
@@ -108,6 +133,8 @@ docs/
   DESIGN_DECISIONS.md          # why it's built this way (incl. real-vs-synthetic data), and what we'd change
   CAPABILITY_MAPPING.md        # every required capability -> exact code location
   COST_LATENCY_TRADEOFFS.md    # cost / latency / model-usage point of view
+progress/                      # dated development log (what changed, why, and what was verified)
+pyproject.toml, uv.lock, .python-version   # optional uv-based setup (see Quickstart Option B)
 ```
 
 ## Required capabilities
