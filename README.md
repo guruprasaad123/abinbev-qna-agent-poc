@@ -1,5 +1,9 @@
 # AB InBev Q&A Agent (Prototype)
 
+**Live demo: [genie-qna-agent-fmcg.streamlit.app](https://genie-qna-agent-fmcg.streamlit.app)**
+— the Streamlit developer-mode UI (`ui/app.py`), deployed on Streamlit
+Community Cloud's free tier.
+
 A multi-agent enterprise Q&A prototype over Anheuser-Busch InBev's **real,
 publicly disclosed** financial results: one orchestrator agent backed by
 four specialist sub-agents (structured data, unstructured documents,
@@ -71,6 +75,13 @@ export LLM_PROVIDER=anthropic            # or: openai
 export ANTHROPIC_API_KEY=sk-...          # or: export OPENAI_API_KEY=sk-...
 python3 scripts/chat_cli.py
 
+# Or the Streamlit developer-mode UI -- a live orchestrator trace (NLU/entity
+# resolution, sub-agent routing, tool outputs), dynamic model routing by query
+# complexity, and cost/latency telemetry, alongside the chat itself. Live demo:
+# https://genie-qna-agent-fmcg.streamlit.app
+pip install streamlit
+streamlit run ui/app.py
+
 # Full demo + capability checklist, as a notebook:
 pip install jupyter
 jupyter notebook notebooks/demo.ipynb    # Restart Kernel & Run All
@@ -104,6 +115,7 @@ uv run python3 scripts/generate_structured_data.py
 uv run python3 scripts/generate_documents.py
 uv run python3 -m unittest discover -s tests -v
 uv run python3 scripts/chat_cli.py        # set LLM_PROVIDER/*_API_KEY (or .env) first for real answers
+uv run streamlit run ui/app.py            # developer-mode UI -- live demo: genie-qna-agent-fmcg.streamlit.app
 uv run jupyter notebook notebooks/demo.ipynb
 ```
 
