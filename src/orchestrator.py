@@ -87,6 +87,10 @@ Guidelines:
   clarification_question. Do not ask for clarification if reasonable defaults exist or if
   conversation context (given to you separately) already supplies the missing piece.
 - "which KPIs / metrics / zones / countries / periods do you have" -> intent "metadata_discovery".
+  This is ONLY for questions about the SCHEMA/CATALOG itself (what KPIs/zones/periods/document
+  types exist) -- NOT for "what documents discuss/mention/relate to <topic>", which is a
+  document-RETRIEVAL question (needed_subagents includes "unstructured") even though it also
+  asks "what do you have."
 - A question about ONLY a brand (no zone/country) should still route to "unstructured" -- there
   is no structured brand data, so don't route it to "structured" alone.
 """

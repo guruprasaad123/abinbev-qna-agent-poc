@@ -1,0 +1,289 @@
+{
+  "started_at": "2026-09-14 13:24:59",
+  "capabilities": [
+    {
+      "number": 24,
+      "title": "Transparent reporting of assumptions, data availability, and system limitations",
+      "slug": "cap24_transparent_reporting",
+      "cases": [
+        {
+          "id": "01",
+          "description": "country rollup should be stated as an explicit assumption",
+          "turns": [
+            "What was AB InBev's revenue in Brazil in 2025?"
+          ],
+          "passed": true,
+          "reason": "assumptions=[\"AB InBev doesn't publicly disclose structured financials by country; showing the **South America** zone (which includes Brazil) instead, plus any Brazil-specific commentary found in the documents.\"], expected one containing any of (\"doesn't publicly disclose\", 'zone', 'south america')",
+          "latency_s": 114.8,
+          "cost_usd": 0.001368,
+          "answers": [
+            "AB InBev does **not publicly disclose a country-level revenue figure for Brazil** in the evidence retrieved, so there is **no exact Brazil revenue number available for 2025**.\n\nWhat the documents do show:\n\n- **Brazil (2025 commentary)**: Brazil volumes declined **4.1%** in 2025, with beer volumes down **4.6%** [DOC-011].\n- **South America zone** (which includes Brazil) is the closest reported segment, but the evidence only provides partial quarterly figures:\n  - Q1 2025 South America revenue: **$2,978M** [DOC-005]\n  - Q4 2025 South America revenue: **$3,645M** [DOC-008]\n  - Q2 and Q3 2025 figures were not included in the retrieved materials, so a full-year South America total cannot be calculated from this evidence.\n\nIf you\u2019d like, I can check whether Q2/Q3 2025 South America zone figures are available so we can approximate the full-year zone revenue \u2014 but please keep in mind that this would still be a **zone-level (South America) figure, not a Brazil-specific revenue number**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **South America** zone (which includes Brazil) instead, plus any Brazil-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-005",
+                "title": "Q1 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-05-07",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "02",
+          "description": "unsupported competitor should be flagged transparently",
+          "turns": [
+            "What is Molson Coors' revenue?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Molson Coors is **not part of Anheuser-Busch InBev (AB InBev)** \u2014 it\u2019s a separate, competing brewer.'",
+          "latency_s": 57.77,
+          "cost_usd": 0.000992,
+          "answers": [
+            "Molson Coors is **not part of Anheuser-Busch InBev (AB InBev)** \u2014 it\u2019s a separate, competing brewer. As a result, there is **no internal AB InBev data** covering Molson Coors\u2019 revenue, and I don\u2019t have a verified public figure in the retrieved evidence to quote.\n\nIf you need Molson Coors\u2019 revenue, you\u2019d need to pull it from their public financial reports. On the AB InBev side, I can instead look up **AB InBev\u2019s revenue** (e.g., by market or brand) if that\u2019s helpful."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "web"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'Molson Coors' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "brand-level financial unavailability should be stated plainly",
+          "turns": [
+            "What was the exact revenue for Budweiser as a standalone brand in 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='I could not find an exact standalone revenue figure for Budweiser in 2025 in the retrieved evidence.'",
+          "latency_s": 99.88,
+          "cost_usd": 0.001598,
+          "answers": [
+            "I could not find an exact standalone revenue figure for Budweiser in 2025 in the retrieved evidence.\n\n- [DOC-012] shows AB InBev\u2019s \u201cmegabrands\u201d \u2014 which include Budweiser \u2014 grew **4.1% in FY2025**, but it does not give Budweiser\u2019s standalone revenue amount.\n- [DOC-008] provides FY2025 zone-level results (e.g., North America revenue **$3,235M**), but AB InBev\u2019s reporting in these documents is by zone, not by individual brand.\n- No other retrieved document contains a brand-specific Budweiser revenue number for 2025.\n\nSo the exact Budweiser standalone revenue for 2025 is **not available** from the evidence provided. If you\u2019d like, I can look for Budweiser volume data or the megabrand portfolio\u2019s total revenue as a next step."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "04",
+          "description": "a truncated/limited result should note the limitation",
+          "turns": [
+            "Show me every single data point you have for North America"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Here is every data point currently available for **North America** from the structured KPI dataset:\\n'",
+          "latency_s": 115.81,
+          "cost_usd": 0.002125,
+          "answers": [
+            "Here is every data point currently available for **North America** from the structured KPI dataset:\n\n| Grain | Zone | Year | Quarter | Period Label | Revenue (USD million) | Volume (thousand hL) | Normalized EBITDA (USD million) | EBITDA Margin (%) | Organic Revenue Growth (%) | Net Profit (USD million) | Source |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n| quarterly | North America | 2024 | 1 | Q1 2024 | $3,593 | 21,353.0 | $1,126 | 31.3% | -8.8% | \u2014 | AB InBev First Quarter 2024 Results (BusinessWire, 7 May 2024) |\n| quarterly | North America | 2024 | 2 | Q2 2024 | $3,864 | 22,639.0 | $1,338 | 34.6% | -1.3% | \u2014 | AB InBev Second Quarter 2024 Results (BusinessWire, 31 Jul 2024) |\n| quarterly | North America | 2024 | 3 | Q3 2024 | $3,867 | 22,764.0 | $1,358 | 35.1% | 1.5% | \u2014 | AB InBev Third Quarter 2024 Results (BusinessWire, 30 Oct 2024) |\n| quarterly | North America | 2024 | 4 | Q4 2024 | $3,331 | 19,516.0 | $969 | 29.1% | 1.7% | \u2014 | AB InBev Full Year and Fourth Quarter 2024 Results (BusinessWire, 26 Feb 2025) |\n| quarterly | North America | 2025 | 1 | Q1 2025 | $3,364 | 19,842.0 | $1,087 | 32.3% | -4.7% | \u2014 | AB InBev First Quarter 2025 Results (BusinessWire, 7 May 2025) |\n| quarterly | North America | 2025 | 2 | Q2 2025 | $3,844 | 22,376.0 | $1,372 | 35.7% | 2.2% | \u2014 | AB InBev Second Quarter 2025 Results (BusinessWire, 31 Jul 2025) |\n| quarterly | North America | 2025 | 3 | Q3 2025 | $3,765 | 21,896.0 | $1,323 | 35.1% | -0.7% | \u2014 | AB InBev Third Quarter 2025 Results (BusinessWire, 30 Oct 2025) |\n| quarterly | North America | 2025 | 4 | Q4 2025 | $3,235 | 18,619.0 | $906 | 28.0% | -1.0% | \u2014 | AB InBev Full Year and Fourth Quarter 2025 Results (BusinessWire, 11 Feb 2026) |\n| annual | North America | 2024 | \u2014 | FY2024 | $14,655 | 86,272.0 | $4,791 | 32.7% | \u2014 | \u2014 | Computed: sum of North America's 4 quarters in FY2024 |\n| annual | North America | 2025 | \u2014 | FY2025 | $14,208 | 82,733.0 | $4,688 | 33.0% | \u2014 | \u2014 | Computed: sum of North America's 4 quarters in FY2025 |\n\n**Notes:**\n- Net Profit is not populated for any North America row in the dataset.\n- Annual organic revenue growth is also blank; it was only reported at the quarterly level.\n- The quarterly figures are from AB InBev's official quarterly results releases; FY rows are computed sums of the four quarters.\n\nUseful follow-ups if you want to go deeper:\n- Want a quarter-over-quarter comparison of revenue and EBITDA across 2024\u20132025 for North America?\n- Want to compare North America against another zone (e.g., EMEA or South America) for the same period?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "web search unavailable/degraded should be reported, not silently ignored",
+          "turns": [
+            "What's Heineken's current global market share?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='I don\u2019t have a verified figure for Heineken\u2019s current global market share.\\n\\nHeineken is not part of '",
+          "latency_s": 33.64,
+          "cost_usd": 0.001227,
+          "answers": [
+            "I don\u2019t have a verified figure for Heineken\u2019s current global market share.\n\nHeineken is not part of AB InBev\u2019s tracked entities (brand/zone/country) \u2014 it\u2019s a separate global competitor \u2014 so no internal structured data exists for it. The web search also returned no specific, citable market\u2011share number, so I can\u2019t provide a reliable figure without risking inaccuracy.\n\nFor context, industry sources (e.g., Euromonitor, Statista, company annual reports) typically estimate Heineken\u2019s global beer market share in the high single digits, but I\u2019m not able to confirm a current number from the evidence available here.\n\nIf you\u2019d like, I can look into:\n- AB InBev\u2019s own global market share (our internal data), or\n- Heineken\u2019s market share for a specific region or period via additional public web research."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "web"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'Heineken' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "an answer combining structured + unstructured should note which came from where",
+          "turns": [
+            "What was North America's revenue in Q1 2024, and what's the commentary behind it?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## North America \u2014 Q1 2024 revenue\\n\\n**$3,593 million** (reported), per the Q1 2024 zone-by-zone resu'",
+          "latency_s": 31.79,
+          "cost_usd": 0.001637,
+          "answers": [
+            "## North America \u2014 Q1 2024 revenue\n\n**$3,593 million** (reported), per the Q1 2024 zone-by-zone results [DOC-001] and AB InBev's First Quarter 2024 Results release (BusinessWire, 7 May 2024).\n\nSupporting metrics for the same zone and period [DOC-001]:\n\n| Metric | Q1 2024 |\n| --- | --- |\n| Revenue | $3,593M |\n| Organic growth | \u22128.8% |\n| Volume | 21,353K hL |\n| Normalized EBITDA | $1,126M |\n| Normalized EBITDA margin | 31.3% |\n\n## Commentary behind it\n\nThe retrieved evidence gives the **quantitative** picture but only limited qualitative narrative:\n\n- Revenue in North America **declined 8.8% on an organic basis**, the weakest organic growth of the zones reported in the same document (Middle Americas +8.0%, South America +5.1%) [DOC-001].\n- **Organic growth** here means growth excluding foreign-currency translation and scope changes (acquisitions/disposals), so the \u22128.8% isolates underlying business performance rather than FX or portfolio effects [DOC-013].\n- **Normalized EBITDA was $1,126M at a 31.3% margin** \u2014 notably lower margin than Middle Americas (46.6%) in the same quarter [DOC-001], indicating the revenue decline carried through to profitability.\n\n**Transparency note:** the retrieved documents do not include the specific management explanation for the North America decline (e.g., US beer-industry trends, brand-mix or channel commentary). Only the headline figures above are supported by the evidence provided \u2014 I can't attribute a driver that isn't in the source material.\n\n## Adjacent context (for reference)\n\n- **Q1 2025**: North America revenue $3,364M, organic growth **\u22124.7%**, volume 19,842K hL, normalized EBITDA $1,087M (32.3% margin) [DOC-005] \u2014 i.e., still declining a year later, but at a slower organic rate.\n- **Q4 2024**: North America revenue $3,331M, organic growth **+1.7%**, volume 19,516K hL, normalized EBITDA $969M (29.1% margin) [DOC-004].\n\n---\n**Suggested follow-ups:**\n1. How does North America's Q1 2024 organic decline compare with Middle Americas and South America on a volume and EBITDA-margin basis?\n2. What did North America's revenue trajectory look like across Q1 2024 \u2192 Q4 2024 \u2192 Q1 2025?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-001",
+                "title": "Q1 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-05-07",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-013",
+                "title": "Glossary: Organic Growth and Normalized EBITDA",
+                "date": "2026-02-11",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-005",
+                "title": "Q1 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-05-07",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        }
+      ],
+      "passed": 6,
+      "total": 6
+    }
+  ],
+  "summary": {
+    "total_cases": 6,
+    "passed": 6,
+    "failed": 0,
+    "elapsed_s": 454.2,
+    "total_cost_usd": 0.0089
+  }
+}

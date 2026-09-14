@@ -3,6 +3,17 @@
 Every attribute listed in the assignment, mapped to exactly where it's
 implemented and how to see it exercised in `notebooks/demo.ipynb`.
 
+**Deeper, per-capability evidence**: each of the 25 rows below also has its
+own dedicated real-LLM test suite (8-10 cases each, 185 total) under
+`tests/live/cases/cap01..cap25.py`, runnable via
+`scripts/run_live_capability_tests.py`, with results additionally rendered
+as a standalone notebook per capability under
+`notebooks/capabilities/<NN>_<slug>/demo.ipynb`. This is broader,
+capability-focused coverage beyond the single end-to-end `demo.ipynb` walk-
+through referenced in the table below -- see `docs/DESIGN_DECISIONS.md` §4
+for why it's a separate suite, not merged into the offline
+`tests/test_pipeline.py`.
+
 | # | Required capability | Implementation | Notebook section |
 |---|---|---|---|
 | 1 | Single-turn and multi-turn conversational interactions | `Orchestrator.handle_turn()` is stateless per call but reads/writes `self.memory` (`src/memory.py`), so a single call works standalone and a sequence of calls accumulates context | §4 (single-turn), §5 (multi-turn) |

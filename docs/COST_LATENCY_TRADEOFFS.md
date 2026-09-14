@@ -215,6 +215,25 @@ it, don't hand-edit the numbers below.
 | GPT-4o | $2.50 | $10.00 | `synthesize` alternative in the OpenAI ecosystem |
 | Claude Opus / GPT-5 (frontier) | $15.00+ | $75.00+ | **Not recommended for any tier here.** The domain is bounded (6 KPIs, 5 zones, one schema) and doesn't need frontier multi-step reasoning. Revisit only if the domain grows to open-ended, ambiguous multi-hop reasoning that a Sonnet/GPT-4o-class model demonstrably gets wrong. |
 
+**What this deployment actually runs** (live gateway, real published rates
+checked Sept 2026 — not illustrative):
+
+| Model | Input $/Mtok | Output $/Mtok | Tier fit | Source |
+|---|---|---|---|---|
+| DeepSeek V4 Flash | $0.22 (off-peak) / $0.44 (peak) | $0.66 / $1.32 | `classify`, `generate`, and the `synthesize` fallback | [BenchLM](https://benchlm.ai/deepseek/api-pricing), [TechJack](https://techjacksolutions.com/ai-tools/deepseek/deepseek-pricing/) |
+| DeepSeek V4.1 Flash | $0.15 (cache miss) / $0.003 (cache hit) | $0.60 | `synthesize` moderate tier | [TechBriefly](https://techbriefly.com/2026/09/11/deepseek-v4-1-flash-api-pricing/), [AIPricing Guru](https://www.aipricing.guru/deepseek-pricing/) |
+| GLM-5.3-Flash | $0.15 (list) | $0.50 | `synthesize` complex tier | [eesel AI](https://www.eesel.ai/blog/glm-5-3-flash-pricing) |
+
+DeepSeek's peak window is Mon-Fri 01:00-04:00 & 06:00-10:00 UTC (roughly
+doubles both rates); a cache hit is far cheaper on either DeepSeek model.
+`PRICING_PER_MTOK_USD` uses the off-peak/cache-miss rate as a reasonable
+upper-bound estimate rather than tracking peak/cache state. Note this
+gateway currently offers both DeepSeek models at $0 (the ":free"/"limited"
+tiers used for `classify`/`generate` and, until upgraded, `synthesize`) —
+the table still prices them at real open-market rates, since the point of
+tracking cost is "what this traffic is actually worth," not "what happens
+to be free on one gateway today."
+
 **Practical recommendation for this system**: Haiku-class (or GPT-4o-mini/
 GPT-5-mini-class) for `classify` and `generate`, Sonnet-class (or GPT-4o-class)
 for `synthesize`. That's the two real price points that matter — the

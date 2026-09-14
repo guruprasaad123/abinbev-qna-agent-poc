@@ -1,0 +1,306 @@
+{
+  "started_at": "2026-09-14 13:25:00",
+  "capabilities": [
+    {
+      "number": 25,
+      "title": "Graceful handling of unsupported or unavailable requests",
+      "slug": "cap25_graceful_handling",
+      "cases": [
+        {
+          "id": "01",
+          "description": "unsupported entity (real competitor) -> clear message, not a crash",
+          "turns": [
+            "What was Carlsberg's revenue last year?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='I don\u2019t have that figure in the retrieved evidence \u2014 the KPI query returned no matching rows for Car'",
+          "latency_s": 126.95,
+          "cost_usd": 0.001368,
+          "answers": [
+            "I don\u2019t have that figure in the retrieved evidence \u2014 the KPI query returned no matching rows for Carlsberg's revenue, so I can\u2019t confirm or estimate last year\u2019s revenue from available data.\n\nIf you can share the source or reporting period, I can help validate it. Alternatively, I can pull AB InBev revenue or other available brewery KPIs from the provided datasets."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "unsupported granularity (brand-level financials) -> clear message, not a fabricated number",
+          "turns": [
+            "What was Corona's exact global revenue figure in 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Based on the retrieved evidence, I\u2019m unable to provide an exact 2025 global revenue figure for Coron'",
+          "latency_s": 61.73,
+          "cost_usd": 0.001318,
+          "answers": [
+            "Based on the retrieved evidence, I\u2019m unable to provide an exact 2025 global revenue figure for Corona in USD millions.\n\nWhat the evidence does show:\n\n- AB InBev\u2019s \u201cmegabrands\u201d \u2014 which include Corona, Budweiser, Stella Artois, and Michelob Ultra \u2014 grew revenue **4.1% in FY2025** [DOC-012].\n- The same document notes that the Corona figures cited **exclude Mexico**, where Constellation Brands holds a permanent license to the Corona/Modelo brand [DOC-012].\n- No document in the provided evidence contains a standalone Corona global revenue number for 2025 [DOC-012][DOC-008][DOC-004][DOC-011].\n\nSo the exact figure you asked for is **not supported by the evidence provided**. If you\u2019re looking for that specific number, it would likely need to come from a brand-level revenue disclosure or a more granular earnings dataset.\n\nWould you like me to check for Corona\u2019s revenue trend (e.g., 2024 vs. 2025 growth %) or any regional breakdown instead?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "03",
+          "description": "a nonsensical/garbled question -> handled gracefully, not a crash",
+          "turns": [
+            "asdkfj revenue zzz???"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Which zone and period would you like revenue for?'",
+          "latency_s": 56.21,
+          "cost_usd": 0.000549,
+          "answers": [
+            "Which zone and period would you like revenue for?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "an empty-ish/minimal question -> handled gracefully",
+          "turns": [
+            "?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"What would you like to know about AB InBev's financial performance?\"",
+          "latency_s": 63.36,
+          "cost_usd": 0.000363,
+          "answers": [
+            "What would you like to know about AB InBev's financial performance?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "a request for a data granularity that flatly doesn't exist (channel-level)",
+          "turns": [
+            "What was North America's e-commerce channel revenue specifically?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"Based on the retrieved AB InBev internal reporting documents, I can't give you a specific e-commerce\"",
+          "latency_s": 96.69,
+          "cost_usd": 0.001371,
+          "answers": [
+            "Based on the retrieved AB InBev internal reporting documents, I can't give you a specific e-commerce channel revenue figure for North America. E-commerce is not a tracked or reported segment in the internal KPI data available \u2014 the tracked dimensions are zone, brand, and country, with revenue reported at the zone level (e.g., North America total revenue), not broken out by sales channel.\n\nFor reference, North America's **total revenue** figures in the retrieved documents were:\n- Q1 2024: **$3,593M**\n- Q3 2024: **$3,867M**\n- Q4 2024: **$3,331M**\n\nNone of these are e-commerce-specific, and no channel-level split (e-commerce vs. retail vs. on-premise, etc.) appears in the evidence. If such a figure exists, it would be from external/public market research rather than AB InBev's internal reporting.\n\nWould you like me to pull the full-year 2024 or 2025 North America revenue trajectory instead, or look into a specific brand's performance in North America?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'e-commerce channel' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-003",
+                "title": "Q3 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-10-30",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-001",
+                "title": "Q1 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-05-07",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "06",
+          "description": "a request mixing a supported and unsupported entity in one turn",
+          "turns": [
+            "Compare AB InBev's North America revenue to Molson Coors'"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"## Short answer\\n\\nI can't produce a like-for-like revenue comparison here \u2014 the evidence needed for i\"",
+          "latency_s": 55.46,
+          "cost_usd": 0.001836,
+          "answers": [
+            "## Short answer\n\nI can't produce a like-for-like revenue comparison here \u2014 the evidence needed for it isn't available.\n\n**What the evidence shows:**\n\n| Source | Result |\n|---|---|\n| Internal structured KPIs (`fact_kpi`, zone = North America, kpi = revenue_usd_m) | **No matching rows returned** \u2014 the query came back empty |\n| Web search | **No results** provided |\n| Internal documents | **None** supplied |\n\n**Why the comparison can't be made:**\n\n1. **No AB InBev North America figure is in hand.** The structured KPI query for North America `revenue_usd_m` returned zero rows, so I have no internal number to put on the AB InBev side of the comparison. I won't estimate or recall one \u2014 any figure I produced would be invented.\n2. **Molson Coors is outside AB InBev's tracked entity set.** Molson Coors is a separate, competing company, not an AB InBev brand, zone, or country. There is therefore no internal structured data, and no internal document evidence, for it. Anything stated about Molson Coors would be public/external information only \u2014 and no such external source was returned in this evidence set.\n\nSo neither side of the requested comparison is supported by the retrieved evidence. Reporting a ratio or a ranking would be guesswork.\n\n**What would unblock this:**\n- An internal KPI pull for AB InBev North America `revenue_usd_m` (with a defined fiscal period), and\n- Molson Coors' reported net sales from its own public filings \u2014 a source outside this agent's internal data.\n\nFollow-ups you might want instead:\n- Pull AB InBev North America `revenue_usd_m` for the latest available period (and the prior year for a growth rate).\n- Compare North America revenue against another AB InBev zone (e.g. South America or EMEA) where internal KPI data exists."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "web"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'Molson Coors' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "out-of-scope request handled gracefully rather than forced into a data answer",
+          "turns": [
+            "What's the capital of France?"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',)",
+          "latency_s": 26.43,
+          "cost_usd": 0.000487,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "a request for a period outside the known data range",
+          "turns": [
+            "What was North America's revenue in Q1 2030?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"I couldn't find a matching record for **North America revenue in Q1 2030** in the available structur\"",
+          "latency_s": 92.93,
+          "cost_usd": 0.001173,
+          "answers": [
+            "I couldn't find a matching record for **North America revenue in Q1 2030** in the available structured KPI data \u2014 the query returned no rows for that zone/period combination.\n\nThis may mean the data point hasn't been loaded yet, or that the period/zone combination isn't currently tracked in the source.\n\nIf you'd like, I can check:\n\n- **North America revenue for Q1 2029** or another available quarter\n- Revenue for **another zone in Q1 2030**"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 580.2,
+    "total_cost_usd": 0.0085
+  }
+}

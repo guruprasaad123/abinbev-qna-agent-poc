@@ -81,6 +81,21 @@ PRICING_PER_MTOK_USD = {
     "gpt-5-mini":    {"input": 0.25, "output": 2.00},
     "gpt-4o":        {"input": 2.50, "output": 10.00},
     "gpt-4o-mini":   {"input": 0.15, "output": 0.60},
+    # Real published rates for the gateway models this deployment actually
+    # uses (checked live, Sept 2026 -- see docs/COST_LATENCY_TRADEOFFS.md §3
+    # for sources). Off-peak/cache-miss rate used as the baseline; DeepSeek's
+    # peak window (Mon-Fri 01:00-04:00 & 06:00-10:00 UTC) roughly doubles
+    # both figures, and a cache HIT on either DeepSeek model is far cheaper
+    # -- this table intentionally doesn't attempt to track cache-hit/peak
+    # state, so treat these as a reasonable upper-bound estimate, not exact.
+    # Note: on THIS system's specific gateway, the two DeepSeek models below
+    # are currently offered at $0 (the ":free"/"limited" tiers) -- this table
+    # still prices them at their real open-market rate rather than $0,
+    # because the point of tracking cost here is "what this traffic is
+    # actually worth," not "what happens to be free on one gateway today."
+    "deepseek-v4.1-flash": {"input": 0.15, "output": 0.60},
+    "deepseek-v4-flash":   {"input": 0.22, "output": 0.66},
+    "glm-5.3-flash":       {"input": 0.15, "output": 0.50},
     "mock":          {"input": 0.0, "output": 0.0},
 }
 

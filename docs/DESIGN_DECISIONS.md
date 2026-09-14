@@ -91,9 +91,23 @@ explicit follow-ups rather than pretending the trade-off doesn't exist (see
 recorded. Consequences:
 - The **entire pipeline** — routing, SQL safety, retrieval, memory,
   formatting — is unit-testable offline with `MockLLMClient`, no API key, no
-  network (`tests/test_pipeline.py`, 18 tests, all passing). This is what let
+  network (`tests/test_pipeline.py`, 24 tests, all passing). This is what let
   us validate the architecture *before* burning any real API spend or
   needing credentials, and is what a CI pipeline would run on every commit.
+- The same abstraction is what makes a SECOND, deliberately separate test
+  suite possible: `tests/live/` runs all 25 required capabilities from the
+  assignment brief against a REAL model (185 hand-written cases across
+  `tests/live/cases/cap01..cap25.py`, run via `scripts/run_live_capability_tests.py`).
+  It's named `live_capabilities_suite.py`, not `test_*.py`, specifically so
+  `python3 -m unittest discover -s tests` (the fast, free, documented
+  command) never accidentally sweeps it up and turns an expected-instant
+  check into an hours-long, real-cost run for someone who's just configured
+  an API key -- it's skipped entirely (not failed) when no live LLM is
+  configured, and must be invoked explicitly otherwise. Per-capability
+  results also render into human-readable notebooks under
+  `notebooks/capabilities/<NN>_<slug>/demo.ipynb` via
+  `scripts/build_capability_notebooks.py`, built directly from the already-
+  captured real results rather than re-running everything a second time.
 - Switching models/providers, or giving different roles different models, is
   a one-line environment-variable change (`LLM_MODEL_CLASSIFY` /
   `LLM_MODEL_GENERATE` / `LLM_MODEL_SYNTHESIZE`), not a code change —

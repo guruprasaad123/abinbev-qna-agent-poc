@@ -1,0 +1,268 @@
+{
+  "started_at": "2026-09-14 13:12:14",
+  "capabilities": [
+    {
+      "number": 3,
+      "title": "Intent validation before data retrieval",
+      "slug": "cap03_intent_validation",
+      "cases": [
+        {
+          "id": "01",
+          "description": "greeting never reaches a sub-agent",
+          "turns": [
+            "hi"
+          ],
+          "passed": true,
+          "reason": "intent='greeting', expected one of ('greeting',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 3.72,
+          "cost_usd": 0.000312,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?"
+          ],
+          "intents": [
+            "greeting"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "out-of-scope never reaches a sub-agent",
+          "turns": [
+            "What's the weather?"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 46.13,
+          "cost_usd": 0.000363,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "metadata_discovery never reaches a sub-agent",
+          "turns": [
+            "What KPIs do you track?"
+          ],
+          "passed": true,
+          "reason": "intent='metadata_discovery', expected one of ('metadata_discovery',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 5.39,
+          "cost_usd": 0.000423,
+          "answers": [
+            "**Available data**:\n\nKPIs: Revenue (USD million), Volume (thousand hL), Normalized EBITDA (USD million), EBITDA Margin (% (computed)), Organic Revenue Growth (%), Net Profit (USD million)\n\nStructured (SQL) grain: zone x quarter, Q1 2024-Q4 2025; zone x year and company-wide (Global) x year, FY2022-FY2025. No brand-level or country-level structured rows -- AB InBev doesn't disclose that granularity publicly.\n\nZones: North America, Middle Americas, South America, EMEA, Asia Pacific\nCountries (roll up to their zone): United States (North America), Canada (North America), Mexico (Middle Americas), Colombia (Middle Americas), Peru (Middle Americas), Ecuador (Middle Americas), Brazil (South America), Argentina (South America), United Kingdom (EMEA), Netherlands (EMEA), France (EMEA), Italy (EMEA), South Africa (EMEA), Nigeria (EMEA), China (Asia Pacific), South Korea (Asia Pacific)\nBrands (document/qualitative mentions only, not structured rows): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\n\nDocument types: real press releases and filing excerpts, summarized with citations to the original AB InBev source and URL."
+          ],
+          "intents": [
+            "metadata_discovery"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "a genuine data question DOES reach the structured sub-agent",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "intent='data_query', expected one of ('data_query',); sub_agents_used=['structured'], expected 'structured' present",
+          "latency_s": 60.94,
+          "cost_usd": 0.000651,
+          "answers": [
+            "North America's revenue in Q1 2024 was **$3,593 million (USD)**.\n\nThis is based on the structured KPI data for the North America zone, revenue in USD millions, Q1 2024.\n\nWould you like to see how this compares to Q1 2023, or break down North America revenue by brand or channel?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "a comparison question is classified as comparison intent",
+          "turns": [
+            "Compare EMEA and North America revenue for 2025"
+          ],
+          "passed": true,
+          "reason": "intent='comparison', expected one of ('comparison',)",
+          "latency_s": 120.36,
+          "cost_usd": 0.001753,
+          "answers": [
+            "## EMEA vs. North America Revenue \u2014 2025\n\n| Zone | Revenue (USD million) |\n| --- | --- |\n| EMEA | $9,502 |\n| North America | $14,208 |\n\n**Key takeaways**\n- **North America is the larger of the two zones**, with $14,208M in 2025 revenue versus $9,502M for EMEA.\n- The figures come from a full-year aggregate of quarterly-grain records for 2025, per zone.\n\n**Data caveats (transparency)**\n- The evidence provides only these two revenue aggregates. It does not include a quarter-by-quarter breakdown, so no seasonality or intra-year trend can be assessed.\n- There is **no volume, organic growth, or prior-year comparison** in the retrieved evidence, so this is a size comparison only, not a performance/growth comparison.\n- No internal documents or web sources were retrieved for this question; the comparison rests entirely on the structured KPI data.\n\n**Suggested follow-ups**\n- Break down 2025 revenue by quarter for North America and EMEA to see the intra-year trend.\n- Pull a second KPI (e.g., EBITDA or volume) for these two zones to see whether profitability or volumes track the revenue ranking."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "a brand-only question routes to unstructured, not structured",
+          "turns": [
+            "Tell me about Corona's positioning outside Mexico"
+          ],
+          "passed": true,
+          "reason": "sub_agents_used=['unstructured'], expected 'unstructured' present",
+          "latency_s": 71.34,
+          "cost_usd": 0.001946,
+          "answers": [
+            "## Corona\u2019s Positioning Outside Mexico \u2014 What the Evidence Shows\n\nThe retrieved evidence does **not** include a dedicated analysis of Corona\u2019s brand positioning (target consumer, premium status, messaging, etc.) outside Mexico. What can be said from the available data is the following:\n\n**1. Corona is a core \u201cmegabrand\u201d globally**\nCorona is one of AB InBev\u2019s four anchor megabrands (with Budweiser, Stella Artois, and Michelob Ultra), defined as global/multi-country brands [DOC-012]. That megabrand portfolio grew revenue **+4.6% in FY2024** and **+4.1% in FY2025** \u2014 both years **ahead of total AB InBev company revenue growth** \u2014 indicating Corona and its peers are key growth engines outside their home markets, even in a soft overall environment [DOC-012].\n\n**2. The US route-to-market is via a licensing arrangement**\nThe document notes, \u201cCorona (outside Mexico, where Constellation Brands holds a permanent license to the Corona/Modelo brand\u2026\u201d \u2014 the text is truncated, but it flags that Corona\u2019s distribution outside Mexico (in the US, per industry context) is handled by Constellation Brands, not AB InBev directly [DOC-012]. AB InBev\u2019s own reporting therefore would not capture all of Corona\u2019s US volume/revenue.\n\n**3. Context from the US market (Corona\u2019s key external market)**\nThe US was weak in 2025: sales-to-retailers and sales-to-wholesalers both declined **-3.2%** [DOC-011], and the North America zone (which includes the US) posted **-1.0%** organic revenue growth in Q4 2025 vs. +1.7% in Q4 2024 [DOC-004][DOC-008]. This is zone-level context, not Corona-specific \u2014 no Corona-by-country breakout is available.\n\n**4. Analytical limitation on peers**\nThe data build does not maintain structured financials for Constellation Brands or other major brewers, so Constellation\u2019s Corona performance cannot be quantified here [DOC-014].\n\n---\n\n**In short:** Corona is positioned as a global megabrand growing faster than the company average, but outside Mexico its commercial performance sits largely with Constellation Brands\u2019 license, and AB InBev\u2019s public data does not provide a Corona-specific breakdown by country. Any detailed positioning claim is not supported by this evidence set.\n\nSuggested follow-ups if useful:\n- \u201cCompare AB InBev\u2019s megabrand growth (FY2025) against company total, zone by zone.\u201d\n- \u201cWhat are Constellation Brands\u2019 own reported Corona volumes/revenue in the US?\u201d"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **Middle Americas** zone (which includes Mexico) instead, plus any Mexico-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "07",
+          "description": "ambiguous request is flagged for clarification, not guessed at",
+          "turns": [
+            "Tell me about performance."
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed', expected one of ('clarification_needed',)",
+          "latency_s": 5.94,
+          "cost_usd": 0.000431,
+          "answers": [
+            "Could you specify which aspect of performance you'd like? For example, a KPI (revenue, volume, EBITDA, etc.), a region (e.g., North America, EMEA), and a period (e.g., Q3 2025, full year 2025)?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "capability-intro request classified correctly, not as data_query",
+          "turns": [
+            "What can you do?"
+          ],
+          "passed": true,
+          "reason": "intent='capability_intro', expected one of ('capability_intro',)",
+          "latency_s": 4.11,
+          "cost_usd": 0.000361,
+          "answers": [
+            "I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant, built over AB InBev's real, publicly disclosed results. I can:\n- Answer questions about Revenue, Volume, Normalized EBITDA, EBITDA Margin, Organic Revenue Growth, Net Profit, by reporting zone and quarter/year\n- Compare KPIs across zones or time periods (QoQ, YoY)\n- Roll a country up to its zone automatically when structured data doesn't go that granular\n- Retrieve real press releases, filing excerpts and brand/country commentary with citations\n- Pull in public/web context for named competitors or anything outside our own data\n- Do custom calculations (growth rates, projections) on the numbers\n\nKnown zones: North America, Middle Americas, South America, EMEA, Asia Pacific\nKnown countries: United States, Canada, Mexico, Colombia, Peru, Ecuador, Brazil, Argentina, United Kingdom, Netherlands, France, Italy, South Africa, Nigeria, China, South Korea\nKnown brands (document-level only): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\nStructured data covers Q1 2024-Q4 2025 (quarterly, by zone) and FY2022-FY2025 (annual, company-wide)."
+          ],
+          "intents": [
+            "capability_intro"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 318.4,
+    "total_cost_usd": 0.0062
+  }
+}

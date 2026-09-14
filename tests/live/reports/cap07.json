@@ -1,0 +1,243 @@
+{
+  "started_at": "2026-09-14 13:24:37",
+  "capabilities": [
+    {
+      "number": 7,
+      "title": "Multilingual and mixed-language queries",
+      "slug": "cap07_multilingual",
+      "cases": [
+        {
+          "id": "01",
+          "description": "Spanish question, should be detected and answered in Spanish",
+          "turns": [
+            "\u00bfCu\u00e1les fueron los ingresos de Middle Americas en el primer trimestre de 2024?"
+          ],
+          "passed": true,
+          "reason": "detected language='es', expected one of ('es',); unavailable=False, answer='Los ingresos de **Middle Americas** en el **primer trimestre de 2024** fueron de **$4,051 millones d'",
+          "latency_s": 124.12,
+          "cost_usd": 0.001009,
+          "answers": [
+            "Los ingresos de **Middle Americas** en el **primer trimestre de 2024** fueron de **$4,051 millones de USD** (seg\u00fan los datos estructurados de KPI).\n\n\u00bfTe gustar\u00eda comparar esta cifra con otro trimestre o desglosar los ingresos por pa\u00eds o marca?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "French question",
+          "turns": [
+            "Quelle \u00e9tait la marge EBITDA en EMEA au deuxi\u00e8me trimestre 2025?"
+          ],
+          "passed": true,
+          "reason": "detected language='fr', expected one of ('fr',); unavailable=False, answer='La marge EBITDA en zone EMEA pour le deuxi\u00e8me trimestre 2025 s\u2019\u00e9levait \u00e0 **32,1 %**.\\n\\nSi vous le sou'",
+          "latency_s": 109.79,
+          "cost_usd": 0.001191,
+          "answers": [
+            "La marge EBITDA en zone EMEA pour le deuxi\u00e8me trimestre 2025 s\u2019\u00e9levait \u00e0 **32,1 %**.\n\nSi vous le souhaitez, je peux \u00e9galement vous indiquer l\u2019\u00e9volution par rapport au trimestre pr\u00e9c\u00e9dent ou \u00e0 la m\u00eame p\u00e9riode de l\u2019ann\u00e9e pr\u00e9c\u00e9dente."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "German question",
+          "turns": [
+            "Wie hoch war der Umsatz von Nordamerika im ersten Quartal 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Der Umsatz von Nordamerika betrug im ersten Quartal 2024 **3.593 Mio. USD**.\\n\\nFalls du m\u00f6chtest, kan'",
+          "latency_s": 144.93,
+          "cost_usd": 0.001089,
+          "answers": [
+            "Der Umsatz von Nordamerika betrug im ersten Quartal 2024 **3.593 Mio. USD**.\n\nFalls du m\u00f6chtest, kann ich diesen Wert mit dem Vorjahresquartal (Q1 2023) oder dem Vorquartal (Q4 2023) vergleichen, um die Entwicklung einzuordnen."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "Portuguese question (relevant given Brazil/South America data)",
+          "turns": [
+            "Qual foi a receita da Am\u00e9rica do Sul em 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='De acordo com os dados estruturados de KPI, a receita da Am\u00e9rica do Sul (South America) em 2025 foi '",
+          "latency_s": 77.4,
+          "cost_usd": 0.001557,
+          "answers": [
+            "De acordo com os dados estruturados de KPI, a receita da Am\u00e9rica do Sul (South America) em 2025 foi de **US$ 11.954 milh\u00f5es**.\n\nEsse valor corresponde \u00e0 soma da receita consolidada a partir dos dados trimestrais da regi\u00e3o no ano de 2025.\n\nSe quiser, posso detalhar a receita por trimestre ou comparar com o resultado de 2024."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "mixed-language: Hindi-English code-switching",
+          "turns": [
+            "South America ka revenue Q3 2025 mein kitna tha?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='South America \u0915\u093e Q3 2025 revenue **$2,802 million (USD)** \u092f\u093e\u0928\u0940 \u0932\u0917\u092d\u0917 **$2.8 \u092c\u093f\u0932\u093f\u092f\u0928** \u0925\u093e\u0964\\n\\n\u0905\u0917\u0930 \u091a\u093e\u0939\u0947\u0902 \u0924'",
+          "latency_s": 66.41,
+          "cost_usd": 0.000977,
+          "answers": [
+            "South America \u0915\u093e Q3 2025 revenue **$2,802 million (USD)** \u092f\u093e\u0928\u0940 \u0932\u0917\u092d\u0917 **$2.8 \u092c\u093f\u0932\u093f\u092f\u0928** \u0925\u093e\u0964\n\n\u0905\u0917\u0930 \u091a\u093e\u0939\u0947\u0902 \u0924\u094b \u092e\u0948\u0902 \u0907\u0938\u0915\u0940 \u0924\u0941\u0932\u0928\u093e \u092a\u093f\u091b\u0932\u0940 \u0924\u093f\u092e\u093e\u0939\u0940 (Q2 2025) \u092f\u093e \u0938\u093e\u0932-\u0926\u0930-\u0938\u093e\u0932 (Q3 2024) \u0938\u0947 \u0915\u0930 \u0938\u0915\u0924\u093e \u0939\u0942\u0901, \u092f\u093e South America \u0915\u0947 \u0926\u0947\u0936-\u0938\u094d\u0924\u0930 \u0915\u093e \u092c\u094d\u0930\u0947\u0915\u0921\u093e\u0909\u0928 \u0926\u0947\u0916 \u0938\u0915\u0924\u093e \u0939\u0942\u0901\u0964"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "mixed-language: Spanish-English code-switching",
+          "turns": [
+            "Cual fue el revenue de North America en Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='El revenue de **North America** en **Q1 2024** fue de **$3,593 millones de USD**. [Fuente: datos est'",
+          "latency_s": 14.37,
+          "cost_usd": 0.000871,
+          "answers": [
+            "El revenue de **North America** en **Q1 2024** fue de **$3,593 millones de USD**. [Fuente: datos estructurados de KPI]\n\nSi quieres, puedo compararlo con el trimestre anterior o con otras zonas."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "English question as a control case (should stay in English)",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "detected language='en', expected one of ('en',)",
+          "latency_s": 74.21,
+          "cost_usd": 0.000565,
+          "answers": [
+            "North America\u2019s revenue in Q1 2024 was **$3,593 million USD**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "non-English capability-intro request",
+          "turns": [
+            "\u00bfQu\u00e9 puedes hacer?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant, built over AB InBev's real, publicly disclose\"",
+          "latency_s": 5.35,
+          "cost_usd": 0.000339,
+          "answers": [
+            "I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant, built over AB InBev's real, publicly disclosed results. I can:\n- Answer questions about Revenue, Volume, Normalized EBITDA, EBITDA Margin, Organic Revenue Growth, Net Profit, by reporting zone and quarter/year\n- Compare KPIs across zones or time periods (QoQ, YoY)\n- Roll a country up to its zone automatically when structured data doesn't go that granular\n- Retrieve real press releases, filing excerpts and brand/country commentary with citations\n- Pull in public/web context for named competitors or anything outside our own data\n- Do custom calculations (growth rates, projections) on the numbers\n\nKnown zones: North America, Middle Americas, South America, EMEA, Asia Pacific\nKnown countries: United States, Canada, Mexico, Colombia, Peru, Ecuador, Brazil, Argentina, United Kingdom, Netherlands, France, Italy, South Africa, Nigeria, China, South Korea\nKnown brands (document-level only): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\nStructured data covers Q1 2024-Q4 2025 (quarterly, by zone) and FY2022-FY2025 (annual, company-wide)."
+          ],
+          "intents": [
+            "capability_intro"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 617.0,
+    "total_cost_usd": 0.0076
+  }
+}

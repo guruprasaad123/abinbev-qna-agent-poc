@@ -1,0 +1,368 @@
+{
+  "started_at": "2026-09-14 13:24:53",
+  "capabilities": [
+    {
+      "number": 19,
+      "title": "Multiple KPIs, entities, dimensions, and hierarchical business structures",
+      "slug": "cap19_multi_kpi_entity_hierarchy",
+      "cases": [
+        {
+          "id": "01",
+          "description": "revenue KPI",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\\n\\nWant to \"",
+          "latency_s": 10.78,
+          "cost_usd": 0.000597,
+          "answers": [
+            "North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\n\nWant to compare this with Q1 2025 or break it down by brand/segment?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "volume KPI",
+          "turns": [
+            "What was EMEA's volume in Q2 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='EMEA\u2019s volume in Q2 2025 was **24,172.0 thousand hectoliters (hL)**.\\n\\nIf you\u2019d like, I can help pull'",
+          "latency_s": 69.99,
+          "cost_usd": 0.000924,
+          "answers": [
+            "EMEA\u2019s volume in Q2 2025 was **24,172.0 thousand hectoliters (hL)**.\n\nIf you\u2019d like, I can help pull the year-over-year change or a country/brand breakdown for the same period."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "normalized EBITDA KPI",
+          "turns": [
+            "What was Asia Pacific's normalized EBITDA in 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"Asia Pacific's normalized EBITDA for 2025 was **1,700.0 USD million** (i.e., **$1.7 billion**), base\"",
+          "latency_s": 140.68,
+          "cost_usd": 0.00139,
+          "answers": [
+            "Asia Pacific's normalized EBITDA for 2025 was **1,700.0 USD million** (i.e., **$1.7 billion**), based on the sum of quarterly figures.\n\nIf you'd like, I can break this down by quarter or compare it against 2024/2023 to show the trend."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "EBITDA margin KPI (computed)",
+          "turns": [
+            "What was South America's EBITDA margin in Q4 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='South America\u2019s EBITDA margin in Q4 2025 was **36.2%**.'",
+          "latency_s": 141.53,
+          "cost_usd": 0.000872,
+          "answers": [
+            "South America\u2019s EBITDA margin in Q4 2025 was **36.2%**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "organic revenue growth KPI",
+          "turns": [
+            "What was Middle Americas' organic revenue growth in 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"**Middle Americas' organic revenue growth for 2025 could not be retrieved.**\\n\\nThe structured KPI que\"",
+          "latency_s": 141.31,
+          "cost_usd": 0.001692,
+          "answers": [
+            "**Middle Americas' organic revenue growth for 2025 could not be retrieved.**\n\nThe structured KPI query for zone = Middle Americas, year = 2025 (annual grain) returned no value \u2014 the result cell was empty, indicating the figure is missing or not yet available in the data. I can't report a number here, and I won't estimate or invent one.\n\nPossible reasons include the metric not yet being loaded for 2025, a different grain (e.g., quarterly) being available, or the zone/metric being recorded under a different name.\n\nIf helpful, I could next:\n\n- Check Middle Americas' organic revenue growth for a prior year (e.g., 2024) to establish a baseline.\n- Look for 2025 figures for other zones as a comparison.\n- Verify whether the metric exists under quarterly grain or a different KPI name."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "net profit KPI",
+          "turns": [
+            "What was AB InBev's net profit in FY2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='AB InBev\u2019s **net profit for FY2025 (Global)** was **$6,837 million USD**.\\n\\nThis figure comes directl'",
+          "latency_s": 23.43,
+          "cost_usd": 0.00098,
+          "answers": [
+            "AB InBev\u2019s **net profit for FY2025 (Global)** was **$6,837 million USD**.\n\nThis figure comes directly from the structured KPI data for Global, full-year 2025.\n\nIf useful, I can compare this against FY2024 net profit or break down profitability by region/segment."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "hierarchy: country resolves under its zone",
+          "turns": [
+            "What was the revenue for the United States in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='North America', expected to contain 'North America'",
+          "latency_s": 31.61,
+          "cost_usd": 0.001974,
+          "answers": [
+            "AB InBev does not publicly disclose standalone U.S. revenue. Based on the available structured data, the closest figure is for the **North America** zone (which includes the United States):\n\n| Zone | Year | Quarter | Revenue (USD million) |\n| --- | --- | --- | --- |\n| North America | 2024 | 1 | $3,593 |\n\nSo the **North America zone revenue for Q1 2024 was $3,593 million (~$3.59 billion)**. A United States\u2013only figure was not available in the retrieved evidence.\n\nIf helpful, I can compare this to Q1 2023 or look for U.S.-specific commentary in the internal documents."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **North America** zone (which includes United States) instead, plus any United States-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "hierarchy: a different country under a different zone",
+          "turns": [
+            "What was Colombia's revenue contribution in 2025?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('middle americas',): \"## Colombia revenue contribution, FY2025\\n\\n**Short answer: AB InBev does not disclose revenue by country, so a Colombia-only revenue figure is not available.** The query on `country = 'Colombia'` retur\"",
+          "latency_s": 54.37,
+          "cost_usd": 0.002168,
+          "answers": [
+            "## Colombia revenue contribution, FY2025\n\n**Short answer: AB InBev does not disclose revenue by country, so a Colombia-only revenue figure is not available.** The query on `country = 'Colombia'` returns the zone-level roll-up instead:\n\n| Zone | Year | Revenue (USD million) |\n| --- | --- | --- |\n| Middle Americas | 2025 | $17,376 |\n\nSo the defensible statement is: **the Middle Americas zone \u2014 which includes Colombia \u2014 generated $17,376M of revenue in 2025.** That is a zone total, not Colombia's contribution, and no country-level split is published that would let us compute Colombia's share.\n\n### What we can say about Colombia specifically\n- **Volumes:** Colombia's volumes *increased* in FY2025, per the country-level filing commentary [DOC-011]. The excerpt is truncated and does not give the percentage, so no volume growth figure can be quoted.\n- **Zone context (Q4 2025):** Middle Americas revenue was $4,927M in Q4 2025, with organic growth of **+5.9%**, volume 39,672K hL and normalized EBITDA margin of 50.9% [DOC-008] \u2014 the strongest margin of the zones reported there.\n- Earlier in the year, Middle Americas delivered $4,340M of revenue in Q2 2025 (+5.1% organic) [DOC-006], so the zone accelerated through the second half.\n\n### Transparency note\n- The `$17,376M` figure is a **zone aggregate**, captured at the Middle Americas level even though the filter was on Colombia.\n- No Colombia-level revenue, EBITDA, or margin data appears in any retrieved source; any \"Colombia revenue contribution\" percentage would have to be estimated, and I won't fabricate one.\n- The remaining Colombia commentary in [DOC-011] is cut off mid-sentence, so even the volume direction is all that can be confirmed.\n\n**Suggested follow-ups:**\n- What was Middle Americas' revenue and organic growth for the full year 2025 versus 2024 (comparing [DOC-008] with [DOC-004])?\n- Can we pull the untruncated Colombia section of the FY2025 country-level filing commentary for the volume growth rate?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **Middle Americas** zone (which includes Colombia) instead, plus any Colombia-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-006",
+                "title": "Q2 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-07-31",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "09",
+          "description": "entity dimension: brand-level qualitative question",
+          "turns": [
+            "How is Stella Artois performing globally?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Based on the evidence retrieved, I don\u2019t have a brand-specific performance figure for Stella Artois '",
+          "latency_s": 21.63,
+          "cost_usd": 0.001357,
+          "answers": [
+            "Based on the evidence retrieved, I don\u2019t have a brand-specific performance figure for Stella Artois itself. The available data doesn\u2019t include a Stella Artois\u2013level revenue, volume, or EBITDA line.\n\nWhat the evidence does show:\n\n- Stella Artois is grouped with AB InBev\u2019s \u201cmegabrands,\u201d alongside Budweiser, Corona, and Michelob Ultra [DOC-012].\n- These megabrands collectively grew revenue **4.6% in FY2024** and **4.1% in FY2025**, with both years ahead of total company revenue growth [DOC-012].\n- However, no document in the retrieved set breaks out Stella Artois individually, and the structured database covers zone/company-level results rather than brand-level performance [DOC-015].\n\nSo the honest answer is: **globally, Stella Artois appears to be part of a megabrand portfolio that is growing slightly ahead of the company, but its exact global performance can\u2019t be isolated from the evidence provided.**\n\nIf you\u2019d like, I can look at zone-level AB InBev results \u2014 e.g., Europe or other regions where Stella Artois is most relevant \u2014 or compare megabrand portfolio growth against AB InBev\u2019s overall company growth."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-013",
+                "title": "Glossary: Organic Growth and Normalized EBITDA",
+                "date": "2026-02-11",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-015",
+                "title": "Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes",
+                "date": "2026-02-12",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-010",
+                "title": "FY2023 Full-Year Results: Company Totals",
+                "date": "2024-02-28",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "10",
+          "description": "multiple dimensions combined: zone + KPI + period in one ask",
+          "turns": [
+            "What was North America's EBITDA margin in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"North America's EBITDA margin in Q1 2024 was **31.3%**.\"",
+          "latency_s": 37.67,
+          "cost_usd": 0.000815,
+          "answers": [
+            "North America's EBITDA margin in Q1 2024 was **31.3%**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "summary": {
+    "total_cases": 10,
+    "passed": 10,
+    "failed": 0,
+    "elapsed_s": 673.4,
+    "total_cost_usd": 0.0128
+  }
+}

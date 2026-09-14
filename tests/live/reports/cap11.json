@@ -1,0 +1,412 @@
+{
+  "started_at": "2026-09-14 13:24:41",
+  "capabilities": [
+    {
+      "number": 11,
+      "title": "Document retrieval with source citations",
+      "slug": "cap11_document_citations",
+      "cases": [
+        {
+          "id": "01",
+          "description": "brand question should come back with citations",
+          "turns": [
+            "What is Corona's growth strategy outside Mexico?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-012', 'title': 'Megabrand Performance Summary, FY2024-FY2025', 'date': '2026-02-12', 'source_type': 'market_research'}, {'doc_id': 'DOC-004', 'title': 'FY2024 Full-Year Results and Q4 2024 Summary', 'date': '2025-02-26', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-008', 'title': 'FY2025 Full-Year Results and Q4 2025 Summary', 'date': '2026-02-11', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-011', 'title': 'FY2025 Country-Level Commentary (Selected Markets)', 'date': '2026-02-12', 'source_type': 'filing_excerpt'}, {'doc_id': 'DOC-014', 'title': 'Competitive Landscape Overview: Global Brewing Industry', 'date': '2025-08-01', 'source_type': 'competitor_intel'}], expected at least one",
+          "latency_s": 82.8,
+          "cost_usd": 0.001926,
+          "answers": [
+            "Based on the retrieved evidence, I unfortunately **cannot give you a concrete articulation of Corona's growth strategy outside Mexico** \u2014 none of the retrieved documents contains an explicit strategy statement (e.g., premiumization, market-expansion priorities, or investment focus) for Corona internationally.\n\nHere is what the evidence **does** support:\n\n- **Brand ownership context**: Outside Mexico, the Corona/Modelo brand rights are held by AB InBev (Constellation Brands holds a permanent license only for Mexico) [DOC-012].\n- **Megabrand momentum**: Corona is one of AB InBev's four anchor \"megabrands\" (with Budweiser, Stella Artois, Michelob Ultra). The megabrand portfolio grew revenue **+4.6% in FY2024** and **+4.1% in FY2025**, both years ahead of total company revenue growth \u2014 suggesting international premium-brand growth is a core corporate lever, but this is portfolio-level, not Corona-specific [DOC-012].\n- **Zone-level proxy (limited)**: AB InBev does not publicly disclose structured financials by country. The closest zone breakdown is **Middle Americas** (includes Mexico), which showed organic revenue growth of **+6.6% in Q4 2024** and **+5.9% in Q4 2025** \u2014 but this does not isolate Corona or non-Mexico markets [DOC-004], [DOC-008].\n- **Country context (non-Corona-specific)**: FY2025 volume commentary shows US sales-to-retailers **-3.2%**, Brazil **-4.1%** (beer -4.6%), Mexico flat, China **-8.6%**, Colombia up \u2014 but none of these figures is broken out for Corona [DOC-011].\n\n**Bottom line**: The available documents confirm Corona is a strategic global megabrand growing ahead of the company average, but they do **not** describe its specific growth strategy outside Mexico. You'd need the full text of the megabrand summary (DOC-012) or a Corona-specific market/execution update to answer this properly.\n\nWould you like me to pull the full Megabrand Performance Summary section for Corona specifically, or look for evidence on Corona's performance in a particular region (e.g., Europe or Asia Pacific)?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **Middle Americas** zone (which includes Mexico) instead, plus any Mexico-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "02",
+          "description": "country-context question should come back with citations",
+          "turns": [
+            "What's driving Brazil's volume decline?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-011', 'title': 'FY2025 Country-Level Commentary (Selected Markets)', 'date': '2026-02-12', 'source_type': 'filing_excerpt'}, {'doc_id': 'DOC-005', 'title': 'Q1 2025 Results: Zone-by-Zone Summary', 'date': '2025-05-07', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-003', 'title': 'Q3 2024 Results: Zone-by-Zone Summary', 'date': '2024-10-30', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-008', 'title': 'FY2025 Full-Year Results and Q4 2025 Summary', 'date': '2026-02-11', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-014', 'title': 'Competitive Landscape Overview: Global Brewing Industry', 'date': '2025-08-01', 'source_type': 'competitor_intel'}], expected at least one",
+          "latency_s": 188.19,
+          "cost_usd": 0.00319,
+          "answers": [
+            "## Short answer\n\nThe retrieved evidence confirms **that** Brazil's volumes fell, but \u2014 importantly \u2014 it does **not** contain an explicit, Brazil-specific list of *drivers*. There is no country-level structured KPI data for Brazil, and the retrieved documents give the magnitude of the decline without root-cause commentary. What follows separates what's confirmed from what can only be inferred.\n\n## 1. What's confirmed on the decline\n\n- **[DOC-011]** (FY2025 country-level filing excerpt) states plainly: *\"Brazil: volumes declined 4.1%, with beer volumes down 4.6%.\"* This is the only Brazil-specific datapoint in the evidence set.\n- South America zone totals (the closest structured proxy) show a decline concentrated in the middle of 2025:\n\n| Period | Volume 2024 (K hL) | Volume 2025 (K hL) | YoY change |\n|---|---|---|---|\n| Q1 | 40,347 | 40,891 | **+1.3%** |\n| Q2 | 35,969 | 34,199 | **\u22124.9%** |\n| Q3 | 39,502 | 36,922 | **\u22126.5%** |\n| Q4 | 44,950 | 43,160 | **\u22124.0%** |\n| **FY** | **160,768** | **155,172** | **\u22123.5%** |\n\nSo the weakness is **not** a full-year, evenly-spread erosion: Q1 2025 was still growing, and the drag came from Q2\u2013Q4 2025, worst in Q3.\n\n## 2. What the evidence suggests (inference, not disclosure)\n\nThese are arithmetic implications from the data above, not statements AB InBev has made:\n\n- **Beer underperformed the portfolio.** Total Brazil volume \u22124.1% vs. beer \u22124.6% [DOC-011] implies the non-beer (beyond-beer) lines declined less and partly cushioned the total.\n- **Price/mix and FX are doing the offsetting.** Revenue per unit moved little year-on-year (South America revenue of $11,954M on 155,172 K hL in 2025 vs. $12,423M on 160,768 K hL in 2024) *despite* organic revenue growth staying positive every quarter (\u22123.8% reported USD revenue against +5.0% organic growth in Q4 2025). That pattern \u2014 organic growth positive while reported revenue and volume fall \u2014 points to pricing/mix holding up the top line while FX translates it down, rather than to a collapse in realised price.\n- **Profitability tracked volume down in the weak quarters.** Normalized EBITDA fell in Q2 2025 ($692M vs. $750M) and Q3 2025 ($881M vs. $908M), but Q4 2025 EBITDA rose ($1,321M vs. $1,310M) even as volume fell 4.0%, consistent with cost/mix management absorbing the volume softness.\n\n## 3. What is *not* in the evidence\n\nNo retrieved document attributes Brazil's decline to specific causes \u2014 no mention of consumer demand softness, category mix, competitive share loss, weather, channel/route-to-market changes, or pricing elasticity in Brazil. Any such narrative would be fabricated. Note also that **[DOC-014]** (competitive landscape) confirms AB InBev maintains no structured financial data on peers like Heineken or Ambev's rivals, so competitive-share explanations cannot be tested with this evidence set either.\n\n## 4. Data limitation\n\nAB InBev does not publicly disclose structured financials by country. The quarterly table above is the **South America zone**, which includes Brazil \u2014 the row values match the South America zone figures published in [DOC-005], [DOC-003] and [DOC-008] (e.g. Q4 2025 volume 43,160 K hL, revenue $3,645M) rather than Brazil alone. Treat all volume/revenue/EBITDA figures here as zone-level, with Brazil's 4.1% / beer 4.6% declines [DOC-011] as the only country-specific fact available.\n\n**Follow-ups you might want:**\n- How does Brazil's 4.1% decline compare with Mexico (flat) and Colombia (up) in FY2025 \u2014 is this a Brazil-specific problem or a regional pattern?\n- Did Brazil's Q4 2025 volume trend improve versus Q3 2025, and how did organic revenue growth hold up?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **South America** zone (which includes Brazil) instead, plus any Brazil-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-005",
+                "title": "Q1 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-05-07",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-003",
+                "title": "Q3 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-10-30",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "03",
+          "description": "earnings-commentary question should come back with citations",
+          "turns": [
+            "What did the FY2025 earnings commentary say about North America?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-011', 'title': 'FY2025 Country-Level Commentary (Selected Markets)', 'date': '2026-02-12', 'source_type': 'filing_excerpt'}, {'doc_id': 'DOC-008', 'title': 'FY2025 Full-Year Results and Q4 2025 Summary', 'date': '2026-02-11', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-006', 'title': 'Q2 2025 Results: Zone-by-Zone Summary', 'date': '2025-07-31', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-003', 'title': 'Q3 2024 Results: Zone-by-Zone Summary', 'date': '2024-10-30', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-005', 'title': 'Q1 2025 Results: Zone-by-Zone Summary', 'date': '2025-05-07', 'source_type': 'earnings_commentary'}], expected at least one",
+          "latency_s": 106.51,
+          "cost_usd": 0.001837,
+          "answers": [
+            "should be focused. Yet the active context FY2025 might suggest they'd like FY context. But include caveat about Q4 only. Could optionally mention earlier quarters to \"round out\" but careful: those are from separate quarterly earnings, not FY2025 commentary. We can include \"if useful\" maybe in a small note. But answer should not be overlong. The instructions: Use ONLY numbers/facts given. So we can include those.\n\nLet's craft with markdown and citations.\n\nFollow-up suggestions: \"Would you like me to pull the full-year North America P&L (revenue, EBITDA, volume) for FY2025, or compare Q4 2025 vs Q4 2024?\" Need ensure natural. Also perhaps \"What drove the US 3.2% decline (pricing/mix vs volume)?\" Good.\n\nNeed mention \"sales-to-retailers and sales-to-wholesalers both declined 3.2% in 2025\" - Actually DOC-011 says \"United States: sales-to-retailers and sales-to-wholesalers both declined 3.2% in 2025.\" So both declined.\n\nLet's produce final.Based on the FY2025 earnings commentary retrieved:\n\n- **United States (full-year 2025):** Sales-to-retailers and sales-to-wholesalers **both declined 3.2%** [DOC-011].\n- **North America zone (Q4 2025):** Revenue was **$3,235M** (organic growth **-1.0%**), volume was **18,619K hL**, and normalized EBITDA was **$906M** (margin **28.0%**) [DOC-008].\n\nCaveat: The available FY2025 earnings commentary provides zone-level detail for Q4 2025, but not full-year North America revenue/EBITDA/volume totals. The only full-year 2025 North America figure in the evidence is the U.S. volume decline of 3.2%.\n\nWould you like me to pull full-year North America P&L figures for FY2025, or compare Q4 2025 against Q4 2024?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-006",
+                "title": "Q2 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-07-31",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-003",
+                "title": "Q3 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-10-30",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-005",
+                "title": "Q1 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-05-07",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "04",
+          "description": "megabrand/portfolio question should come back with citations",
+          "turns": [
+            "How are AB InBev's megabrands performing?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-012', 'title': 'Megabrand Performance Summary, FY2024-FY2025', 'date': '2026-02-12', 'source_type': 'market_research'}, {'doc_id': 'DOC-014', 'title': 'Competitive Landscape Overview: Global Brewing Industry', 'date': '2025-08-01', 'source_type': 'competitor_intel'}, {'doc_id': 'DOC-015', 'title': 'Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes', 'date': '2026-02-12', 'source_type': 'metadata_note'}, {'doc_id': 'DOC-009', 'title': 'FY2022 Full-Year Results: Company Totals', 'date': '2023-03-01', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-008', 'title': 'FY2025 Full-Year Results and Q4 2025 Summary', 'date': '2026-02-11', 'source_type': 'earnings_commentary'}], expected at least one",
+          "latency_s": 50.08,
+          "cost_usd": 0.001571,
+          "answers": [
+            "Based on the available evidence:\n\n**At a glance (market research, not internal reporting):** AB InBev\u2019s megabrands \u2014 the global portfolio anchored by **Budweiser, Corona, Stella Artois, and Michelob Ultra** \u2014 grew revenue **4.6% in FY2024** and **4.1% in FY2025**, and in both years grew **ahead of total company revenue growth** [DOC-012].\n\n**Important caveat:** This build does not maintain structured internal data for \u201cmegabrands\u201d as a tracked entity \u2014 it covers AB InBev company/zone-level financials only [DOC-015]. The figures above come from a market-research summary and are qualitative/public information, not internal reporting [DOC-012]. Also, the evidence notes a nuance for Corona: the reference is **Corona outside Mexico**, where Constellation Brands holds a permanent license to the Corona/Modelo brand in that market [DOC-012].\n\nSo the short answer: megabrands are performing **positively, and slightly better than the company overall**, at least as of the FY2024\u2013FY2025 summary.\n\nIf useful, I can dig into **how specific megabrands (e.g., Corona outside Mexico or Budweiser in a particular zone) contributed**, or compare megabrand growth to the **company-level organic revenue trend** in the same periods."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'megabrands' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              },
+              {
+                "doc_id": "DOC-015",
+                "title": "Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes",
+                "date": "2026-02-12",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-009",
+                "title": "FY2022 Full-Year Results: Company Totals",
+                "date": "2023-03-01",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "05",
+          "description": "a specific brand+country combination should come back with citations",
+          "turns": [
+            "How is Michelob Ultra doing in the US market?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-012', 'title': 'Megabrand Performance Summary, FY2024-FY2025', 'date': '2026-02-12', 'source_type': 'market_research'}, {'doc_id': 'DOC-008', 'title': 'FY2025 Full-Year Results and Q4 2025 Summary', 'date': '2026-02-11', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-004', 'title': 'FY2024 Full-Year Results and Q4 2024 Summary', 'date': '2025-02-26', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-011', 'title': 'FY2025 Country-Level Commentary (Selected Markets)', 'date': '2026-02-12', 'source_type': 'filing_excerpt'}, {'doc_id': 'DOC-013', 'title': 'Glossary: Organic Growth and Normalized EBITDA', 'date': '2026-02-11', 'source_type': 'metadata_note'}], expected at least one",
+          "latency_s": 19.54,
+          "cost_usd": 0.001366,
+          "answers": [
+            "Based on the evidence available, there is **no direct Michelob Ultra\u2013specific KPI for the US market** \u2014 AB InBev doesn't publicly disclose brand-level country financials in this dataset. The nearest relevant data points are:\n\n### Michelob Ultra at the megabrand level (global)\n- Michelob Ultra is one of AB InBev's \"megabrands\" (alongside Budweiser, Corona, and Stella Artois). This portfolio grew revenue **4.6% in FY2024** and **4.1% in FY2025**, both ahead of total-company revenue growth [DOC-012].\n- Note: this is global/multicountry performance, not a US-specific Michelob Ultra figure.\n\n### US market context\n- AB InBev's **United States** business: sales-to-retailers (STR) and sales-to-wholesalers (STW) both declined **3.2% in 2025** [DOC-011].\n- The nearest geographic segment available \u2014 **North America** \u2014 shows a softening trend in Q4:\n\n| Metric | Q4 2024 | Q4 2025 | Change |\n|---|---:|---:|---:|\n| Revenue | $3,331M | $3,235M | Organic growth **-1.0%** |\n| Volume | 19,516K hL | 18,619K hL | ~ **-4.6%** |\n| Normalized EBITDA margin | 29.1% | 28.0% | -1.1 pts |\n\n(Source: [DOC-004], [DOC-008])\n\n### Bottom line\nThe evidence points to **soft US beer-market conditions** overall in 2025, but it does **not** isolate Michelob Ultra's US market share, volume, or revenue. The only positive brand-level signal is Michelob Ultra's inclusion in the globally growing megabrand portfolio \u2014 but that should not be read as a US-specific result.\n\n---\n\nWould you like me to pull together a comparison of Michelob Ultra's global megabrand performance versus the North America zone trend, or look at another US brand (e.g., Bud Light or Busch) for contrast?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **North America** zone (which includes United States) instead, plus any United States-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-013",
+                "title": "Glossary: Organic Growth and Normalized EBITDA",
+                "date": "2026-02-11",
+                "source_type": "metadata_note"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "06",
+          "description": "sustainability/strategy question should come back with citations",
+          "turns": [
+            "What are AB InBev's sustainability initiatives?"
+          ],
+          "passed": true,
+          "reason": "citations=[{'doc_id': 'DOC-014', 'title': 'Competitive Landscape Overview: Global Brewing Industry', 'date': '2025-08-01', 'source_type': 'competitor_intel'}, {'doc_id': 'DOC-015', 'title': 'Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes', 'date': '2026-02-12', 'source_type': 'metadata_note'}, {'doc_id': 'DOC-012', 'title': 'Megabrand Performance Summary, FY2024-FY2025', 'date': '2026-02-12', 'source_type': 'market_research'}, {'doc_id': 'DOC-009', 'title': 'FY2022 Full-Year Results: Company Totals', 'date': '2023-03-01', 'source_type': 'earnings_commentary'}, {'doc_id': 'DOC-011', 'title': 'FY2025 Country-Level Commentary (Selected Markets)', 'date': '2026-02-12', 'source_type': 'filing_excerpt'}], expected at least one",
+          "latency_s": 16.2,
+          "cost_usd": 0.001088,
+          "answers": [
+            "Based on the retrieved evidence, I\u2019m unable to provide a specific answer about AB InBev\u2019s sustainability initiatives. None of the retrieved documents or structured data cover sustainability programs, ESG targets, or environmental initiatives \u2014 the available documents focus on financial results, megabrand performance, and competitive landscape details [DOC-014] [DOC-015] [DOC-012] [DOC-009] [DOC-011].\n\nIf you\u2019d like, I can search for AB InBev\u2019s latest sustainability report or specific topics such as water stewardship, renewable energy, or packaging commitments."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              },
+              {
+                "doc_id": "DOC-015",
+                "title": "Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes",
+                "date": "2026-02-12",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-009",
+                "title": "FY2022 Full-Year Results: Company Totals",
+                "date": "2023-03-01",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "07",
+          "description": "a pure structured question should NOT need citations (sanity/contrast case)",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "sub_agents_used=['structured'], expected 'structured' present",
+          "latency_s": 58.18,
+          "cost_usd": 0.000679,
+          "answers": [
+            "North America\u2019s revenue in Q1 2024 was **$3,593 million USD**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 7,
+      "total": 7
+    }
+  ],
+  "summary": {
+    "total_cases": 7,
+    "passed": 7,
+    "failed": 0,
+    "elapsed_s": 521.9,
+    "total_cost_usd": 0.0117
+  }
+}

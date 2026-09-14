@@ -33,9 +33,13 @@ Built as a take-home assignment. See `docs/` for the full design writeup and
   safety controls), unstructured document retrieval (BM25 + metadata/tag/
   recency filtering, with citations), web search (pluggable, graceful
   degradation), and sandboxed Python code execution.
-- **18 offline tests** (`tests/test_pipeline.py`) that run against a
+- **24 offline tests** (`tests/test_pipeline.py`) that run against a
   zero-cost, zero-network mock LLM — no API key required to verify the
   system's plumbing.
+- **185 real-LLM capability tests** (`tests/live/`, 8-10 per required
+  capability) — a deliberately separate, opt-in suite (see Quickstart) that
+  exercises every one of the 25 required capabilities against an actual
+  model, with per-capability notebooks under `notebooks/capabilities/`.
 - **Full documentation** in `docs/`: architecture, design decisions/trade-offs
   (including the real-vs-synthetic-data decision), a capability-by-capability
   mapping to code, and a cost/latency/model-usage point of view.
@@ -70,6 +74,14 @@ python3 scripts/chat_cli.py
 # Full demo + capability checklist, as a notebook:
 pip install jupyter
 jupyter notebook notebooks/demo.ipynb    # Restart Kernel & Run All
+
+# Optional, separate: 185 real-LLM tests covering all 25 required
+# capabilities in depth (needs a real key/`.env` -- costs real tokens and
+# takes real wall-clock time, NOT part of the fast offline suite above):
+python3 scripts/run_live_capability_tests.py
+python3 scripts/run_live_capability_tests.py --capability 9   # just one, e.g. SQL safety
+# then, to render the results as per-capability notebooks:
+python3 scripts/build_capability_notebooks.py
 ```
 
 Install only the extras you actually need — see `requirements.txt` for exactly which
@@ -120,16 +132,26 @@ src/
     unstructured_agent.py  # NL -> filtered document retrieval
     websearch_agent.py     # NL -> web search results
     coding_agent.py         # NL -> sandboxed calculation
+ui/app.py                      # Streamlit developer-mode UI (see Quickstart)
 scripts/
   generate_structured_data.py  # builds data/db/ab_inbev.db from real, cited figures
   generate_documents.py        # builds data/unstructured/*.md + manifest.json (real, cited)
   build_notebook.py            # builds notebooks/demo.ipynb
+  build_capability_notebooks.py # renders notebooks/capabilities/ from a live test run's report
+  run_live_capability_tests.py # CLI for tests/live/ (progress output, --capability filter)
   chat_cli.py                  # interactive terminal chat
 data/
   db/ab_inbev.db                # real, cited structured dataset
   unstructured/*.md            # real, cited document corpus + manifest.json
-notebooks/demo.ipynb           # prerun demo covering every required capability
-tests/test_pipeline.py         # offline test suite (mock LLM, no API key needed)
+notebooks/
+  demo.ipynb                   # prerun demo covering every required capability, end-to-end
+  capabilities/<NN>_<slug>/demo.ipynb  # one notebook per capability, built from tests/live/ results
+tests/
+  test_pipeline.py             # offline test suite (mock LLM, no API key needed)
+  live/                        # real-LLM capability suite (opt-in, see Quickstart)
+    runner.py                  # Case/run_case + reusable assertion helpers
+    cases/cap01..cap25_*.py    # 185 cases, one file per required capability
+    live_capabilities_suite.py # unittest suite (NOT auto-discovered -- see docs/DESIGN_DECISIONS.md §4)
 docs/
   ARCHITECTURE.md              # system diagram + request flow
   DESIGN_DECISIONS.md          # why it's built this way (incl. real-vs-synthetic data), and what we'd change
