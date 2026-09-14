@@ -1,0 +1,217 @@
+{
+  "started_at": "2026-09-14 13:24:46",
+  "capabilities": [
+    {
+      "number": 14,
+      "title": "Standardized formatting, including markdown tables and unit-aware presentation",
+      "slug": "cap14_standardized_formatting",
+      "cases": [
+        {
+          "id": "01",
+          "description": "multi-KPI question should render as a markdown table",
+          "turns": [
+            "Give me North America's revenue, volume, and EBITDA margin for Q1 2024"
+          ],
+          "passed": true,
+          "reason": "no markdown table detected: '## North America \u2014 Q1 2024\\n\\n| KPI | Value |\\n| --- | --- |\\n| Revenue | **$3,593 million** |\\n| Volume | **21,353 thousand hL** |\\n| EBITDA Margin | **31.3%** |\\n\\nAt $3,593m revenue and 21,353 khl volume, '",
+          "latency_s": 89.19,
+          "cost_usd": 0.000988,
+          "answers": [
+            "## North America \u2014 Q1 2024\n\n| KPI | Value |\n| --- | --- |\n| Revenue | **$3,593 million** |\n| Volume | **21,353 thousand hL** |\n| EBITDA Margin | **31.3%** |\n\nAt $3,593m revenue and 21,353 khl volume, that implies roughly **$168 per hL** of revenue in the quarter.\n\nNote: the EBITDA margin figure is flagged as computed in the source data, so it's derived rather than a directly reported line item.\n\nFollow-ups you might find useful:\n- How does North America's Q1 2024 revenue compare to the same quarter last year?\n- What drove the volume trend \u2014 beer vs. beyond-beer brands?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "comparison across zones should render as a markdown table",
+          "turns": [
+            "Compare revenue between North America and EMEA in 2025"
+          ],
+          "passed": true,
+          "reason": "no markdown table detected: '## Revenue comparison \u2014 North America vs. EMEA (2025)\\n\\nBased on the 2025 quarterly-grain revenue data (summed across the four quarters):\\n\\n| Zone | Revenue (USD m, 2025) |\\n| --- | --- |\\n| North America'",
+          "latency_s": 58.61,
+          "cost_usd": 0.001654,
+          "answers": [
+            "## Revenue comparison \u2014 North America vs. EMEA (2025)\n\nBased on the 2025 quarterly-grain revenue data (summed across the four quarters):\n\n| Zone | Revenue (USD m, 2025) |\n| --- | --- |\n| North America | 14,208.0 |\n| EMEA | 9,502.0 |\n\n**Key takeaways**\n\n- **North America generated more revenue than EMEA in 2025** \u2014 14,208 m USD vs. 9,502 m USD, a difference of **4,706 m USD** in North America's favor.\n- North America was therefore the larger of the two zones by revenue in 2025.\n\n**Data notes / caveats**\n\n- These figures cover only the two requested zones; other zones (e.g. Latin America, Asia Pacific) were excluded from the query, so this is not a company-wide revenue total.\n- The evidence contains only the annual sums for 2025 \u2014 no quarterly split or prior-year comparison \u2014 so I can't say whether the gap was stable through the year or how it evolved versus 2024.\n\n**Suggested follow-ups**\n\n- Compare the same two zones for **2024** to see whether North America's lead is widening or narrowing.\n- Pull the **2025 quarterly breakdown** per zone to see which quarters drove the difference."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "revenue figure should carry its unit (USD million)",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('million', 'usd', '$'): \"North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\\n\\nWant to compare this with Q1 2025 or break it down by brand/segment?\"",
+          "latency_s": 99.19,
+          "cost_usd": 0.000563,
+          "answers": [
+            "North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\n\nWant to compare this with Q1 2025 or break it down by brand/segment?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "volume figure should carry its unit (thousand hL)",
+          "turns": [
+            "What was EMEA's volume in Q2 2025?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('hl', 'hectoliter'): 'EMEA\u2019s volume in Q2 2025 was **24,172.0 thousand hectoliters (hL)**.\\n\\nIf you\u2019d like, I can help pull the year-over-year change or a country/brand breakdown for the same period.'",
+          "latency_s": 113.82,
+          "cost_usd": 0.000598,
+          "answers": [
+            "EMEA\u2019s volume in Q2 2025 was **24,172.0 thousand hectoliters (hL)**.\n\nIf you\u2019d like, I can help pull the year-over-year change or a country/brand breakdown for the same period."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "EBITDA margin should be presented as a percentage",
+          "turns": [
+            "What was Asia Pacific's EBITDA margin in 2025?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('%', 'percent'): \"Asia Pacific's EBITDA margin for 2025 was **29.9%** (calculated as normalized EBITDA divided by revenue, based on quarterly data) [Structured KPI data].\\n\\nIf useful, I can compare this against other zo\"",
+          "latency_s": 55.77,
+          "cost_usd": 0.00138,
+          "answers": [
+            "Asia Pacific's EBITDA margin for 2025 was **29.9%** (calculated as normalized EBITDA divided by revenue, based on quarterly data) [Structured KPI data].\n\nIf useful, I can compare this against other zones or show how the margin trended across quarters in 2025."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "a quarterly trend question should render as a table with one row per quarter",
+          "turns": [
+            "Show me EMEA's revenue for each quarter of 2025"
+          ],
+          "passed": true,
+          "reason": "no markdown table detected: \"Here is EMEA's revenue for each quarter of 2025:\\n\\n| Quarter | Period Label | Revenue (USD million) |\\n| --- | --- | --- |\\n| 1 | Q1 2025 | $1,965 |\\n| 2 | Q2 2025 | $2,489 |\\n| 3 | Q3 2025 | $2,524 |\\n| 4 \"",
+          "latency_s": 47.23,
+          "cost_usd": 0.001281,
+          "answers": [
+            "Here is EMEA's revenue for each quarter of 2025:\n\n| Quarter | Period Label | Revenue (USD million) |\n| --- | --- | --- |\n| 1 | Q1 2025 | $1,965 |\n| 2 | Q2 2025 | $2,489 |\n| 3 | Q3 2025 | $2,524 |\n| 4 | Q4 2025 | $2,524 |\n\nEMEA revenue grew through the year, with Q4 matching Q3 at $2,524 million.\n\nWould you like to compare these quarterly figures to 2024, or break down EMEA revenue by country or brand?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "a single, simple figure need not force a table (sanity check formatting isn't over-applied)",
+          "turns": [
+            "What was North America's net profit in FY2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"I wasn't able to find a value for North America's net profit in FY2025. The structured KPI query for\"",
+          "latency_s": 70.95,
+          "cost_usd": 0.001667,
+          "answers": [
+            "I wasn't able to find a value for North America's net profit in FY2025. The structured KPI query for `net_profit_usd_m` (zone = North America, year = 2025, annual/quarter IS NULL) returned no data \u2014 the result table shows \"\u2014\" rather than a figure.\n\nI also don't have any internal documents, web results, or code-execution outputs for this question to fall back on, so I can't report a number without inventing one, and I won't do that.\n\nTo be clear about what's missing: this could mean the FY2025 figure simply isn't recorded yet, the annual aggregate hasn't been loaded, or the metric is captured under a different name or zone label in the data.\n\nIf helpful, natural next steps would be:\n- Check whether **FY2024** North America net profit exists, to see if it's a data-coverage gap versus a metric gap.\n- Look at **quarterly** North America figures for 2025, in case only annual aggregation is missing."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 7,
+      "total": 7
+    }
+  ],
+  "summary": {
+    "total_cases": 7,
+    "passed": 7,
+    "failed": 0,
+    "elapsed_s": 535.2,
+    "total_cost_usd": 0.0081
+  }
+}

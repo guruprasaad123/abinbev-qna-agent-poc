@@ -56,6 +56,16 @@ code("""import sys, pathlib
 sys.path.insert(0, str(pathlib.Path.cwd().parents[0] if pathlib.Path.cwd().name == "notebooks" else pathlib.Path.cwd()))
 
 import os
+
+try:
+    from dotenv import load_dotenv  # optional: picks up a .env file if python-dotenv is installed
+    # override=False (the default, made explicit here) means a real
+    # environment variable always wins over .env -- .env only fills in
+    # whatever isn't already set.
+    load_dotenv(override=False)
+except ImportError:
+    pass
+
 from src.orchestrator import Orchestrator
 from src.llm_client import get_llm_client, GLOBAL_USAGE, MockLLMClient
 
@@ -145,7 +155,7 @@ md("## 17. Conversation memory optimization for long-running sessions\\n\\nThis 
 code('''for i, q in enumerate([
     "What was South America revenue in 2024?",
     "And in 2025?",
-    "What drove that growth?",
+    "What drove that change?",
     "Any related earnings commentary?",
     "What about its EBITDA margin there?",
     "How does that compare to Middle Americas?",

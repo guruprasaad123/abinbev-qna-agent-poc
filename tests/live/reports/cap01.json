@@ -1,0 +1,396 @@
+{
+  "started_at": "2026-09-14 13:24:32",
+  "capabilities": [
+    {
+      "number": 1,
+      "title": "Single-turn and multi-turn conversational interactions",
+      "slug": "cap01_single_multi_turn",
+      "cases": [
+        {
+          "id": "01",
+          "description": "single-turn: one question, one complete answer",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "intent='data_query', expected one of ('data_query',); unavailable=False, answer=\"North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\\n\\nWant to \"",
+          "latency_s": 66.62,
+          "cost_usd": 0.000594,
+          "answers": [
+            "North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\n\nWant to compare this with Q1 2025 or break it down by brand/segment?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "single-turn: a different zone/KPI in isolation",
+          "turns": [
+            "What was EMEA's EBITDA margin in Q2 2025?"
+          ],
+          "passed": true,
+          "reason": "intent='data_query', expected one of ('data_query',); unavailable=False, answer='EMEA\u2019s EBITDA margin in Q2 2025 was **32.1%**.'",
+          "latency_s": 70.67,
+          "cost_usd": 0.000999,
+          "answers": [
+            "EMEA\u2019s EBITDA margin in Q2 2025 was **32.1%**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "multi-turn: 2 turns, second reuses zone from the first",
+          "turns": [
+            "What was South America's revenue in 2024?",
+            "And its volume?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='South America', expected to contain 'South America'",
+          "latency_s": 187.91,
+          "cost_usd": 0.002136,
+          "answers": [
+            "South America's revenue in 2024 was **$12,423 million USD** (approx. $12.4 billion) [Structured KPI data, grain = quarterly].\n\n---\n\nWould you like to see the **quarterly breakdown for 2024**, or how this compares to **2023 revenue** for the region?",
+            "The volume for **South America in 2024** was **321,536 thousand hectoliters (kHL)**."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "multi-turn: 3 turns, drilling from company-wide to a zone to a KPI",
+          "turns": [
+            "Give me AB InBev's overall FY2025 revenue.",
+            "Now just for Middle Americas.",
+            "What about its EBITDA margin?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='Middle Americas', expected to contain 'Middle Americas'",
+          "latency_s": 239.67,
+          "cost_usd": 0.004163,
+          "answers": [
+            "AB InBev\u2019s overall FY2025 revenue was **$59,320 million (USD)**, based on the Global annual KPI data.",
+            "For **Middle Americas** in **FY2025**, revenue was **$17,376 million USD** (i.e., $17.4B). [Structured KPI data]\n\nIf you\u2019d like, I can pull the FY2024 figure for Middle Americas to show year-over-year change, or compare this against another zone for the same period.",
+            "Based on the structured KPI data for **Middle Americas (FY2025)**, the computed **EBITDA margin is 50.0%**.\n\nThis figure is derived from the sum of quarterly normalized EBITDA divided by quarterly revenue for 2025 in the Middle Americas zone.\n\nWould you like to see how this compares to the previous year or to other zones?"
+          ],
+          "intents": [
+            "data_query",
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            [],
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "multi-turn: 4 turns mixing intents (greeting, data, comparison, metadata)",
+          "turns": [
+            "Hi there",
+            "What was North America's revenue in Q1 2025?",
+            "How does that compare to EMEA?",
+            "What KPIs do you track?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='**Available data**:\\n\\nKPIs: Revenue (USD million), Volume (thousand hL), Normalized EBITDA (USD milli'",
+          "latency_s": 131.07,
+          "cost_usd": 0.003841,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?",
+            "North America\u2019s revenue in Q1 2025 was **$3,364 million** (USD).\n\nWould you like to compare this to Q4 2024 or Q1 2024 to see the quarter-over-quarter or year-over-year change?",
+            "## Q1 2025 Revenue: North America vs. EMEA\n\n| Zone | Revenue (USD million) |\n| --- | --- |\n| **North America** | **$3,364** |\n| EMEA | $1,965 |\n\n**The comparison:** North America's Q1 2025 revenue of **$3,364m** is higher than EMEA's **$1,965m**, making North America the larger of the two zones this quarter.\n\n**Caveats on this evidence:**\n- The retrieved data covers only these two zones for Q1 2025 at quarterly grain \u2014 it does not include other zones, so no statement about AB InBev's total revenue or these zones' global rank is possible from this evidence alone.\n- Only absolute revenue is available; no growth rates, currency-adjusted figures, or volume/price/mix breakdowns were provided, so I can't speak to trends or drivers behind the difference.\n\nIf you'd like, I can pull the same comparison for an adjacent period (e.g., Q4 2024 or Q1 2024) or extend it to another zone.",
+            "**Available data**:\n\nKPIs: Revenue (USD million), Volume (thousand hL), Normalized EBITDA (USD million), EBITDA Margin (% (computed)), Organic Revenue Growth (%), Net Profit (USD million)\n\nStructured (SQL) grain: zone x quarter, Q1 2024-Q4 2025; zone x year and company-wide (Global) x year, FY2022-FY2025. No brand-level or country-level structured rows -- AB InBev doesn't disclose that granularity publicly.\n\nZones: North America, Middle Americas, South America, EMEA, Asia Pacific\nCountries (roll up to their zone): United States (North America), Canada (North America), Mexico (Middle Americas), Colombia (Middle Americas), Peru (Middle Americas), Ecuador (Middle Americas), Brazil (South America), Argentina (South America), United Kingdom (EMEA), Netherlands (EMEA), France (EMEA), Italy (EMEA), South Africa (EMEA), Nigeria (EMEA), China (Asia Pacific), South Korea (Asia Pacific)\nBrands (document/qualitative mentions only, not structured rows): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\n\nDocument types: real press releases and filing excerpts, summarized with citations to the original AB InBev source and URL."
+          ],
+          "intents": [
+            "greeting",
+            "data_query",
+            "comparison",
+            "metadata_discovery"
+          ],
+          "sub_agents_used": [
+            [],
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            []
+          ],
+          "assumptions": [
+            [],
+            [],
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            [],
+            [],
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "multi-turn: a long-ish 5-turn back-and-forth on the same zone",
+          "turns": [
+            "What was Asia Pacific's revenue in 2025?",
+            "And 2024?",
+            "What about volume for both years?",
+            "Any earnings commentary on Asia Pacific?",
+            "What's the EBITDA margin trend across 2025?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='Asia Pacific', expected to contain 'Asia Pacific'",
+          "latency_s": 384.8,
+          "cost_usd": 0.008007,
+          "answers": [
+            "Asia Pacific's revenue in 2025 was **$5,694 million USD** (approximately $5.69 billion), based on the aggregated quarterly data for the region. [structured KPI data]\n\nIf useful, I can break this down by quarter or compare it against another region (e.g., North America or EMEA) for the same period.",
+            "For **Asia Pacific** in **2024**, revenue was **$6,196 million USD** (approximately $6.2B). [Structured KPI data]\n\nThis is the annual total from the quarterly data provided for that year.\n\nWould you like a quarterly breakdown for 2024, or a comparison with 2023?",
+            "**Asia Pacific \u2014 volume (k hl, annual grain)**\n\n| Year | Volume (k hl) |\n| --- | --- |\n| 2024 | 84,397 |\n| 2025 | 78,999 |\n\nYear over year, volume decreased by **5,398 k hl** (84,397 \u2192 78,999), which works out to a decline of roughly **6.4%**.\n\nA note on scope: the active context was set to `period=2024`, but since you asked for both years, this pulls the annual Asia Pacific volume figures for 2024 and 2025 directly from the KPI fact table on the same basis (annual grain, Asia Pacific zone), so the comparison is like-for-like. If 2025 happens to be a partial or restated period in the source data, treat the year-over-year change as indicative rather than final.\n\nNext steps you might consider:\n- Break down the 2024 \u2192 2025 volume change by individual Asia Pacific market to see where the decline is concentrated.\n- Compare volume against revenue or revenue per hl for the same zone and years to check whether the drop is offset by pricing/mix.",
+            "Based on the earnings commentary documents retrieved, **there is no Asia Pacific\u2013specific commentary or figures included** \u2014 the zone-by-zone excerpts available cover North America, Middle Americas, and South America for Q1 2024 [DOC-001], Q3 2024 [DOC-003], FY/Q4 2024 [DOC-004], Q3 2025 [DOC-007], and FY2025 [DOC-008].\n\nThe Asia Pacific section appears to be missing from the retrieved evidence, so I can\u2019t provide 2024 Asia Pacific volume or earnings commentary without inventing figures.\n\nWould you like me to pull Asia Pacific volume (k hL) or revenue commentary for FY2024 or Q4 2024 specifically?",
+            "For **Asia Pacific**, the 2025 EBITDA margin trend was **steadily declining across all four quarters**:\n\n| Quarter | EBITDA Margin |\n| --- | --- |\n| Q1 2025 | 36.1% |\n| Q2 2025 | 32.1% |\n| Q3 2025 | 29.5% |\n| Q4 2025 | 18.2% |\n\nSo from Q1 to Q4, the margin dropped by **17.9 percentage points** (from 36.1% to 18.2%), with the sharpest single-quarter decline occurring in Q4 2025 (down 11.3 points from Q3).\n\nIf helpful, I can dig into what drove the Q4 drop, or compare this trend to 2024/prior-year performance."
+          ],
+          "intents": [
+            "data_query",
+            "data_query",
+            "comparison",
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            [
+              "unstructured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            [],
+            [],
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            [],
+            [],
+            [
+              {
+                "doc_id": "DOC-003",
+                "title": "Q3 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-10-30",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-001",
+                "title": "Q1 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-05-07",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-007",
+                "title": "Q3 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-10-30",
+                "source_type": "earnings_commentary"
+              }
+            ],
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "single-turn immediately followed by an unrelated single-turn (no shared context expected)",
+          "turns": [
+            "What was North America's net profit in FY2025?"
+          ],
+          "passed": true,
+          "reason": "intent='data_query', expected one of ('data_query',); unavailable=False, answer='Based on the retrieved evidence, no net profit figure is available for **North America in FY2025** \u2014'",
+          "latency_s": 110.93,
+          "cost_usd": 0.001877,
+          "answers": [
+            "Based on the retrieved evidence, no net profit figure is available for **North America in FY2025** \u2014 the KPI record returns a blank/null value:\n\n| Zone | Year | Quarter | Net Profit (USD million) |\n| --- | --- | --- | --- |\n| North America | 2025 | \u2014 | \u2014 |\n\nI can\u2019t provide a number because the data source does not currently contain the value for this KPI/period. It may not have been loaded yet, or the metric may be unavailable for that fiscal year.\n\nIf you\u2019d like, I can:\n- Check the underlying data for a different KPI (e.g., revenue or EBITDA) for North America FY2025, or\n- Pull the net profit breakdown by quarter to see if partial data exists."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "multi-turn: switching zones mid-conversation, latest wins",
+          "turns": [
+            "What was North America's revenue in Q1 2024?",
+            "Now show me the same for South America."
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='South America', expected to contain 'South America'",
+          "latency_s": 225.57,
+          "cost_usd": 0.001863,
+          "answers": [
+            "North America's revenue in Q1 2024 was **$3,593 million USD** (i.e., **$3.593 billion**).",
+            "For **South America**, the **Q1 2024 revenue** was **$3,233 million USD** (~$3.23 billion)."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "09",
+          "description": "multi-turn: a clarification turn followed by a proper answer",
+          "turns": [
+            "Tell me about performance.",
+            "I mean North America's revenue for Q1 2024."
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='North America\u2019s revenue for Q1 2024 was **$3,593 million USD** ($3.593B).'",
+          "latency_s": 108.29,
+          "cost_usd": 0.00297,
+          "answers": [
+            "Based on the available global annual KPI data for 2022\u20132025, the overall picture is **revenue roughly flat, volumes declining, but profitability steadily improving**.\n\n| Year | Revenue (USD M) | Volume (thousand hL) | Normalized EBITDA (USD M) | EBITDA Margin | Net Profit (USD M) |\n|---|---|---|---|---|---|\n| 2022 | $57,786 | 595,133 | $19,843 | 34.3% | $5,969 |\n| 2023 | $59,380 | 584,728 | $19,976 | 33.6% | $5,341 |\n| 2024 | $59,768 | 575,706 | $20,958 | 35.1% | $5,855 |\n| 2025 | $59,320 | 561,100 | $21,223 | 35.8% | $6,837 |\n\nKey observations:\n\n- **Revenue** grew from $57.8B in 2022 to a peak of $59.8B in 2024, then dipped slightly to $59.3B in 2025.\n- **Volume** has declined every year, from ~595M hL in 2022 to ~561M hL in 2025 \u2014 a cumulative decline of about 5.7%. This suggests a continued premiumization/mix shift rather than volume-led growth.\n- **Normalized EBITDA** has risen consistently to $21.2B in 2025, with **EBITDA margin** improving to 35.8% \u2014 up from 34.3% in 2022.\n- **Net profit** recovered from a dip in 2023 to reach $6.8B in 2025.\n- **Organic revenue growth** is only reported for 2024 (+2.7%); no comparable figures were provided for 2022, 2023, or 2025, so the organic growth trajectory over the full period can\u2019t be assessed.\n\nOne caveat: the data is global and annual only \u2014 it doesn\u2019t break down performance by region, brand, or segment.\n\nWould you like to see a regional breakdown (e.g., Americas, EMEA, Asia-Pacific) or quarterly trends for 2025?",
+            "North America\u2019s revenue for Q1 2024 was **$3,593 million USD** ($3.593B)."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        }
+      ],
+      "passed": 9,
+      "total": 9
+    }
+  ],
+  "summary": {
+    "total_cases": 9,
+    "passed": 9,
+    "failed": 0,
+    "elapsed_s": 1526.0,
+    "total_cost_usd": 0.0265
+  }
+}

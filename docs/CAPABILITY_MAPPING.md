@@ -3,6 +3,17 @@
 Every attribute listed in the assignment, mapped to exactly where it's
 implemented and how to see it exercised in `notebooks/demo.ipynb`.
 
+**Deeper, per-capability evidence**: each of the 25 rows below also has its
+own dedicated real-LLM test suite (8-10 cases each, 185 total) under
+`tests/live/cases/cap01..cap25.py`, runnable via
+`scripts/run_live_capability_tests.py`, with results additionally rendered
+as a standalone notebook per capability under
+`notebooks/capabilities/<NN>_<slug>/demo.ipynb`. This is broader,
+capability-focused coverage beyond the single end-to-end `demo.ipynb` walk-
+through referenced in the table below -- see `docs/DESIGN_DECISIONS.md` §4
+for why it's a separate suite, not merged into the offline
+`tests/test_pipeline.py`.
+
 | # | Required capability | Implementation | Notebook section |
 |---|---|---|---|
 | 1 | Single-turn and multi-turn conversational interactions | `Orchestrator.handle_turn()` is stateless per call but reads/writes `self.memory` (`src/memory.py`), so a single call works standalone and a sequence of calls accumulates context | §4 (single-turn), §5 (multi-turn) |
@@ -16,7 +27,7 @@ implemented and how to see it exercised in `notebooks/demo.ipynb`.
 | 9 | Secure access with SQL safety controls | `src/tools/sql_tool.py`: read-only DB connection, single-SELECT-only enforcement, table/keyword whitelist, forced row cap, step-budget execution abort. Covered by `tests/test_pipeline.py::TestSQLSafety` (5 tests) | §8 |
 | 10 | Structured and unstructured retrieval from multiple sources | `src/agents/structured_agent.py` (SQLite) and `src/agents/unstructured_agent.py` (document corpus); NLU's `needed_subagents` can request either or both | §4, §9, §10 |
 | 11 | Document retrieval with source citations | `unstructured_agent.answer()` returns `RetrievedDoc` objects (doc_id/title/date/source_type); synthesis prompt is instructed to cite `[DOC-xxx]` inline | §9, §10 |
-| 12 | Hybrid data retrieval | NLU's `needed_subagents` is multi-label; a single question can trigger structured **and** unstructured **and** web **and** coding in one turn, all folded into one synthesis call (see also §6/§11 in `docs/DESIGN_DECISIONS.md` on what "hybrid" does/doesn't mean here) | §9 |
+| 12 | Hybrid data retrieval | NLU's `needed_subagents` is multi-label; a single question can trigger structured **and** unstructured **and** web **and** coding in one turn, all folded into one synthesis call. Also hybrid within document retrieval itself: `src/tools/retrieval_tool.py::DocumentIndex.search()` blends BM25 (lexical) + metadata/tag/recency + an optional local-embedding semantic signal (`src/tools/embedding_tool.py`), gracefully degrading to the first two if the embedding model isn't installed (see `docs/DESIGN_DECISIONS.md` §6 for the real measured trade-offs) | §9 |
 | 13 | Answer validation, retry mechanisms, response quality evaluation | `Orchestrator._needs_retry`: deterministic numeric-overlap check between the drafted answer and retrieved evidence; on failure, one corrective synthesis retry with the specific problem stated. `structured_agent.answer()` also retries its own SQL generation once on a validation/execution error | §8 (SQL retry path), §17 (`resp.retried` flag surfaced every turn) |
 | 14 | Standardized formatting: markdown tables, unit-aware presentation | `src/formatting.py::rows_to_markdown_table` / `format_value`: currency/percent/volume formatting per `KPI_CATALOG`, with each KPI's real disclosed unit (e.g. "USD million", "thousand hL") in the table header | §4 |
 | 15 | Temporal reasoning: current, historical, comparative periods | NLU extracts `period` and `comparison_period`; the structured-agent prompt is instructed to compute YoY/QoQ via conditional aggregation over `year`/`quarter`; real quarterly data spans Q1 2024–Q4 2025, with annual company totals back to FY2022, so "current" vs "historical" is meaningful | §13 |
@@ -29,4 +40,4 @@ implemented and how to see it exercised in `notebooks/demo.ipynb`.
 | 22 | Metadata discovery for available KPIs, dimensions, periods, datasets | Same fast-path as #18; lists KPIs, zones, countries (with their zone), document-only brands, document types, and the real structured-data date ranges (`DATA_START`/`DATA_END`) | §2 |
 | 23 | Document filtering using metadata, tags, and recency | `src/tools/retrieval_tool.py::DocumentIndex.search()` combines BM25 score with a metadata-match score (brand/country/tag/source_type overlap) and a recency-decay boost; callable with BM25 score of zero (pure metadata query, e.g. "most recent earnings documents mentioning Asia Pacific") | §10 |
 | 24 | Transparent reporting of assumptions, data availability, limitations | Every hierarchy-fallback note, SQL failure, truncated-result note, and unavailable-web-search reason is collected into `AgentResponse.assumptions` and explicitly surfaced to the synthesis prompt and to the caller | §11, §15, §16 |
-| 25 | Graceful handling of unsupported or unavailable requests | Unsupported entities (§21) and unavailable tools (web search with no key/package, §10 in `DESIGN_DECISIONS.md`) return clearly-labeled partial results rather than crashing or fabricating; `structured_agent` returns `ok=False` with a message rather than raising past the orchestrator | §11, §16 |
+| 25 | Graceful handling of unsupported or unavailable requests | Unsupported entities (§21) and unavailable tools (web search with no key/package, §10 in `DESIGN_DECISIONS.md`) return clearly-labeled partial results rather than crashing or fabricating; `structured_agent` returns `ok=False` with a message rather than raising past the orchestrator. Extends to the LLM dependency itself: `src/llm_client.py` translates any provider-SDK failure (rate limit, account/quota block, network error, 5xx) into one provider-agnostic `LLMUnavailableError` (after a configured fallback model, if any, also fails); `Orchestrator.handle_turn` catches it and returns a plain, honest "temporarily unavailable" `AgentResponse` (`unavailable=True`) instead of an unhandled exception crashing the caller (CLI/notebook/UI) -- verified by forcing every underlying API call to fail and confirming `handle_turn` still returns cleanly | §11, §16 |

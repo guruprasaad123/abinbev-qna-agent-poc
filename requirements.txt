@@ -19,3 +19,17 @@ duckduckgo-search>=6.0
 # --- Notebook ---
 jupyter>=1.0.0
 notebook>=7.0.0
+
+# --- Developer-mode UI (optional) ---
+# only needed to run `streamlit run ui/app.py`
+streamlit>=1.38.0
+
+# --- Semantic document retrieval: DELIBERATELY NOT listed here ---
+# fastembed adds a real, measured ~288MB of process memory once loaded (see
+# docs/DESIGN_DECISIONS.md #6) -- too much to put in this file unconditionally,
+# since anything platform-tooling (incl. Streamlit Community Cloud) installs
+# straight from requirements.txt with no concept of "optional" the way
+# pyproject.toml's [project.optional-dependencies] has. Without it, retrieval
+# silently falls back to BM25 + metadata only (the original behavior) -- which
+# is the safe default for a 1GB-RAM deploy target. To opt in deliberately:
+# see requirements-embeddings.txt.

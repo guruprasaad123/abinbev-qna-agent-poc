@@ -1,0 +1,262 @@
+{
+  "started_at": "2026-09-14 13:24:44",
+  "capabilities": [
+    {
+      "number": 13,
+      "title": "Answer validation, retry mechanisms, and response quality evaluation",
+      "slug": "cap13_answer_validation_retry",
+      "cases": [
+        {
+          "id": "01",
+          "description": "a question needing several numbers at once (multi-KPI), retry-prone",
+          "turns": [
+            "Give me North America's revenue, volume, and EBITDA margin for FY2025 all at once"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='**North America \u2014 FY2025 (sum of quarterly data, grain = quarterly)**\\n\\n| KPI | Value |\\n| --- | --- |'",
+          "latency_s": 64.1,
+          "cost_usd": 0.001589,
+          "answers": [
+            "**North America \u2014 FY2025 (sum of quarterly data, grain = quarterly)**\n\n| KPI | Value |\n| --- | --- |\n| Revenue | **$14,208 M** |\n| Volume | **82,733.0 k hL** |\n| EBITDA Margin | **33.0%** |\n\nNotes on methodology:\n- Revenue and volume are the sum of the four FY2025 quarters for the North America zone.\n- The EBITDA margin is computed as normalized EBITDA \u00f7 total revenue \u00d7 100, so it is a period-weighted margin rather than a simple average of quarterly margins.\n\nEverything you asked for was available at this grain, so there are no gaps to flag.\n\nPossible next steps:\n- Break the same three KPIs out **by quarter** to see the intra-year trend.\n- Compare against **FY2024 North America** to get the year-over-year change in revenue, volume, and margin."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "a dense multi-zone, multi-period comparison in one turn",
+          "turns": [
+            "Compare revenue and EBITDA margin for North America, EMEA, and Asia Pacific across 2024 and 2025"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## Revenue & EBITDA Margin: North America vs EMEA vs Asia Pacific (2024\u20132025)\\n\\n| Zone | Revenue 2024'",
+          "latency_s": 220.74,
+          "cost_usd": 0.003064,
+          "answers": [
+            "## Revenue & EBITDA Margin: North America vs EMEA vs Asia Pacific (2024\u20132025)\n\n| Zone | Revenue 2024 | Revenue 2025 | \u0394 Revenue | Margin 2024 | Margin 2025 | \u0394 Margin |\n| --- | --- | --- | --- | --- | --- | --- |\n| North America | $14,655M | $14,208M | \u2212$447M (\u22123.1%) | 32.7% | 33.0% | +0.3 pp |\n| EMEA | $9,003M | $9,502M | +$499M (+5.5%) | 31.6% | 32.6% | +1.0 pp |\n| Asia Pacific | $6,196M | $5,694M | \u2212$502M (\u22128.1%) | 31.2% | 29.9% | \u22121.3 pp |\n| **Combined** | **$29,854M** | **$29,404M** | **\u2212$450M (\u22121.5%)** | \u2014 | \u2014 | \u2014 |\n\n### What stands out\n\n**Revenue**\n- **North America remains by far the largest zone** \u2014 roughly 48\u201349% of the three-zone total in both years \u2014 despite a 3.1% decline.\n- **EMEA is the only zone that grew**, up 5.5% (+$499M), and is the main offset to declines elsewhere.\n- **Asia Pacific had the sharpest contraction**, down 8.1% (\u2212$502M), and it fell from second to... it remains the smallest of the three by a widening margin.\n- Net effect across the three zones is a modest 1.5% revenue decline, i.e. EMEA's growth did not fully offset North America + Asia Pacific losses.\n\n**EBITDA margin**\n- **North America is the most profitable of the three in both years** (32.7% \u2192 33.0%), and is the only zone combining a high margin with a slight improvement.\n- **EMEA posted the biggest margin gain** (+1.0 pp to 32.6%), meaning its revenue growth came with improving profitability \u2014 it is now essentially level with North America.\n- **Asia Pacific is the only zone with margin compression** (\u22121.3 pp to 29.9%), so it is absorbing both a revenue decline and a profitability decline.\n- Margin dispersion widened: in 2024 the spread between the highest and lowest zone was 1.5 pp; in 2025 it is 3.1 pp.\n\n### Caveats on the evidence\n- The figures come from a single query at **quarterly grain aggregated to the year**, using normalized EBITDA. They are not broken out by quarter, so I can't tell you whether these trends were steady or driven by one or two weak/strong quarters.\n- No other zones are included, so this is a three-zone view, not a group-wide one.\n- EBITDA margin here is computed as normalized EBITDA \u00f7 revenue from the same dataset; it is not a reported margin figure.\n\n### Suggested follow-ups\n- Break Asia Pacific's 2025 decline down by quarter to see whether the revenue and margin weakness was concentrated in a specific period.\n- Pull the 2024\u20132025 split for the same three zones by brand or market within EMEA, to identify what is driving its +5.5% growth."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "a straightforward single-number question, should not need a retry",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('3,593', '3593'): 'North America\u2019s revenue in Q1 2024 was **$3,593 million USD**.'",
+          "latency_s": 148.9,
+          "cost_usd": 0.0008,
+          "answers": [
+            "North America\u2019s revenue in Q1 2024 was **$3,593 million USD**."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "a question with a false premise the answer must not silently accept",
+          "turns": [
+            "What drove South America's huge revenue growth last year?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## Short answer: growth was real but not \"huge\" \u2014 and it came from price/mix, not volume\\n\\nSouth Amer'",
+          "latency_s": 101.79,
+          "cost_usd": 0.003068,
+          "answers": [
+            "## Short answer: growth was real but not \"huge\" \u2014 and it came from price/mix, not volume\n\nSouth America's top line grew roughly **+5% last year**, driven almost entirely by higher revenue per hectoliter rather than by selling more beer. Volumes actually *declined*.\n\n### The headline numbers\n\n| Metric | Value |\n|---|---|\n| Revenue 2024 | $3,473M |\n| Revenue 2025 | $3,645M |\n| Revenue YoY growth | **+4.95%** |\n| Avg organic revenue growth, 2025 (quarterly avg.) | **+4.78%** |\n| Volume, Q4 2024 [DOC-004] | 44,950K hL |\n| Volume, Q4 2025 [DOC-008] | 43,160K hL |\n| Organic growth, Q4 2024 \u2192 Q4 2025 | +3.2% \u2192 **+5.0%** |\n\n### What actually drove it\n\n**1. Price/mix, not volume.** Volume fell from 44,950K hL to 43,160K hL (a decline of roughly 4%), while revenue rose ~5%. That implies revenue per hectoliter rose about **9%** \u2014 so the growth is a pricing/mix story, with a shrinking volume base as a partial offset [DOC-004][DOC-008].\n\n**2. Momentum was uneven through the year, not a straight-line surge.** Using the quarterly zone summaries:\n- Q1 2025: +8.5% organic (revenue $2,978M) \u2014 the strongest quarter [DOC-005]\n- Q3 2025: +2.0% organic (revenue $2,802M) \u2014 a clear deceleration [DOC-007]\n- Q4 2025: +5.0% organic (revenue $3,645M) \u2014 a rebound to close the year [DOC-008]\n\nFor context, Q1 2024 was +5.1% [DOC-001], so the Q1 2025 outperformance was an acceleration rather than the run-rate.\n\n### Important caveats\n\n- **These are not full-year figures.** The structured query pulls `MAX` revenue per year at quarterly grain, so the $3,645M / $3,473M values are the highest single quarters (they match the Q4 zone prints in the documents), not annual totals. The \"+4.95% YoY\" is therefore effectively a Q4-on-Q4 comparison, not full-year growth.\n- **Q2 2025 is missing** from the retrieved evidence, so the intra-year trajectory has a gap.\n- **The documents don't break out the composition of the price/mix gain** \u2014 no brand, premiumization, channel, or category-level detail is provided, so I can't attribute the ~9% revenue-per-hL improvement to specific brands or segments from this evidence. South America's normalized EBITDA is also truncated in the retrieved snippets, so margin impact can't be assessed.\n- **\"Huge\" overstates it.** At ~5% organic, South America was a solid grower \u2014 and notably faster than North America (\u20111.0% in Q4 2025) \u2014 but in line with or slightly below Middle Americas (+5.9% in Q4 2025) [DOC-008].\n\n### Suggested follow-ups\n- Pull **Q2 2025 South America** results to complete the intra-year organic growth trend.\n- Compare South America's **normalized EBITDA margin** against Middle Americas and North America to see whether the price/mix gain is flowing through to profitability."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-007",
+                "title": "Q3 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-10-30",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-005",
+                "title": "Q1 2025 Results: Zone-by-Zone Summary",
+                "date": "2025-05-07",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-001",
+                "title": "Q1 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-05-07",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "05",
+          "description": "a long multi-turn conversation, checking the final answer stays grounded",
+          "turns": [
+            "What was Middle Americas revenue in 2024?",
+            "And in 2025?",
+            "What drove that change?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Based on the evidence available, I can\u2019t give a full year-over-year driver breakdown for Middle Amer'",
+          "latency_s": 101.8,
+          "cost_usd": 0.004319,
+          "answers": [
+            "Middle Americas revenue in 2024 was **$17,071 million USD** (approximately **$17.1 billion**), based on the aggregated quarterly KPI data.",
+            "For **Middle Americas** in **2025**, total revenue was **$17,376 million USD** (approximately **$17.4 billion**). [Structured KPI data]\n\nThis is the full-year figure based on quarterly data for the zone. If you\u2019d like, I can compare it against 2024 or break it down by quarter/brand.",
+            "Based on the evidence available, I can\u2019t give a full year-over-year driver breakdown for Middle Americas revenue in 2025, because the retrieved data does not include a full FY2025 Middle Americas revenue figure or a formal bridge of its growth drivers.\n\nWhat the evidence does show:\n\n- In **Q4 2025**, Middle Americas revenue was **$4,927M**, with **+5.9% organic growth**, volume of **39,672K hL**, and normalized EBITDA margin of **50.9%** [DOC-008].\n- For comparison, in **Q3 2024**, Middle Americas revenue was **$4,103M**, with **+1.9% organic growth**, volume of **37,107K hL**, and normalized EBITDA margin of **50.4%** [DOC-003]. These are not seasonally matching quarters, so this is only a directional reference.\n- At the company level, AB InBev\u2019s **megabrands** (Budweiser, Corona, Stella Artois, Michelob Ultra) grew revenue **4.1% in FY2025** and **4.6% in FY2024** \u2014 ahead of total company revenue growth \u2014 and Corona outside Mexico was called out as a continuing growth point [DOC-012]. That suggests premium/megabrand momentum was likely a contributor in Middle Americas, but the document doesn\u2019t give a zone-specific split.\n\nSo the short answer: the available data points to **organic growth and continued premium/megabrand momentum**, but the underlying revenue drivers for Middle Americas in 2025 are not fully disclosed in the retrieved evidence \u2014 I don\u2019t want to over-claim a specific attribution.\n\nIf you want, I can pull the **FY2025 vs FY2024 Middle Americas annual revenue** comparison, or dig into **Corona/Modelo performance in Mexico** specifically."
+          ],
+          "intents": [
+            "data_query",
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            [],
+            [
+              {
+                "doc_id": "DOC-015",
+                "title": "Anheuser-Busch InBev (AB InBev) Data and Reporting Scope Notes",
+                "date": "2026-02-12",
+                "source_type": "metadata_note"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-003",
+                "title": "Q3 2024 Results: Zone-by-Zone Summary",
+                "date": "2024-10-30",
+                "source_type": "earnings_commentary"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "06",
+          "description": "a comparison across many dimensions at once (stresses the synthesis step)",
+          "turns": [
+            "Compare EBITDA margin and organic revenue growth for North America versus EMEA in 2025"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## North America vs EMEA \u2014 2025 (quarterly average)\\n\\n| Zone | Avg EBITDA margin (%) | Avg organic re'",
+          "latency_s": 35.38,
+          "cost_usd": 0.001825,
+          "answers": [
+            "## North America vs EMEA \u2014 2025 (quarterly average)\n\n| Zone | Avg EBITDA margin (%) | Avg organic revenue growth (%) |\n| --- | --- | --- |\n| North America | 32.775 | **\u22121.05** |\n| EMEA | 32.55 | **3.30** |\n\n**What stands out**\n\n- **EBITDA margin is essentially at parity.** North America's 32.775% sits only marginally above EMEA's 32.55% (a gap of ~0.23 percentage points, computed from the table) \u2014 not a meaningful profitability difference between the two zones.\n- **Organic revenue growth is where they diverge.** EMEA posted +3.30%, while North America contracted at \u22121.05% \u2014 a spread of ~4.35 percentage points (again, computed from the table). This is the real story: North America is holding its margin while its top line shrank, whereas EMEA is growing while defending a similar margin level.\n- Practical read: EMEA shows the healthier growth profile in 2025; North America looks like a margin-maintenance story with revenue pressure.\n\n**Caveats on this evidence**\n\n- These figures are **averages across reported 2025 quarters** (the query filtered `quarter IS NOT NULL`), not full-year totals \u2014 so seasonality and intra-year swings are smoothed out. A zone that weakened or recovered over the course of the year would look identical in this view.\n- No internal documents, web results, or code-execution output were retrieved to explain *why* North America's organic growth is negative, so the drivers (pricing, volume, mix, brand performance) cannot be attributed from this evidence alone.\n- Only these two zones were queried; no global or other-zone benchmark is available for context.\n\n**Suggested next questions**\n\n- Break North America's organic growth out by quarter in 2025 to see whether the decline is narrowing or deepening.\n- Compare the two zones on volume or revenue-per-hectolitre to test whether North America's margin hold is price-driven."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 6,
+      "total": 6
+    }
+  ],
+  "summary": {
+    "total_cases": 6,
+    "passed": 6,
+    "failed": 0,
+    "elapsed_s": 673.1,
+    "total_cost_usd": 0.0147
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "started_at": "2026-09-14 14:54:04",
+  "capabilities": [
+    {
+      "number": 2,
+      "title": "Greeting, capability introduction, and out-of-scope request handling",
+      "slug": "cap02_greeting_capability_oos",
+      "cases": [
+        {
+          "id": "01",
+          "description": "plain greeting",
+          "turns": [
+            "hi"
+          ],
+          "passed": true,
+          "reason": "intent='greeting', expected one of ('greeting',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 5.23,
+          "cost_usd": 0.000343,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?"
+          ],
+          "intents": [
+            "greeting"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 1,
+      "total": 1
+    }
+  ],
+  "summary": {
+    "total_cases": 1,
+    "passed": 1,
+    "failed": 0,
+    "elapsed_s": 5.8,
+    "total_cost_usd": 0.0003
+  }
+}

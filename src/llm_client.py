@@ -13,6 +13,13 @@ They call `LLMClient.generate(...)`. This means:
      single choke point, which is what makes docs/COST_LATENCY_TRADEOFFS.md
      numbers real rather than guessed.
 
+All of these are read from the real process environment (os.environ) at call
+time. `scripts/chat_cli.py`, `scripts/build_notebook.py`, and `ui/app.py` all
+optionally load a `.env` file via `load_dotenv(override=False)` first -- a
+real exported environment variable always wins over `.env`; `.env` only
+fills in whatever isn't already set, so e.g. a value exported in CI or a
+deployment's environment can't be silently shadowed by a stray `.env` file.
+
 Environment variables:
   LLM_PROVIDER         = "anthropic" | "openai" | "mock"   (default: mock if no key found)
   ANTHROPIC_API_KEY  or  OPENAI_API_KEY
@@ -20,13 +27,37 @@ Environment variables:
                        JSON output against a small fixed schema, no deep reasoning needed)
   LLM_MODEL_GENERATE   model for sub-agent narrow generation: NL->SQL, code-snippet generation,
                        memory summarization (cheap tier -- templated output against a fixed schema)
-  LLM_MODEL_SYNTHESIZE model for the final answer-synthesis + validation-retry pass (workhorse tier --
-                       this is the one place multilingual fluency and judgment actually matter)
-See docs/COST_LATENCY_TRADEOFFS.md for why these three are split rather than
-using one model everywhere, or the two-tier (router/worker) split this
-replaced: classify and generate together are the majority of call VOLUME in
-this system but need the least reasoning; synthesize is the minority of
-calls but is what the user actually judges answer quality by.
+  LLM_MODEL_SYNTHESIZE model for the final answer-synthesis + validation-retry pass, MODERATE
+                       complexity tier (workhorse tier -- this is the one place multilingual
+                       fluency and judgment actually matter)
+  LLM_MODEL_SYNTHESIZE_SIMPLE   synthesize-role model for the SIMPLE complexity tier (single
+                       zone/KPI/period, one sub-agent, no retry) -- defaults to LLM_MODEL_GENERATE's
+                       model if unset, since a simple answer doesn't need the workhorse tier
+  LLM_MODEL_SYNTHESIZE_COMPLEX  synthesize-role model for the COMPLEX complexity tier (3+
+                       sub-agents / hybrid retrieval, or a validation retry already fired once) --
+                       defaults to LLM_MODEL_SYNTHESIZE's model if unset
+See docs/COST_LATENCY_TRADEOFFS.md for why these three ROLES (classify/
+generate/synthesize) are split rather than using one model everywhere, or the
+two-tier (router/worker) split this replaced: classify and generate together
+are the majority of call VOLUME in this system but need the least reasoning;
+synthesize is the minority of calls but is what the user actually judges
+answer quality by. Within the synthesize ROLE specifically, `get_synthesis_tier_models()`
+gives the orchestrator a further 3-way COMPLEXITY split (simple/moderate/complex),
+chosen per-turn by `Orchestrator._classify_complexity()` from signals already
+available after routing (sub-agent count, comparison intent, multi-entity
+questions, whether a validation retry already fired) -- no extra LLM call
+needed to decide. `LLMClient.generate()`'s `model_override` lets a caller pick
+the model for one specific call without constructing a whole new client.
+
+If LLM_MODEL_SYNTHESIZE (or a tier override above) points at a quota-limited
+model (e.g. a "free, limited" tier model worth using for its extra quality),
+get_llm_client() automatically wires LLM_MODEL_GENERATE's model as its
+rate-limit/outage fallback -- any API-layer failure on the primary model
+retries once against that model rather than crashing the turn, and if THAT
+also fails, raises one clean LLMUnavailableError rather than a raw SDK
+exception (see docs/COST_LATENCY_TRADEOFFS.md §2 for the worked example).
+classify/generate have no fallback of their own; they're already the
+always-available baseline tier.
 """
 from __future__ import annotations
 import os
@@ -50,6 +81,21 @@ PRICING_PER_MTOK_USD = {
     "gpt-5-mini":    {"input": 0.25, "output": 2.00},
     "gpt-4o":        {"input": 2.50, "output": 10.00},
     "gpt-4o-mini":   {"input": 0.15, "output": 0.60},
+    # Real published rates for the gateway models this deployment actually
+    # uses (checked live, Sept 2026 -- see docs/COST_LATENCY_TRADEOFFS.md §3
+    # for sources). Off-peak/cache-miss rate used as the baseline; DeepSeek's
+    # peak window (Mon-Fri 01:00-04:00 & 06:00-10:00 UTC) roughly doubles
+    # both figures, and a cache HIT on either DeepSeek model is far cheaper
+    # -- this table intentionally doesn't attempt to track cache-hit/peak
+    # state, so treat these as a reasonable upper-bound estimate, not exact.
+    # Note: on THIS system's specific gateway, the two DeepSeek models below
+    # are currently offered at $0 (the ":free"/"limited" tiers) -- this table
+    # still prices them at their real open-market rate rather than $0,
+    # because the point of tracking cost here is "what this traffic is
+    # actually worth," not "what happens to be free on one gateway today."
+    "deepseek-v4.1-flash": {"input": 0.15, "output": 0.60},
+    "deepseek-v4-flash":   {"input": 0.22, "output": 0.66},
+    "glm-5.3-flash":       {"input": 0.15, "output": 0.50},
     "mock":          {"input": 0.0, "output": 0.0},
 }
 
@@ -120,42 +166,99 @@ def _approx_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
+class LLMUnavailableError(Exception):
+    """Raised in place of a provider SDK's own exception (openai.APIError,
+    anthropic.APIError, ...) when an LLM call ultimately fails -- after any
+    configured fallback attempt also failed, or immediately if none is
+    configured. Callers (src/orchestrator.py) catch this ONE, provider-
+    agnostic type so a real outage (rate limit, account/quota block, network
+    failure, 5xx) degrades the turn gracefully ("Support graceful handling of
+    unsupported or unavailable requests") instead of an unhandled provider-
+    specific exception crashing the caller (e.g. the Streamlit UI)."""
+
+
 class LLMClient:
     """Base interface every provider implementation and MockLLMClient conforms to."""
 
     model_name: str = "mock"
 
     def generate(self, system: str, user: str, history: Optional[list[dict]] = None,
-                 json_mode: bool = False, max_tokens: int = 1024, caller: str = "unknown") -> str:
+                 json_mode: bool = False, max_tokens: int = 1024, caller: str = "unknown",
+                 model_override: Optional[str] = None) -> str:
         raise NotImplementedError
 
 
 class AnthropicLLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None,
+                 fallback_model: Optional[str] = None):
         import anthropic  # lazy import: only required if this provider is actually selected
-        self._client = anthropic.Anthropic(api_key=api_key)
+        self._client = anthropic.Anthropic(api_key=api_key, base_url=base_url)
+        self._anthropic = anthropic
         self.model_name = model
+        # A quota-limited model (e.g. a "free tier, limited" model on a
+        # gateway) can legitimately run out of budget mid-session -- rather
+        # than let that crash the turn, fall back once to a known-unlimited
+        # model. None means no fallback is configured for this role.
+        self._fallback_model = fallback_model
 
-    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
+    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown",
+                 model_override=None) -> str:
         messages = list(history or [])
         messages.append({"role": "user", "content": user})
         t0 = time.time()
-        resp = self._client.messages.create(
-            model=self.model_name, system=system, messages=messages, max_tokens=max_tokens,
-        )
+        model_used = model_override or self.model_name
+        try:
+            try:
+                resp = self._client.messages.create(
+                    model=model_used, system=system, messages=messages, max_tokens=max_tokens,
+                )
+            except self._anthropic.APIError:
+                # Any API-layer failure on the primary model (rate limit,
+                # account/quota block, transient 5xx, ...) -- not just a rate
+                # limit specifically -- is worth one fallback attempt if a
+                # fallback model is configured for this role.
+                if not self._fallback_model:
+                    raise
+                model_used = self._fallback_model
+                resp = self._client.messages.create(
+                    model=model_used, system=system, messages=messages, max_tokens=max_tokens,
+                )
+            # A response cut off by the token cap (rather than a natural stop) is
+            # unusable -- this happens in practice with reasoning-style models that
+            # spend part of the budget thinking before writing the actual answer.
+            # Retry once with more room rather than silently returning a truncated
+            # (sometimes still-mid-thought) fragment as if it were the final answer.
+            if resp.stop_reason == "max_tokens" and max_tokens < 4000:
+                resp = self._client.messages.create(
+                    model=model_used, system=system, messages=messages,
+                    max_tokens=min(max_tokens * 2, 4000),
+                )
+        except self._anthropic.APIError as e:
+            # Primary failed AND either no fallback was configured or the
+            # fallback failed too -- surface ONE clean, provider-agnostic
+            # error rather than a raw SDK exception.
+            raise LLMUnavailableError(f"{caller}: Anthropic API request failed "
+                                       f"({type(e).__name__}): {e}") from e
         latency_ms = (time.time() - t0) * 1000
         text = "".join(block.text for block in resp.content if getattr(block, "type", None) == "text")
-        GLOBAL_USAGE.record(caller, self.model_name, resp.usage.input_tokens, resp.usage.output_tokens, latency_ms)
+        GLOBAL_USAGE.record(caller, model_used, resp.usage.input_tokens, resp.usage.output_tokens, latency_ms)
         return text
 
 
 class OpenAILLMClient(LLMClient):
-    def __init__(self, model: str, api_key: str):
+    def __init__(self, model: str, api_key: str, base_url: Optional[str] = None,
+                 fallback_model: Optional[str] = None):
         import openai  # lazy import
-        self._client = openai.OpenAI(api_key=api_key)
+        self._client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        self._openai = openai
         self.model_name = model
+        # See AnthropicLLMClient.__init__ for why: fall back once to a
+        # known-unlimited model if the primary (possibly quota-limited) one
+        # is rate-limited, instead of crashing the turn.
+        self._fallback_model = fallback_model
 
-    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
+    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown",
+                 model_override=None) -> str:
         messages = [{"role": "system", "content": system}]
         messages.extend(history or [])
         messages.append({"role": "user", "content": user})
@@ -163,13 +266,41 @@ class OpenAILLMClient(LLMClient):
         kwargs = {}
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
-        resp = self._client.chat.completions.create(
-            model=self.model_name, messages=messages, max_tokens=max_tokens, **kwargs,
-        )
+        model_used = model_override or self.model_name
+        try:
+            try:
+                resp = self._client.chat.completions.create(
+                    model=model_used, messages=messages, max_tokens=max_tokens, **kwargs,
+                )
+            except self._openai.APIError:
+                # Any API-layer failure on the primary model (rate limit,
+                # account/quota block, transient 5xx, ...) -- not just a rate
+                # limit specifically -- is worth one fallback attempt if a
+                # fallback model is configured for this role.
+                if not self._fallback_model:
+                    raise
+                model_used = self._fallback_model
+                resp = self._client.chat.completions.create(
+                    model=model_used, messages=messages, max_tokens=max_tokens, **kwargs,
+                )
+            # See AnthropicLLMClient.generate for why: a response truncated by the
+            # token cap (finish_reason "length") rather than a natural stop can be
+            # an unfinished reasoning fragment, not a usable answer -- retry once
+            # with more room instead of returning it as-is.
+            if resp.choices[0].finish_reason == "length" and max_tokens < 4000:
+                resp = self._client.chat.completions.create(
+                    model=model_used, messages=messages, max_tokens=min(max_tokens * 2, 4000), **kwargs,
+                )
+        except self._openai.APIError as e:
+            # Primary failed AND either no fallback was configured or the
+            # fallback failed too -- surface ONE clean, provider-agnostic
+            # error rather than a raw SDK exception.
+            raise LLMUnavailableError(f"{caller}: OpenAI-compatible API request failed "
+                                       f"({type(e).__name__}): {e}") from e
         latency_ms = (time.time() - t0) * 1000
         text = resp.choices[0].message.content or ""
         usage = resp.usage
-        GLOBAL_USAGE.record(caller, self.model_name, usage.prompt_tokens, usage.completion_tokens, latency_ms)
+        GLOBAL_USAGE.record(caller, model_used, usage.prompt_tokens, usage.completion_tokens, latency_ms)
         return text
 
 
@@ -184,7 +315,8 @@ class MockLLMClient(LLMClient):
     """
     model_name = "mock"
 
-    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown") -> str:
+    def generate(self, system, user, history=None, json_mode=False, max_tokens=1024, caller="unknown",
+                 model_override=None) -> str:
         t0 = time.time()
         text = self._route(system, user, json_mode)
         latency_ms = (time.time() - t0) * 1000
@@ -314,14 +446,63 @@ def get_llm_client(role: str = "synthesize") -> LLMClient:
     provider = os.environ.get("LLM_PROVIDER", "").lower()
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     openai_key = os.environ.get("OPENAI_API_KEY")
+    # Generic override so an OpenAI/Anthropic-SDK-compatible gateway (e.g. a
+    # third-party model router) can be swapped in without code changes --
+    # same idea as the provider/model env vars above.
+    base_url = os.environ.get("LLM_BASE_URL") or None
 
     if not provider:
         provider = "anthropic" if anthropic_key else "openai" if openai_key else "mock"
 
+    # "synthesize" is the one role worth pointing at a stronger (and, in
+    # practice, more likely to be quota-limited -- e.g. a "free, limited"
+    # tier model) model; if that role hits a rate limit, fall back once to
+    # whatever "generate" is configured to use, since that tier is meant to
+    # be the always-available baseline. "classify"/"generate" have no
+    # fallback of their own -- they're already the baseline.
+    fallback_env_var = _ROLE_ENV_VAR["generate"] if role == "synthesize" else None
+
     if provider == "anthropic" and anthropic_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["anthropic"][role])
-        return AnthropicLLMClient(model=model, api_key=anthropic_key)
+        fallback_model = (os.environ.get(fallback_env_var, _ROLE_DEFAULT_MODEL["anthropic"]["generate"])
+                           if fallback_env_var else None)
+        return AnthropicLLMClient(model=model, api_key=anthropic_key, base_url=base_url,
+                                   fallback_model=fallback_model)
     if provider == "openai" and openai_key:
         model = os.environ.get(_ROLE_ENV_VAR[role], _ROLE_DEFAULT_MODEL["openai"][role])
-        return OpenAILLMClient(model=model, api_key=openai_key)
+        fallback_model = (os.environ.get(fallback_env_var, _ROLE_DEFAULT_MODEL["openai"]["generate"])
+                           if fallback_env_var else None)
+        return OpenAILLMClient(model=model, api_key=openai_key, base_url=base_url,
+                                fallback_model=fallback_model)
     return MockLLMClient()
+
+
+def get_synthesis_tier_models() -> dict:
+    """The synthesize ROLE, further split by per-turn COMPLEXITY (simple/
+    moderate/complex) -- see the module docstring and
+    docs/COST_LATENCY_TRADEOFFS.md §2. Read once by the orchestrator; the
+    chosen tier's model is passed as `generate(..., model_override=...)` on
+    the single, already-constructed `llm_synthesize` client for that turn,
+    so its existing rate-limit/outage fallback still applies underneath
+    whichever tier was picked.
+
+    "moderate" reuses LLM_MODEL_SYNTHESIZE's value/default (unchanged name,
+    so existing configs keep working exactly as before this feature existed).
+    "simple"/"complex" fall back to generate's/moderate's model respectively
+    if not explicitly set -- i.e. this is a no-op (every tier resolves to the
+    same one model) until LLM_MODEL_SYNTHESIZE_SIMPLE/_COMPLEX are set.
+    """
+    provider = os.environ.get("LLM_PROVIDER", "").lower()
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if not provider:
+        provider = "anthropic" if anthropic_key else "openai" if openai_key else "mock"
+
+    moderate_default = _ROLE_DEFAULT_MODEL.get(provider, {}).get("synthesize", "mock")
+    simple_default = _ROLE_DEFAULT_MODEL.get(provider, {}).get("generate", moderate_default)
+    moderate = os.environ.get(_ROLE_ENV_VAR["synthesize"], moderate_default)
+    return {
+        "simple": os.environ.get("LLM_MODEL_SYNTHESIZE_SIMPLE", simple_default),
+        "moderate": moderate,
+        "complex": os.environ.get("LLM_MODEL_SYNTHESIZE_COMPLEX", moderate),
+    }

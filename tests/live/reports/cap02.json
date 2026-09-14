@@ -1,0 +1,283 @@
+{
+  "started_at": "2026-09-14 13:12:12",
+  "capabilities": [
+    {
+      "number": 2,
+      "title": "Greeting, capability introduction, and out-of-scope request handling",
+      "slug": "cap02_greeting_capability_oos",
+      "cases": [
+        {
+          "id": "01",
+          "description": "plain greeting",
+          "turns": [
+            "hi"
+          ],
+          "passed": true,
+          "reason": "intent='greeting', expected one of ('greeting',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 4.83,
+          "cost_usd": 0.000359,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?"
+          ],
+          "intents": [
+            "greeting"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "greeting with punctuation",
+          "turns": [
+            "Hello!"
+          ],
+          "passed": true,
+          "reason": "intent='greeting', expected one of ('greeting',)",
+          "latency_s": 5.35,
+          "cost_usd": 0.000423,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?"
+          ],
+          "intents": [
+            "greeting"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "casual greeting",
+          "turns": [
+            "hey there"
+          ],
+          "passed": true,
+          "reason": "intent='greeting', expected one of ('greeting',)",
+          "latency_s": 3.93,
+          "cost_usd": 0.00033,
+          "answers": [
+            "Hello! I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings. Ask me about revenue, volume, EBITDA, margin, organic growth or net profit by zone/period, or about brand and country context from our documents. What would you like to know?"
+          ],
+          "intents": [
+            "greeting"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "capability introduction, direct phrasing",
+          "turns": [
+            "What can you help me with?"
+          ],
+          "passed": true,
+          "reason": "intent='capability_intro', expected one of ('capability_intro',)",
+          "latency_s": 24.93,
+          "cost_usd": 0.000395,
+          "answers": [
+            "I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant, built over AB InBev's real, publicly disclosed results. I can:\n- Answer questions about Revenue, Volume, Normalized EBITDA, EBITDA Margin, Organic Revenue Growth, Net Profit, by reporting zone and quarter/year\n- Compare KPIs across zones or time periods (QoQ, YoY)\n- Roll a country up to its zone automatically when structured data doesn't go that granular\n- Retrieve real press releases, filing excerpts and brand/country commentary with citations\n- Pull in public/web context for named competitors or anything outside our own data\n- Do custom calculations (growth rates, projections) on the numbers\n\nKnown zones: North America, Middle Americas, South America, EMEA, Asia Pacific\nKnown countries: United States, Canada, Mexico, Colombia, Peru, Ecuador, Brazil, Argentina, United Kingdom, Netherlands, France, Italy, South Africa, Nigeria, China, South Korea\nKnown brands (document-level only): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\nStructured data covers Q1 2024-Q4 2025 (quarterly, by zone) and FY2022-FY2025 (annual, company-wide)."
+          ],
+          "intents": [
+            "capability_intro"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "capability introduction, alternate phrasing",
+          "turns": [
+            "What kind of questions can I ask you?"
+          ],
+          "passed": true,
+          "reason": "intent='capability_intro', expected one of ('capability_intro',)",
+          "latency_s": 53.42,
+          "cost_usd": 0.000348,
+          "answers": [
+            "I'm the Anheuser-Busch InBev (AB InBev) Q&A assistant, built over AB InBev's real, publicly disclosed results. I can:\n- Answer questions about Revenue, Volume, Normalized EBITDA, EBITDA Margin, Organic Revenue Growth, Net Profit, by reporting zone and quarter/year\n- Compare KPIs across zones or time periods (QoQ, YoY)\n- Roll a country up to its zone automatically when structured data doesn't go that granular\n- Retrieve real press releases, filing excerpts and brand/country commentary with citations\n- Pull in public/web context for named competitors or anything outside our own data\n- Do custom calculations (growth rates, projections) on the numbers\n\nKnown zones: North America, Middle Americas, South America, EMEA, Asia Pacific\nKnown countries: United States, Canada, Mexico, Colombia, Peru, Ecuador, Brazil, Argentina, United Kingdom, Netherlands, France, Italy, South Africa, Nigeria, China, South Korea\nKnown brands (document-level only): Budweiser, Corona, Stella Artois, Michelob Ultra, Beck's, Brahma, Skol, Castle Lager\nStructured data covers Q1 2024-Q4 2025 (quarterly, by zone) and FY2022-FY2025 (annual, company-wide)."
+          ],
+          "intents": [
+            "capability_intro"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "out-of-scope: weather",
+          "turns": [
+            "What's the weather like today?"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',); sub_agents_used=[], expected none (fast-path)",
+          "latency_s": 3.83,
+          "cost_usd": 0.000335,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "out-of-scope: general trivia",
+          "turns": [
+            "Tell me a joke"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',)",
+          "latency_s": 27.32,
+          "cost_usd": 0.000328,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "out-of-scope: unrelated stock",
+          "turns": [
+            "What's the stock price of Apple?"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',)",
+          "latency_s": 12.09,
+          "cost_usd": 0.000526,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "09",
+          "description": "out-of-scope: general coding help unrelated to this data",
+          "turns": [
+            "Can you help me write a sorting algorithm in Rust?"
+          ],
+          "passed": true,
+          "reason": "intent='out_of_scope', expected one of ('out_of_scope',)",
+          "latency_s": 73.35,
+          "cost_usd": 0.000486,
+          "answers": [
+            "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev (AB InBev)'s business data and related market/company context. Anheuser-Busch InBev (AB InBev)'s real, publicly disclosed financial performance -- revenue, volume, normalized EBITDA, EBITDA margin, organic revenue growth and net profit -- by reporting zone (North America, Middle Americas, South America, EMEA, Asia Pacific) and by quarter or year, plus qualitative country- and brand-level commentary, company news, and competitive context drawn from AB InBev's own results releases and filings."
+          ],
+          "intents": [
+            "out_of_scope"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "10",
+          "description": "borderline: a real business question should NOT be out-of-scope",
+          "turns": [
+            "What was AB InBev's revenue in North America last year?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('revenue', 'million'): \"AB InBev's revenue in North America for 2025 was **$14,208 million USD** (approximately $14.2 billion), based on the structured KPI data for the region.\\n\\nNote: this figure reflects the 2025 data avail\"",
+          "latency_s": 108.35,
+          "cost_usd": 0.001615,
+          "answers": [
+            "AB InBev's revenue in North America for 2025 was **$14,208 million USD** (approximately $14.2 billion), based on the structured KPI data for the region.\n\nNote: this figure reflects the 2025 data available for North America; no quarterly breakdown or prior-year comparison was included in the retrieved evidence.\n\nWould you like to see the quarterly breakdown for 2025, or a year-over-year comparison with 2024?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "summary": {
+    "total_cases": 10,
+    "passed": 10,
+    "failed": 0,
+    "elapsed_s": 317.8,
+    "total_cost_usd": 0.0051
+  }
+}

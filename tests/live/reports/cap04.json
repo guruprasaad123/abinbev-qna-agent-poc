@@ -1,0 +1,241 @@
+{
+  "started_at": "2026-09-14 13:12:15",
+  "capabilities": [
+    {
+      "number": 4,
+      "title": "Clarification for ambiguous or incomplete user requests",
+      "slug": "cap04_clarification",
+      "cases": [
+        {
+          "id": "01",
+          "description": "no entity, no KPI, no period at all -- classic ambiguous case",
+          "turns": [
+            "Tell me about performance."
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed'",
+          "latency_s": 49.37,
+          "cost_usd": 0.000431,
+          "answers": [
+            "Which aspect of AB InBev's performance would you like? For example, a specific KPI (revenue, volume, normalized EBITDA, etc.), reporting zone, and time period (quarter/year)?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "vague pronoun with nothing prior to resolve it against",
+          "turns": [
+            "How is it doing?"
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed'",
+          "latency_s": 47.71,
+          "cost_usd": 0.000726,
+          "answers": [
+            "What would you like to know about? For example, AB InBev's overall performance, a specific zone, country, or brand?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "asks for 'the numbers' without saying which",
+          "turns": [
+            "Can you give me the numbers?"
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed'",
+          "latency_s": 9.28,
+          "cost_usd": 0.000702,
+          "answers": [
+            "Could you specify which numbers you'd like? For example, revenue or EBITDA for a specific zone and period (e.g., Q3 2025 North America)?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "names a KPI but no zone/period at all",
+          "turns": [
+            "What's the margin?"
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed'",
+          "latency_s": 5.46,
+          "cost_usd": 0.000408,
+          "answers": [
+            "Which margin would you like? For example, EBITDA margin, and for which period and zone (e.g., Q3 2025, North America)?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "reasonable default exists (company-wide, latest period implied) -- should NOT force clarification",
+          "turns": [
+            "What was AB InBev's total revenue last year?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='AB InBev\u2019s total revenue last year (latest annual Global figure) was **$59,320 million**, or approxi'",
+          "latency_s": 21.72,
+          "cost_usd": 0.001229,
+          "answers": [
+            "AB InBev\u2019s total revenue last year (latest annual Global figure) was **$59,320 million**, or approximately **$59.32 billion** USD."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "a fully-specified question should NOT trigger clarification",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "intent='data_query', expected one of ('data_query',)",
+          "latency_s": 151.91,
+          "cost_usd": 0.000901,
+          "answers": [
+            "North America's revenue in Q1 2024 was **$3,593 million (USD)** (i.e., $3.593B). [Source: structured KPI data]\n\nWant to compare this against Q1 2023 or see the Q2 2024 figure for trend?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "clarification question itself should be specific, not generic filler",
+          "turns": [
+            "How's it going for us?"
+          ],
+          "passed": true,
+          "reason": "intent='clarification_needed'",
+          "latency_s": 24.45,
+          "cost_usd": 0.000826,
+          "answers": [
+            "Would you like an overall AB InBev performance summary? If so, which period and region should I focus on?"
+          ],
+          "intents": [
+            "clarification_needed"
+          ],
+          "sub_agents_used": [
+            []
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "multi-turn: clarification, then the user supplies the missing piece",
+          "turns": [
+            "Tell me about performance.",
+            "North America revenue, Q1 2024"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='North America revenue for Q1 2024 was **$3,593 million (USD)**.\\n\\nThis figure comes from the structur'",
+          "latency_s": 91.31,
+          "cost_usd": 0.001476,
+          "answers": [
+            "Which performance metrics would you like (e.g., revenue, volume, normalized EBITDA) and for which period/zone?",
+            "North America revenue for Q1 2024 was **$3,593 million (USD)**.\n\nThis figure comes from the structured KPI data for the North America zone, revenue metric, Q1 2024.\n\nWould you like to see this compared to the prior-year quarter, or broken out by brand or country?"
+          ],
+          "intents": [
+            "clarification_needed",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 401.6,
+    "total_cost_usd": 0.0067
+  }
+}

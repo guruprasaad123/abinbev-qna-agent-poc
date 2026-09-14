@@ -1,0 +1,281 @@
+{
+  "started_at": "2026-09-14 13:24:33",
+  "capabilities": [
+    {
+      "number": 5,
+      "title": "Contextual follow-up questions by maintaining conversation history",
+      "slug": "cap05_contextual_followup",
+      "cases": [
+        {
+          "id": "01",
+          "description": "follow-up omits the zone -- should reuse the prior one",
+          "turns": [
+            "What was North America's revenue in Q1 2024?",
+            "What about its EBITDA margin?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='North America', expected to contain 'North America'",
+          "latency_s": 153.83,
+          "cost_usd": 0.001694,
+          "answers": [
+            "North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\n\nWant to compare this with Q1 2025 or break it down by brand/segment?",
+            "The EBITDA margin for **North America in Q1 2024** was **31.3%** (computed from the structured KPI data).\n\nIf useful, I can compare this against the prior-year quarter or other zones for context."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "follow-up omits the period -- should reuse the prior one",
+          "turns": [
+            "What was EMEA's revenue in Q3 2025?",
+            "And the volume?"
+          ],
+          "passed": true,
+          "reason": "active_filters['period']='Q3 2025', expected to contain 'Q3 2025'",
+          "latency_s": 272.65,
+          "cost_usd": 0.002118,
+          "answers": [
+            "EMEA\u2019s revenue in Q3 2025 was **$2,524 million** (USD million) per the structured KPI data.\n\nWould you like to see how this compares quarter-over-quarter or year-over-year, or a breakdown by market/brand within EMEA?",
+            "For EMEA in Q3 2025, the volume was **24,149.0 thousand hectoliters (k hL)**.\n\n| Metric | Value |\n|---|---|\n| Volume (thousand hL) | 24,149.0 |\n\nIf you'd like, I can compare this to another quarter or break the volume down further within EMEA."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "'and last year?' style follow-up implying a period shift",
+          "turns": [
+            "What was South America's revenue in 2025?",
+            "And in 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='**South America \u2014 revenue (USD m), 2024**\\n\\n| Metric | Value |\\n| --- | --- |\\n| Revenue 2024 | **12,42'",
+          "latency_s": 110.97,
+          "cost_usd": 0.0031,
+          "answers": [
+            "South America\u2019s revenue in 2025 was **$11,954 million USD** (i.e., ~$11.95 billion), based on summed quarterly KPI data.\n\nIf useful, I can break this down by major country or brand within the South America zone, or compare it against 2024.",
+            "**South America \u2014 revenue (USD m), 2024**\n\n| Metric | Value |\n| --- | --- |\n| Revenue 2024 | **12,423.0 USD m** |\n| Revenue 2025 | 11,954.0 USD m |\n| YoY change | **\u2212469.0 USD m** |\n\nSo for 2024, South America's revenue came in at **12,423.0 USD m** (quarterly grain, summed across 2024). For reference, the same measure for 2025 is 11,954.0 USD m, i.e. a decline of 469.0 USD m year over year.\n\nNote: the evidence covers only the zone-level revenue aggregate for these two years \u2014 no sub-regional, brand-level, or quarterly breakdown was retrieved, so I can't attribute the 2025 decline to specific markets or brands from this data alone.\n\nIf useful, I can next look at:\n- The 2024 quarterly split for South America to see the phasing within the year.\n- A comparable zonal revenue read (e.g. North America or EMEA) to put the \u2212469.0 USD m move in context."
+          ],
+          "intents": [
+            "data_query",
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "pronoun follow-up ('it', 'that') resolved via context",
+          "turns": [
+            "What was Middle Americas' revenue in 2025?",
+            "Is that up or down from 2024?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('up', 'down', 'increase', 'decrease', 'grew', 'declined', '%'): '**Up.** Middle Americas revenue came in at **$17,376.0M in 2025** versus **$17,071.0M in 2024** \u2014 an increase of **+$305.0M**, or roughly **+1.8%** year over year.\\n\\n| Metric | 2024 | 2025 | Change |\\n|'",
+          "latency_s": 84.23,
+          "cost_usd": 0.003076,
+          "answers": [
+            "Middle Americas' revenue in 2025 was **$17,376 million USD** (approximately **$17.4 billion**), based on the structured KPI data.",
+            "**Up.** Middle Americas revenue came in at **$17,376.0M in 2025** versus **$17,071.0M in 2024** \u2014 an increase of **+$305.0M**, or roughly **+1.8%** year over year.\n\n| Metric | 2024 | 2025 | Change |\n| --- | --- | --- | --- |\n| Revenue (USD m) | 17,071.0 | 17,376.0 | +305.0 (up) |\n\nNote: these figures are aggregated from quarterly records (quarters non-null), so they represent full-year totals. No document or web evidence was retrieved for this comparison \u2014 it rests entirely on the structured KPI data.\n\nFollow-ups you might find useful:\n- How does Middle Americas' 2025 growth compare with other zones (e.g. North America, EMEA, APAC)?\n- Was the increase driven by volume growth or higher revenue per hectoliter in 2025?"
+          ],
+          "intents": [
+            "data_query",
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "follow-up asking for a related KPI without repeating the zone",
+          "turns": [
+            "What was Asia Pacific's volume in Q2 2025?",
+            "What about revenue for the same period?"
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='Asia Pacific', expected to contain 'Asia Pacific'",
+          "latency_s": 50.27,
+          "cost_usd": 0.002141,
+          "answers": [
+            "Asia Pacific's volume in Q2 2025 was **23,716 thousand hectoliters (k hL)**.\n\nThis figure comes directly from the quarterly KPI data for Asia Pacific in Q2 2025.\n\nIf you'd like more context, I can look up the prior quarter (Q1 2025) or the same quarter last year (Q2 2024) for a comparison \u2014 just let me know.",
+            "For Asia Pacific in **Q2 2025**, revenue was **$1,658 million (USD)**.\n\nThis is the confirmed figure for the same period per the structured KPI data. If you\u2019d like, I can check how this compares to Q1 2025 or Q2 2024, or break the revenue down by country/brand within Asia Pacific."
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "3-turn chain, each turn depends on the previous one's context",
+          "turns": [
+            "What was North America's revenue in 2025?",
+            "Break that down by quarter.",
+            "Which quarter was strongest?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Based on the available data, **Q2 2025** was the strongest quarter for North America revenue, with *'",
+          "latency_s": 113.62,
+          "cost_usd": 0.003622,
+          "answers": [
+            "North America\u2019s revenue in 2025 was **$14,208 million USD**.",
+            "Below is the North America revenue (USD million) breakdown for 2025 by quarter:\n\n| Quarter | Revenue (USD million) |\n| --- | --- |\n| Q1 2025 | $3,364 |\n| Q2 2025 | $3,844 |\n| Q3 2025 | $3,765 |\n| Q4 2025 | $3,235 |\n\nQ2 was the strongest quarter, while Q4 was the weakest.\n\nWould you like to see the year-over-year change for each quarter, or a breakdown by brand/segment within North America?",
+            "Based on the available data, **Q2 2025** was the strongest quarter for North America revenue, with **$3,844 million** in revenue. This is the top quarter returned from the 2025 data.\n\nWould you like to see how the other quarters compare, or check the year-over-year growth for Q2 2025?"
+          ],
+          "intents": [
+            "data_query",
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            [],
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "follow-up explicitly overriding the zone should NOT keep the old one",
+          "turns": [
+            "What was EMEA's revenue in 2025?",
+            "Now show me North America instead."
+          ],
+          "passed": true,
+          "reason": "active_filters['zone']='North America', expected to contain 'North America'",
+          "latency_s": 153.15,
+          "cost_usd": 0.002797,
+          "answers": [
+            "EMEA's revenue in 2025 was **$9,502 million USD** (approximately **$9.5 billion**), based on quarterly data for the region.\n\nIf useful, I can break this down by quarter or compare it against 2024 performance.",
+            "Here are the **North America** revenue figures for 2025 (USD millions):\n\n| Period | Revenue (USD million) |\n|---|---|\n| Q1 2025 | $3,364 |\n| Q2 2025 | $3,844 |\n| Q3 2025 | $3,765 |\n| Q4 2025 | $3,235 |\n\nQ2 2025 was the strongest quarter, and Q4 2025 was the lowest.\n\nWant to compare this quarterly trend to 2024, or break North America down by country/brand?"
+          ],
+          "intents": [
+            "data_query",
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ],
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            [],
+            []
+          ],
+          "citations": [
+            [],
+            []
+          ]
+        }
+      ],
+      "passed": 7,
+      "total": 7
+    }
+  ],
+  "summary": {
+    "total_cases": 7,
+    "passed": 7,
+    "failed": 0,
+    "elapsed_s": 939.2,
+    "total_cost_usd": 0.0185
+  }
+}

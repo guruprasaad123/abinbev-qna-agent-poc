@@ -1,21 +1,26 @@
 """
-Unstructured document retrieval: hybrid lexical (BM25) + metadata retrieval
-over the generated document corpus, with citations.
+Unstructured document retrieval: hybrid lexical (BM25) + metadata + optional
+semantic (embedding) retrieval over the generated document corpus, with
+citations.
 
-"Hybrid data retrieval" here means combining two independent signals rather
+"Hybrid data retrieval" here means combining independent signals rather
 than lexical alone:
-  1. BM25 relevance score over document title+body (semantic-ish keyword
-     matching, robust to word order/frequency).
+  1. BM25 relevance score over document title+body (keyword matching,
+     robust to word order/frequency, but blind to paraphrase/synonymy).
   2. Metadata match score: exact/alias-resolved hits against tags, brands,
      countries and source_type mentioned or implied by the query, plus a
      recency boost. Metadata filtering also supports being used standalone
      ("Support document filtering using metadata, tags, and recency") for
      queries like "show me the most recent sustainability updates".
-These are combined with tunable weights. A production system would add a
-third, genuinely semantic (embedding) signal here -- see
-docs/DESIGN_DECISIONS.md for why that's flagged as a follow-up rather than
-built now (no embedding endpoint available in this environment, see
-llm_client.py for the parallel constraint on the LLM side).
+  3. Semantic (embedding) similarity, OPTIONAL and gracefully degraded if
+     unavailable -- see src/tools/embedding_tool.py for the local-model
+     choice and the real, measured cost/latency numbers, and
+     docs/DESIGN_DECISIONS.md §6 for the full trade-off writeup. When a
+     precomputed embeddings cache exists (scripts/generate_embeddings.py)
+     and `fastembed` is installed, every document is scored regardless of
+     lexical overlap -- the whole point of adding this signal is to surface
+     a paraphrased match BM25 would score zero on. When unavailable, this
+     silently falls back to exactly the original BM25 + metadata behavior.
 """
 from __future__ import annotations
 import json
@@ -24,6 +29,14 @@ from datetime import date
 from pathlib import Path
 
 from src.tools.bm25 import BM25, tokenize
+from src.tools.embedding_tool import (
+    embed_texts, cosine_similarity, load_cached_document_embeddings,
+)
+
+SEMANTIC_WEIGHT = 3.0  # tunable: puts a typical 0.3-0.8 cosine similarity on
+                        # a roughly comparable additive scale to this corpus's
+                        # typical BM25 scores -- not a principled calibration,
+                        # just a reasonable blend for a 15-document corpus.
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC_DIR = ROOT / "data" / "unstructured"
@@ -53,6 +66,12 @@ class DocumentIndex:
             self.bodies.append(text)
         corpus_tokens = [tokenize(d["title"] + " " + body) for d, body in zip(self.docs, self.bodies)]
         self.bm25 = BM25(corpus_tokens)
+        # Optional semantic signal -- None means "unavailable", checked once
+        # at index-build time (not per query) so search() has a cheap,
+        # consistent True/False to branch on.
+        doc_ids = [d["doc_id"] for d in self.docs]
+        cached = load_cached_document_embeddings(doc_ids)
+        self.doc_embeddings: dict[str, list[float]] | None = cached
 
     def _metadata_score(self, doc: dict, brands: list[str], countries: list[str],
                          tags: list[str], source_types: list[str]) -> float:
@@ -85,10 +104,25 @@ class DocumentIndex:
 
         bm25_hits = dict(self.bm25.top_k(query, k=max(k * 3, 10)))
         candidate_idx = set(bm25_hits.keys())
+
+        # Query-time embedding: computed fresh (can't be precomputed like the
+        # corpus), ~4ms locally -- negligible next to this system's LLM call
+        # latencies. A failure here (fastembed not installed, or a transient
+        # model error) means query_embedding is None and we transparently
+        # fall back to the original BM25 + metadata behavior for this call.
+        query_embedding = None
+        if self.doc_embeddings is not None:
+            vecs = embed_texts([query])
+            query_embedding = vecs[0] if vecs else None
+
         # Even if BM25 finds nothing (e.g. a pure metadata query like "show me
-        # sustainability docs"), still consider all docs for metadata-only matching.
-        if not candidate_idx and (brands or countries or tags or source_types):
+        # sustainability docs"), or embeddings are in play (a paraphrase match
+        # can score zero on BM25 but high on semantic similarity -- the whole
+        # point of adding this signal), consider every document.
+        if not candidate_idx and (brands or countries or tags or source_types or query_embedding):
             candidate_idx = set(range(len(self.docs)))
+        elif query_embedding:
+            candidate_idx |= set(range(len(self.docs)))
 
         scored = []
         for i in candidate_idx:
@@ -96,7 +130,12 @@ class DocumentIndex:
             lexical = bm25_hits.get(i, 0.0)
             meta = self._metadata_score(doc, brands, countries, tags, source_types)
             recency = self._recency_boost(doc["date"], recency_weight)
-            total = lexical + meta + recency
+            semantic = 0.0
+            if query_embedding is not None:
+                doc_vec = self.doc_embeddings.get(doc["doc_id"])
+                if doc_vec is not None:
+                    semantic = SEMANTIC_WEIGHT * cosine_similarity(query_embedding, doc_vec)
+            total = lexical + meta + recency + semantic
             if total <= 0:
                 continue
             scored.append((total, i))

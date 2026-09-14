@@ -1,0 +1,245 @@
+{
+  "started_at": "2026-09-14 13:24:47",
+  "capabilities": [
+    {
+      "number": 15,
+      "title": "Temporal reasoning for current, historical, and comparative period analysis",
+      "slug": "cap15_temporal_reasoning",
+      "cases": [
+        {
+          "id": "01",
+          "description": "current/latest period, implied not stated",
+          "turns": [
+            "What is AB InBev's most recent quarterly revenue?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"AB InBev's most recent reported quarterly revenue for Global is **$15,384 million** in **Q4 2025** (\"",
+          "latency_s": 64.08,
+          "cost_usd": 0.001056,
+          "answers": [
+            "AB InBev's most recent reported quarterly revenue for Global is **$15,384 million** in **Q4 2025** (period label: Q4 2025). [Source: structured KPI data]\n\nIf useful, I can check how that compares to the prior quarter or the same quarter a year earlier, or break it down by region/segment."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "explicit historical period",
+          "turns": [
+            "What was North America's revenue in Q1 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\\n\\nWant to \"",
+          "latency_s": 64.33,
+          "cost_usd": 0.000594,
+          "answers": [
+            "North America's revenue in **Q1 2024** was **$3,593 million (USD)** [structured KPI data].\n\nWant to compare this with Q1 2025 or break it down by brand/segment?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "year-over-year comparison, explicit",
+          "turns": [
+            "How did Middle Americas revenue in Q4 2025 compare to Q4 2024?"
+          ],
+          "passed": true,
+          "reason": "answer did not contain any of ('%', 'increase', 'decrease', 'up', 'down', 'grew', 'declined'): '**Middle Americas revenue \u2014 Q4 2025 vs. Q4 2024**\\n\\n| Metric | Q4 2024 | Q4 2025 | Change |\\n| --- | --- | --- | --- |\\n| Revenue (USD m) | 4,395.0 | 4,927.0 | +532.0 (+12.1%) |\\n\\nRevenue in Middle Americ'",
+          "latency_s": 96.0,
+          "cost_usd": 0.001347,
+          "answers": [
+            "**Middle Americas revenue \u2014 Q4 2025 vs. Q4 2024**\n\n| Metric | Q4 2024 | Q4 2025 | Change |\n| --- | --- | --- | --- |\n| Revenue (USD m) | 4,395.0 | 4,927.0 | +532.0 (+12.1%) |\n\nRevenue in Middle Americas grew by **USD 532.0m**, from **4,395.0m in Q4 2024 to 4,927.0m in Q4 2025** \u2014 an increase of roughly **12.1%** year over year.\n\nNote: the retrieved evidence covers only total revenue for these two quarters; it does not include volume, price/mix, or currency-neutral breakdowns, so the drivers behind the increase can't be attributed from this data alone.\n\nFollow-ups you might find useful:\n- How did Middle Americas volume (or revenue per hectoliter) trend over the same two quarters?\n- How does Middle Americas' Q4 2025 growth compare with other zones (e.g., North America or EMEA)?"
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "quarter-over-quarter comparison",
+          "turns": [
+            "How did North America's revenue in Q2 2025 compare to Q1 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='**North America revenue: Q2 2025 vs Q1 2025**\\n\\n| Metric | Value |\\n| --- | --- |\\n| Q1 2025 revenue | '",
+          "latency_s": 153.63,
+          "cost_usd": 0.001837,
+          "answers": [
+            "**North America revenue: Q2 2025 vs Q1 2025**\n\n| Metric | Value |\n| --- | --- |\n| Q1 2025 revenue | $3,364.0M |\n| Q2 2025 revenue | $3,844.0M |\n| Change | +$480.0M |\n| Change (%) | +14.27% |\n\nNorth America's revenue rose sequentially in Q2 2025, up **$480.0M (+14.27%)** from Q1 2025. Keep in mind this is a quarter-over-quarter comparison, so part of the increase may reflect normal seasonality (Q2 covers the spring/summer selling season) rather than purely underlying growth.\n\n*Evidence note: only the structured KPI query above was available for this question \u2014 no internal documents or web sources were retrieved, so I can't attribute the change to specific drivers such as volume, price/mix, or brand performance.*\n\nFollow-ups you might find useful:\n- How does Q2 2025 compare to Q2 2024 (year-over-year) for North America revenue?\n- What drove the change \u2014 North America volume or revenue per hectoliter in Q2 2025?"
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "full-year trend across all quarters",
+          "turns": [
+            "What is EMEA's revenue trend across each quarter of 2025?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='Based on the structured KPI data for EMEA in 2025, revenue trended upward through the year, then fla'",
+          "latency_s": 71.29,
+          "cost_usd": 0.001119,
+          "answers": [
+            "Based on the structured KPI data for EMEA in 2025, revenue trended upward through the year, then flattened in H2:\n\n| Quarter | Revenue (USD million) |\n| --- | --- |\n| Q1 2025 | $1,965 |\n| Q2 2025 | $2,489 |\n| Q3 2025 | $2,524 |\n| Q4 2025 | $2,524 |\n\n**Trend summary:**\n- **Q1 \u2192 Q2:** Strong growth of **+$524M**.\n- **Q2 \u2192 Q3:** Modest growth of **+$35M**.\n- **Q3 \u2192 Q4:** Flat, with revenue unchanged at **$2,524M**.\n\nOverall, EMEA revenue grew from **$1,965M in Q1** to **$2,524M by Q4**, with most of the increase occurring in Q2.\n\nIf useful, I can pull the same quarterly trend for 2024 to compare year-over-year, or break down EMEA revenue by brand or subregion."
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "relative period phrasing ('last year', 'this year')",
+          "turns": [
+            "What was South America's revenue last year?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"South America's revenue last year (2024) was **$12,423 million USD**.\\n\\nThis figure comes from the su\"",
+          "latency_s": 76.61,
+          "cost_usd": 0.001562,
+          "answers": [
+            "South America's revenue last year (2024) was **$12,423 million USD**.\n\nThis figure comes from the summed quarterly KPI data for the South America zone in 2024, as returned by the structured KPI query.\n\nNote: your active context was set to 2025, so \"last year\" was interpreted as 2024. If you actually meant a different year, let me know and I can re-run the query.\n\nWould you like to see how 2025 revenue compares so far, or a quarterly breakdown of the 2024 figure?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "07",
+          "description": "explicit multi-year comparison intent",
+          "turns": [
+            "Compare North America's EBITDA margin in 2024 versus 2025"
+          ],
+          "passed": true,
+          "reason": "intent='comparison', expected one of ('comparison',)",
+          "latency_s": 66.78,
+          "cost_usd": 0.001459,
+          "answers": [
+            "**North America EBITDA margin: 2024 vs 2025**\n\n| Year | EBITDA Margin |\n| --- | --- |\n| 2024 | 32.7% |\n| 2025 | 33.0% |\n\n**Takeaway:** North America's EBITDA margin expanded modestly year over year, rising **+0.3 percentage points** from 32.7% in 2024 to 33.0% in 2025 (roughly a 0.9% relative improvement). This is a marginal gain rather than a step change \u2014 profitability in the zone is holding broadly steady in the low-33% range.\n\nNote on the data: these figures are computed from quarterly-grain records aggregated by year (sum of normalized EBITDA \u00f7 sum of revenue), so they reflect a full-year blend of quarterly performance rather than a single reported annual figure.\n\nFollow-up ideas:\n- How does North America's 2025 margin compare with the zone's trend over 2022\u20132023?\n- Which other zones (e.g., South America, EMEA) had higher EBITDA margins in 2025?"
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "annual (FY) grain versus quarterly grain distinction",
+          "turns": [
+            "What was AB InBev's FY2025 total revenue?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"AB InBev's FY2025 total global revenue was **$59,320 million USD** (approximately **$59.3 billion**)\"",
+          "latency_s": 21.67,
+          "cost_usd": 0.001081,
+          "answers": [
+            "AB InBev's FY2025 total global revenue was **$59,320 million USD** (approximately **$59.3 billion**), based on the structured KPI data for the Global zone at annual grain for FY2025.\n\nWould you like a comparison with FY2024 revenue or a breakdown by region/segment?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 614.9,
+    "total_cost_usd": 0.0101
+  }
+}

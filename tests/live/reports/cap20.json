@@ -1,0 +1,281 @@
+{
+  "started_at": "2026-09-14 13:24:54",
+  "capabilities": [
+    {
+      "number": 20,
+      "title": "Analytical comparisons across KPIs, entities, periods, and business domains",
+      "slug": "cap20_analytical_comparisons",
+      "cases": [
+        {
+          "id": "01",
+          "description": "compare one KPI across two zones",
+          "turns": [
+            "Compare revenue between North America and EMEA in 2025"
+          ],
+          "passed": true,
+          "reason": "intent='comparison', expected one of ('comparison',)",
+          "latency_s": 140.07,
+          "cost_usd": 0.001956,
+          "answers": [
+            "## Revenue comparison \u2014 North America vs. EMEA (2025)\n\n| Zone | Revenue (USD m, 2025) |\n| --- | --- |\n| North America | 14,208.0 |\n| EMEA | 9,502.0 |\n\n**Key takeaways**\n\n- **North America generated more revenue than EMEA in 2025**: 14,208 m USD vs. 9,502 m USD \u2014 a difference of **4,706 m USD** in North America's favor.\n\n**Data notes / caveats**\n\n- These figures are the summed quarterly-grain revenue records for 2025 for the two requested zones only; other zones (e.g., Latin America, Asia Pacific) were not part of the query, so this is not a company-wide revenue total.\n- The evidence contains only annual zone totals for 2025 \u2014 no quarterly split and no prior-year comparison \u2014 so I can't tell whether this gap was consistent across the year or how it changed versus 2024.\n\n**Suggested follow-ups**\n\n- View the **quarterly 2025 breakdown** for each zone to see when the gap widened or narrowed.\n- Pull the same comparison for **2024** to check whether North America's lead over EMEA is growing."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "02",
+          "description": "compare one zone across two periods",
+          "turns": [
+            "How did North America's revenue in 2025 compare to 2024?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"North America's revenue declined in 2025 compared to 2024. Based on the quarterly KPI data:\\n\\n| Metri\"",
+          "latency_s": 126.68,
+          "cost_usd": 0.001903,
+          "answers": [
+            "North America's revenue declined in 2025 compared to 2024. Based on the quarterly KPI data:\n\n| Metric | Value |\n|---|---|\n| Revenue 2025 | US$14,208M |\n| Revenue 2024 | US$14,655M |\n| Change | \u2013US$447M |\n| Change (%) | \u20133.05% |\n\nSo 2025 was a down year for North America, with revenue falling **US$447M, or \u20133.05%, year-over-year**.\n\nWould you like me to break down the quarterly trend within 2025 to see when the decline occurred, or compare North America's performance to other zones?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "03",
+          "description": "compare two KPIs for one zone",
+          "turns": [
+            "Compare EBITDA margin and organic revenue growth for North America in 2025"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## North America 2025: EBITDA Margin vs Organic Revenue Growth\\n\\n| Quarter | EBITDA Margin | Organic '",
+          "latency_s": 93.4,
+          "cost_usd": 0.001615,
+          "answers": [
+            "## North America 2025: EBITDA Margin vs Organic Revenue Growth\n\n| Quarter | EBITDA Margin | Organic Revenue Growth |\n| --- | --- | --- |\n| Q1 2025 | 32.3% | -4.7% |\n| Q2 2025 | 35.7% | +2.2% |\n| Q3 2025 | 35.1% | -0.7% |\n| Q4 2025 | 28.0% | -1.0% |\n\n**What the two metrics say together**\n\n- **Margins were strong for most of the year, but growth was not.** EBITDA margin held in the 32\u201336% range through Q1\u2013Q3 before falling to 28.0% in Q4. Organic revenue growth, by contrast, was negative in three of four quarters, with Q1 the clear low point at -4.7% and Q2 the only positive quarter at +2.2%.\n- **The two series decouple in Q3.** Margin stayed near its peak (35.1%, essentially flat vs. Q2's 35.7%) while organic growth slipped back to -0.7%. That pattern suggests margin was being supported by something other than top-line expansion (e.g., cost or mix effects), not by volume/revenue momentum.\n- **Q4 is the weak spot on both fronts.** Margin dropped 7.1 percentage points sequentially (35.1% \u2192 28.0%) at the same time organic growth remained slightly negative (-1.0%). Q4 is the only quarter where the two metrics moved in the same adverse direction.\n- **Q1 vs. Q2 is the mirror image.** The weakest growth quarter (-4.7%) still delivered a 32.3% margin, and the only growth quarter (+2.2%) also happened to be the margin peak. So the relationship between growth and margin is not consistent across the year.\n\n**Caveat on full-year figures:** The evidence provides only quarterly data \u2014 no reported full-year 2025 aggregate for either metric. A simple arithmetic average of the four quarters would be roughly ~32.8% EBITDA margin and ~-1.1% organic revenue growth, but that is an approximation, not an official AB InBev full-year figure, and should not be treated as one.\n\n**Follow-up suggestions**\n- What drove the Q4 2025 margin step-down in North America (35.1% \u2192 28.0%) \u2014 is there commentary on cost or mix in internal documents?\n- How does North America's 2025 margin/growth profile compare with other zones (e.g., South America or EMEA) for the same quarters?"
+          ],
+          "intents": [
+            "data_query"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "04",
+          "description": "compare two KPIs across two zones at once",
+          "turns": [
+            "Compare EBITDA margin and organic revenue growth for North America versus EMEA in 2025"
+          ],
+          "passed": true,
+          "reason": "no markdown table detected: '## North America vs EMEA \u2014 2025 (quarterly average)\\n\\n| Zone | Avg EBITDA margin (%) | Avg organic revenue growth (%) |\\n| --- | --- | --- |\\n| North America | 32.775 | **\u22121.05** |\\n| EMEA | 32.55 | **3.3'",
+          "latency_s": 146.33,
+          "cost_usd": 0.002024,
+          "answers": [
+            "## North America vs EMEA \u2014 2025 (quarterly average)\n\n| Zone | Avg EBITDA margin (%) | Avg organic revenue growth (%) |\n| --- | --- | --- |\n| North America | 32.775 | **\u22121.05** |\n| EMEA | 32.55 | **3.30** |\n\n**What stands out**\n\n- **EBITDA margin is essentially at parity.** North America's 32.775% sits only marginally above EMEA's 32.55% (a gap of ~0.23 percentage points, computed from the table) \u2014 not a meaningful profitability difference between the two zones.\n- **Organic revenue growth is where they diverge.** EMEA posted +3.30%, while North America contracted at \u22121.05% \u2014 a spread of ~4.35 percentage points (again, computed from the table). This is the real story: North America is holding its margin while its top line shrank, whereas EMEA is growing while defending a similar margin level.\n- Practical read: EMEA shows the healthier growth profile in 2025; North America looks like a margin-maintenance story with revenue pressure.\n\n**Caveats on this evidence**\n\n- These figures are **averages across reported 2025 quarters** (the query filtered `quarter IS NOT NULL`), not full-year totals \u2014 so seasonality and intra-year swings are smoothed out. A zone that weakened or recovered over the course of the year would look identical in this view.\n- No internal documents, web results, or code-execution output were retrieved to explain *why* North America's organic growth is negative, so the drivers (pricing, volume, mix, brand performance) cannot be attributed from this evidence alone.\n- Only these two zones were queried; no global or other-zone benchmark is available for context.\n\n**Suggested next questions**\n\n- Break North America's organic growth out by quarter in 2025 to see whether the decline is narrowing or deepening.\n- Compare the two zones on volume or revenue-per-hectolitre to test whether North America's margin hold is price-driven."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "05",
+          "description": "compare three zones on one KPI",
+          "turns": [
+            "Compare revenue across North America, EMEA, and Asia Pacific in 2025"
+          ],
+          "passed": true,
+          "reason": "no markdown table detected: '## Revenue by Zone \u2014 Full-Year 2025\\n\\n| Zone | Revenue (USD million) |\\n| --- | --- |\\n| North America | $14,208 |\\n| EMEA | $9,502 |\\n| Asia Pacific | $5,694 |\\n\\n**Key takeaways**\\n\\n- **North America is the'",
+          "latency_s": 34.81,
+          "cost_usd": 0.001905,
+          "answers": [
+            "## Revenue by Zone \u2014 Full-Year 2025\n\n| Zone | Revenue (USD million) |\n| --- | --- |\n| North America | $14,208 |\n| EMEA | $9,502 |\n| Asia Pacific | $5,694 |\n\n**Key takeaways**\n\n- **North America is the largest of the three zones** at $14,208m.\n- **EMEA ranks second** at $9,502m.\n- **Asia Pacific is the smallest** at $5,694m.\n\n**Caveats on the data:** Figures are the SQL aggregate `SUM(revenue_usd_m)` filtered to `year = 2025` and `grain = 'quarterly'`, grouped by zone \u2014 i.e., full-year 2025 totals built from quarterly records. Only these three zones are included; other zones and non-quarterly rows are excluded. No internal documents or web evidence were retrieved, so this comparison rests on the structured KPI data alone.\n\n*Follow-up ideas:* Would you like the same three zones broken out **by quarter** to see the intra-year trend, or a comparison against **2024** to gauge year-over-year growth?"
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "06",
+          "description": "compare a brand's document-level context across two countries",
+          "turns": [
+            "How does Corona's positioning differ between Mexico and other markets?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='## Short answer\\n\\nBased on the retrieved evidence, the clearest documented difference is one of **bra'",
+          "latency_s": 47.93,
+          "cost_usd": 0.001758,
+          "answers": [
+            "## Short answer\n\nBased on the retrieved evidence, the clearest documented difference is one of **brand scope and ownership**, not consumer positioning language: AB InBev's \"Corona\" megabrand is defined *excluding* Mexico, because a permanent license to the Corona/Modelo brand sits with Constellation Brands in that market [DOC-012]. Outside Mexico, Corona is counted and reported as one of AB InBev's four global \"megabrands\" (alongside Budweiser, Stella Artois and Michelob Ultra) and is therefore positioned as a **global, multi-country growth brand** rather than a Mexico-operated one.\n\n## What the evidence actually supports\n\n| Dimension | Mexico | Outside Mexico |\n|---|---|---|\n| Brand scope in AB InBev reporting | Excluded from the \"Corona\" megabrand definition; Corona/Modelo licensed to Constellation Brands [DOC-012] | Counted within AB InBev's megabrand portfolio (Budweiser, Corona, Stella Artois, Michelob Ultra) [DOC-012] |\n| Growth role | Mexico volumes were **flat** in FY2025 [DOC-011] | Megabrands grew revenue **+4.6% in FY2024 and +4.1% in FY2025**, both ahead of total company revenue growth [DOC-012] |\n| Financial reporting granularity | Not disclosed by country; sits inside the **Middle Americas** zone (per stated data limitation) | Tracked at megabrand level, not by individual market |\n\nSo the practical positioning split is: in Mexico, Corona is part of a **licensed portfolio** and Mexico volumes were flat [DOC-011]; internationally, AB InBev manages and markets Corona as a **premium global megabrand** that has been outgrowing the company average [DOC-012].\n\n## Caveats \u2014 please read\n\n- **The key sentence is truncated.** DOC-012 reads \"Corona (outside Mexico, where Constellation Brands holds a permanent license to the Corona/Modelo brand\u2026\" and cuts off mid-clause. I've reported it as written, but the full filing should be checked before quoting it externally \u2014 the geographic scope of the license arrangement is exactly the kind of detail that a truncated snippet can distort.\n- **No positioning narrative was retrieved.** The evidence contains no brand-positioning or consumer-messaging text (e.g. premium/import cues, target occasions, price tier) for either Mexico or other markets. If that's what you need, this evidence set does not answer it.\n- **No country-level financials.** AB InBev does not publicly disclose structured financials by country [per stated limitation]. The nearest proxy is the **Middle Americas** zone, which includes Mexico \u2014 Q4 2025 revenue $4,927M (organic +5.9%), volume 39,672K hL, normalized EBITDA margin 50.9% [DOC-008], versus Q4 2024 revenue $4,395M (organic +6.6%), volume 38,907K hL, margin 50.7% [DOC-004]. Note these are *zone* figures and cannot be attributed to Corona or to Mexico alone.\n- Competitor brand data (Heineken, Constellation Brands, etc.) is not maintained in queryable form in this build [DOC-014], so no benchmarking of Corona against rivals in either market is possible from this evidence.\n\n## Worth checking next\n\n- How did the **Middle Americas zone** (Mexico's reporting home) perform for the full FY2025, not just Q4, versus FY2024?\n- How did Corona's growth compare with the other megabrands \u2014 Budweiser, Stella Artois and Michelob Ultra \u2014 in FY2025?"
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "unstructured"
+            ]
+          ],
+          "assumptions": [
+            [
+              "AB InBev doesn't publicly disclose structured financials by country; showing the **Middle Americas** zone (which includes Mexico) instead, plus any Mexico-specific commentary found in the documents."
+            ]
+          ],
+          "citations": [
+            [
+              {
+                "doc_id": "DOC-011",
+                "title": "FY2025 Country-Level Commentary (Selected Markets)",
+                "date": "2026-02-12",
+                "source_type": "filing_excerpt"
+              },
+              {
+                "doc_id": "DOC-012",
+                "title": "Megabrand Performance Summary, FY2024-FY2025",
+                "date": "2026-02-12",
+                "source_type": "market_research"
+              },
+              {
+                "doc_id": "DOC-004",
+                "title": "FY2024 Full-Year Results and Q4 2024 Summary",
+                "date": "2025-02-26",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-008",
+                "title": "FY2025 Full-Year Results and Q4 2025 Summary",
+                "date": "2026-02-11",
+                "source_type": "earnings_commentary"
+              },
+              {
+                "doc_id": "DOC-014",
+                "title": "Competitive Landscape Overview: Global Brewing Industry",
+                "date": "2025-08-01",
+                "source_type": "competitor_intel"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "07",
+          "description": "compare quarter-over-quarter within a single zone",
+          "turns": [
+            "Compare Middle Americas revenue in Q4 2025 versus Q3 2025"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer='**Middle Americas revenue: Q4 2025 vs Q3 2025**\\n\\n| Metric | Q3 2025 | Q4 2025 | QoQ change |\\n| --- |'",
+          "latency_s": 39.83,
+          "cost_usd": 0.001728,
+          "answers": [
+            "**Middle Americas revenue: Q4 2025 vs Q3 2025**\n\n| Metric | Q3 2025 | Q4 2025 | QoQ change |\n| --- | --- | --- | --- |\n| Revenue (USD m) | 4,325.0 | 4,927.0 | +602.0 |\n| QoQ change (%) | \u2014 | \u2014 | +13.92% |\n\nQ4 2025 revenue for Middle Americas was **$4,927.0m**, an increase of **$602.0m** over the **$4,325.0m** recorded in Q3 2025, equivalent to sequential growth of **+13.92%**.\n\nScope note: these figures come directly from the structured KPI data (zone = Middle Americas, year = 2025, quarters 3 and 4), so the comparison is on the same KPI definition (`revenue_usd_m`). No document, web, or code-execution evidence was provided, so there is no qualitative commentary (e.g. price/mix or volume drivers) available to explain the increase.\n\nPossible next steps:\n- Compare Q4 2025 with Q4 2024 for a year-over-year view of Middle Americas revenue.\n- Look at another KPI for the same zone/periods (e.g. volumes) to help explain the QoQ move."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured"
+            ]
+          ],
+          "assumptions": [
+            []
+          ],
+          "citations": [
+            []
+          ]
+        },
+        {
+          "id": "08",
+          "description": "compare AB InBev's own numbers against a named real competitor",
+          "turns": [
+            "How does AB InBev's overall performance compare to Heineken's public position?"
+          ],
+          "passed": true,
+          "reason": "unavailable=False, answer=\"## Short answer\\n\\nI can't give you a data-backed comparison \u2014 the evidence returned for this question\"",
+          "latency_s": 50.26,
+          "cost_usd": 0.002163,
+          "answers": [
+            "## Short answer\n\nI can't give you a data-backed comparison \u2014 the evidence returned for this question is effectively empty, so any numbers I produced would be fabricated.\n\n## What the evidence actually contains\n\n- **Internal KPI data:** the structured query returned *no matching rows* (`fact_kpi` lookup empty).\n- **Web search:** no results were returned for this query.\n- **Known limitation (as flagged in the evidence):** Heineken is not part of AB InBev's tracked entities (brand / zone / country). It is a separate, competitor company, so there is no internal structured reporting on it \u2014 AB InBev's own systems measure AB InBev's performance, not a rival's.\n\n## What can be said, qualitatively only\n\nThe following is general public-knowledge framing, **not** from internal reporting and not verified against any source in this evidence set \u2014 treat it as orientation only:\n\n- AB InBev and Heineken are both large global brewers competing in overlapping categories, but with different geographic weightings (AB InBev historically skews toward the Americas; Heineken toward Europe, Africa and the Middle East).\n- Their public positions are typically framed around different mixes of volume growth, premiumisation, and margin/revenue-per-hectolitre rather than a single comparable headline number.\n\nI am deliberately giving **no figures** here, because none were supplied and any I offered would be invented.\n\n## What would be needed for a real comparison\n\n1. **AB InBev's own side:** pull actual KPIs (revenue, volume, revenue/hl, EBITDA margin) for the relevant period from `fact_kpi` \u2014 the query above returned nothing, so the filter or period likely needs correcting.\n2. **Heineken's side:** a source that is *external* to AB InBev's entity model \u2014 e.g. Heineken's published annual/half-year reports \u2014 since internal data will never cover a competitor.\n3. **Explicit comparability caveats:** different fiscal reporting conventions, geographic mix, and portfolio definitions mean like-for-like comparison needs to be defined before the numbers are read.\n\n## Suggested next steps\n\n- Re-run the KPI pull for AB InBev alone (correct period/zones) so at least one side of the comparison is grounded in real data \u2014 shall I do that?\n- If you can point me to a permitted external source for Heineken's public results, I can lay the two side by side with clear sourcing."
+          ],
+          "intents": [
+            "comparison"
+          ],
+          "sub_agents_used": [
+            [
+              "structured",
+              "web"
+            ]
+          ],
+          "assumptions": [
+            [
+              "'Heineken' isn't part of Anheuser-Busch InBev (AB InBev)'s tracked entities (brand/zone/country), or is a different company entirely (e.g. a competitor), so no internal structured data exists for it. Any answer about it, if given, is qualitative/public information only, not internal reporting."
+            ]
+          ],
+          "citations": [
+            []
+          ]
+        }
+      ],
+      "passed": 8,
+      "total": 8
+    }
+  ],
+  "summary": {
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "elapsed_s": 679.8,
+    "total_cost_usd": 0.0151
+  }
+}

@@ -106,6 +106,99 @@ Set independently via three environment variables, so provider/model choice
 never requires a code change: `LLM_MODEL_CLASSIFY`, `LLM_MODEL_GENERATE`,
 `LLM_MODEL_SYNTHESIZE` (see `src/llm_client.py` module docstring).
 
+### Worked example: spending a quota-limited model where it actually matters
+
+Some free-tier model marketplaces offer a smarter model alongside a regular
+one, gated as "limited" (a hard rate/quota cap) — e.g. `deepseek-v4.1-flash`
+(higher benchmark intelligence) vs. the always-available `deepseek-v4-flash`.
+The three-tier split above makes the placement decision straightforward
+rather than a guess: `classify` fires on *every* turn (including greetings)
+and only needs reliable schema-following, so it stays on the unlimited
+model; `synthesize` fires once or twice per turn but is where answer
+*quality* — multilingual fluency, correctly flagging thin/contradictory
+evidence, avoiding hallucination — is actually won or lost. That's the one
+role worth spending a limited-quota smarter model on:
+
+```
+LLM_MODEL_CLASSIFY=deepseek-v4-flash:free      # unlimited, high call volume, low reasoning need
+LLM_MODEL_GENERATE=deepseek-v4-flash:free      # unlimited, high call volume, low reasoning need
+LLM_MODEL_SYNTHESIZE=deepseek-v4.1-flash:free  # limited quota, spent on the role that most benefits
+```
+
+**The risk this creates, and how it's guarded:** a hard quota cap means the
+`synthesize` call can legitimately fail mid-session in a way the unlimited
+`classify`/`generate` calls won't. Without a guard, that would surface as an
+unhandled exception crashing the turn — the same class of failure this
+system already hardened against for token-truncation (§1 above).
+`AnthropicLLMClient`/`OpenAILLMClient` (`src/llm_client.py`) both catch *any*
+API-layer failure on the primary model (not narrowly a 429 rate limit —
+this was widened after actually hitting a `402 confidence_level_required`
+account-level block from a free gateway mid-session, a different error
+class than rate-limiting but the same underlying risk) and retry once
+against a configured `fallback_model` — for the `synthesize` role, that
+fallback is whatever `generate` is configured to use (the always-available
+baseline), wired automatically in `get_llm_client()`. `classify`/`generate`
+themselves have no fallback configured, since they're already the baseline
+tier — there's nowhere cheaper/more-available to fall back to. Usage/cost
+is recorded against whichever model actually served the request, not the
+one originally requested, so `GLOBAL_USAGE.summary()` stays accurate even
+when a fallback fires.
+
+**And if the fallback ALSO fails** (the account-level block above affected
+*every* model on that gateway equally, so the fallback attempt failed too):
+the client translates the final failure into one provider-agnostic
+`LLMUnavailableError`, and `Orchestrator.handle_turn` (a thin wrapper around
+the real turn-handling logic) catches it and returns a plain, honest
+"I'm temporarily unable to reach the language model service..." answer
+(`AgentResponse.unavailable=True`) instead of propagating an exception —
+verified by forcing every underlying API call to fail and confirming
+`handle_turn` still returns cleanly rather than crashing the caller (the
+Streamlit UI, in the case that actually surfaced this gap). A narrower,
+separate guard around the memory-summarization call specifically avoids the
+opposite mistake: discarding an already-successfully-synthesized answer
+just because the *unrelated*, best-effort summarization call happened to
+fail afterward.
+
+### Going further: dynamic per-turn routing *within* the synthesize role
+
+The three-role split (classify/generate/synthesize) is static -- set once via
+env vars, same model for every turn. Once a paid pass unlocked several
+models at different price/quality points on one account (rather than one
+quota-limited model to spend carefully), a further, *dynamic* split became
+worth adding: not every `synthesize` call is equally hard, so not every one
+should cost the same.
+
+`Orchestrator._classify_complexity()` picks a tier -- `simple` / `moderate` /
+`complex` -- per turn, from signals already available after NLU + routing,
+with **no extra LLM call**:
+
+| Tier | Trigger | Model (this deployment) | Real Artificial Analysis Intelligence Index |
+|---|---|---|---|
+| `simple` | single zone/KPI, one sub-agent | `deepseek-v4-flash:free` | 35.0 |
+| `moderate` | comparison intent, OR 2 sub-agents, OR multi-zone/multi-KPI question | `deepseek-v4.1-flash:free` | 39.5 |
+| `complex` | 3+ sub-agents (hybrid retrieval), OR a validation retry already fired once | `glm-5.3-flash` | ~42-46 |
+
+The `complex` tier is also what a validation retry escalates to,
+unconditionally -- if the cheaper tier's draft already got flagged as
+citing numbers not present in the evidence, retrying with the *same* tier
+that just got it wrong is a worse bet than escalating.
+
+Mechanically, this reuses the existing single `llm_synthesize` client
+(constructed once, not re-instantiated per turn) via a new
+`generate(..., model_override=...)` parameter -- the client's own
+rate-limit/outage fallback (above) still applies underneath whichever tier
+is requested, so a `complex`-tier call that fails still falls back to
+`generate`'s model rather than crashing.
+
+Verified live against the real gateway: a single-zone/single-KPI question
+routed to `deepseek-v4-flash:free`; a two-zone comparison routed to
+`deepseek-v4.1-flash:free`; a 3-sub-agent hybrid question (structured +
+web + coding) routed to `glm-5.3-flash`, including on its validation retry.
+`Orchestrator._classify_complexity()` itself is pure/deterministic and unit
+tested (`tests/test_pipeline.py::TestSynthesisComplexityRouting`) without
+needing a live model call to verify the *routing decision* -- only the
+worked example above needed a real call, to verify the *plumbing*.
+
 ## 3. Which APIs are affordable, and how they map onto the three tiers
 
 Public per-token API pricing changes fast (multiple vendors cut prices in
@@ -121,6 +214,25 @@ it, don't hand-edit the numbers below.
 | Claude Sonnet | $2.00 | $10.00 | `synthesize` — the workhorse: strong instruction-following and multilingual fluency at a fraction of the top tier's cost |
 | GPT-4o | $2.50 | $10.00 | `synthesize` alternative in the OpenAI ecosystem |
 | Claude Opus / GPT-5 (frontier) | $15.00+ | $75.00+ | **Not recommended for any tier here.** The domain is bounded (6 KPIs, 5 zones, one schema) and doesn't need frontier multi-step reasoning. Revisit only if the domain grows to open-ended, ambiguous multi-hop reasoning that a Sonnet/GPT-4o-class model demonstrably gets wrong. |
+
+**What this deployment actually runs** (live gateway, real published rates
+checked Sept 2026 — not illustrative):
+
+| Model | Input $/Mtok | Output $/Mtok | Tier fit | Source |
+|---|---|---|---|---|
+| DeepSeek V4 Flash | $0.22 (off-peak) / $0.44 (peak) | $0.66 / $1.32 | `classify`, `generate`, and the `synthesize` fallback | [BenchLM](https://benchlm.ai/deepseek/api-pricing), [TechJack](https://techjacksolutions.com/ai-tools/deepseek/deepseek-pricing/) |
+| DeepSeek V4.1 Flash | $0.15 (cache miss) / $0.003 (cache hit) | $0.60 | `synthesize` moderate tier | [TechBriefly](https://techbriefly.com/2026/09/11/deepseek-v4-1-flash-api-pricing/), [AIPricing Guru](https://www.aipricing.guru/deepseek-pricing/) |
+| GLM-5.3-Flash | $0.15 (list) | $0.50 | `synthesize` complex tier | [eesel AI](https://www.eesel.ai/blog/glm-5-3-flash-pricing) |
+
+DeepSeek's peak window is Mon-Fri 01:00-04:00 & 06:00-10:00 UTC (roughly
+doubles both rates); a cache hit is far cheaper on either DeepSeek model.
+`PRICING_PER_MTOK_USD` uses the off-peak/cache-miss rate as a reasonable
+upper-bound estimate rather than tracking peak/cache state. Note this
+gateway currently offers both DeepSeek models at $0 (the ":free"/"limited"
+tiers used for `classify`/`generate` and, until upgraded, `synthesize`) —
+the table still prices them at real open-market rates, since the point of
+tracking cost is "what this traffic is actually worth," not "what happens
+to be free on one gateway today."
 
 **Practical recommendation for this system**: Haiku-class (or GPT-4o-mini/
 GPT-5-mini-class) for `classify` and `generate`, Sonnet-class (or GPT-4o-class)
