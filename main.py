@@ -2,8 +2,9 @@
 Main entry point for the Anheuser-Busch InBev (AB InBev) Enterprise Q&A Agent.
 
 Usage:
-  python3 main.py           # Launch interactive terminal chat
-  python3 main.py --test    # Run offline test suite
+  python3 main.py                  # Launch interactive terminal chat
+  python3 main.py --test           # Run offline test suite
+  python3 main.py --test-live-html # Run live LLM suite & generate HTML report
 """
 import sys
 from pathlib import Path
@@ -15,7 +16,10 @@ from scripts.chat_cli import main as cli_main
 
 
 def main():
-    if len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test-live", "-tl", "test-live")):
+    if len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test-live-html", "-tlh", "test-live-html")):
+        from scripts.run_live_tests_html import main as run_live_html_main
+        sys.exit(run_live_html_main())
+    elif len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test-live", "-tl", "test-live")):
         import unittest
         loader = unittest.TestLoader()
         suite = loader.loadTestsFromName("tests.test_live_llm")

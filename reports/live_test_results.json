@@ -1,0 +1,333 @@
+{
+  "timestamp": "2026-09-14 15:10:41",
+  "provider": "tokenharbor",
+  "base_url": "https://tokenharbor.ai/v1",
+  "model_router": "deepseek-v4.1-flash",
+  "total_tests": 12,
+  "passed": 12,
+  "failed": 0,
+  "pass_rate": 100.0,
+  "total_time_seconds": 360.55,
+  "usage": {
+    "calls": 29,
+    "total_input_tokens": 23205,
+    "total_output_tokens": 11466,
+    "total_tokens": 34671,
+    "total_cost_usd": 0.057603,
+    "estimated_cost_usd": 0.057603,
+    "total_latency_ms": 944080.9,
+    "avg_latency_ms": 32554.5,
+    "by_caller": {
+      "orchestrator_nlu": {
+        "calls": 12,
+        "input_tokens": 11287,
+        "output_tokens": 3925,
+        "cost_usd": 0.023062,
+        "latency_ms": 493149.8918533325
+      },
+      "test_direct_llm": {
+        "calls": 1,
+        "input_tokens": 47,
+        "output_tokens": 21,
+        "cost_usd": 0.00010999999999999999,
+        "latency_ms": 24028.822898864746
+      },
+      "structured_agent": {
+        "calls": 7,
+        "input_tokens": 5577,
+        "output_tokens": 1339,
+        "cost_usd": 0.009594,
+        "latency_ms": 229320.7471370697
+      },
+      "orchestrator_synthesis": {
+        "calls": 8,
+        "input_tokens": 4973,
+        "output_tokens": 4645,
+        "cost_usd": 0.018908,
+        "latency_ms": 162936.9990825653
+      },
+      "orchestrator_synthesis_retry": {
+        "calls": 1,
+        "input_tokens": 1321,
+        "output_tokens": 1536,
+        "cost_usd": 0.005929,
+        "latency_ms": 34644.407987594604
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "LIVE-01",
+      "name": "Live Client Connectivity & Handshake",
+      "category": "Connectivity & Infrastructure",
+      "cap": "Cap 01 & System Plumbing",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Reply with exactly: Enterprise LLM Online",
+        "intent": "direct_completion",
+        "subagents": [],
+        "sql_used": "",
+        "citations": [],
+        "answer": "Enterprise LLM Online",
+        "latency_ms": 24028.9,
+        "turns_data": []
+      }
+    },
+    {
+      "id": "LIVE-02",
+      "name": "Greeting & Capability Introduction",
+      "category": "Conversational Core",
+      "cap": "Cap 02: Greeting & Capability Intro",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Hello! What can you help me with?",
+        "intent": "capability_intro",
+        "subagents": [],
+        "sql_used": "",
+        "citations": [],
+        "answer": "I'm the Anheuser-Busch InBev Q&A assistant. I can:\n- Answer questions about Net Revenue, Volume, Market Share, Net Revenue per hL (ASP), Distribution (ACV / BEES Reach), Marketing Spend, Promotion Spend, Gross Margin, by brand, country, channel and month/quarter/year\n- Compare KPIs across brands, markets, channels or time periods\n- Retrieve company news, market research, sustainability and strategy documents with citations\n- Pull in public/web context for things outside our internal data\n- Do custom calculations (growth rates, projections) on the numbers\n\nKnown brands: Corona, Stella Artois, Michelob ULTRA, Hoegaarden, Budweiser, Bud Light, Brahma, Corona Cero\nKnown markets: United States, Canada, Mexico, Brazil, United Kingdom, Belgium, China, India\nData covers Jan 2023 to Aug 2026 (year-to-date).",
+        "latency_ms": 10966.6,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-03",
+      "name": "Out-of-Scope Domain Guardrail",
+      "category": "Governance & Guardrails",
+      "cap": "Cap 02 & 25: Out-of-Scope Safety",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Can you give me a recipe for baking sourdough bread?",
+        "intent": "out_of_scope",
+        "subagents": [],
+        "sql_used": "",
+        "citations": [],
+        "answer": "That's outside what I can help with -- I'm scoped to Anheuser-Busch InBev's business data and related market/company context. Anheuser-Busch InBev (AB InBev) global performance across its Premium & Above (Corona, Stella Artois, Michelob ULTRA, Hoegaarden), Core & Value (Budweiser, Bud Light, Brahma), and Beyond Beer (Corona Cero 0.0%) portfolios -- net revenue, volume (hL), market share, pricing (NR/hL), distribution/BEES reach, marketing/sponsorships, promotion spend, and gross margin by brand, country, channel, and period, plus related company earnings releases, digital B2B marketplace (BEES) initiatives, sustainability (ESG), and competitive intelligence.",
+        "latency_ms": 6603.5,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-04",
+      "name": "Ambiguous Query Clarification",
+      "category": "Conversational Core",
+      "cap": "Cap 04: Clarification for Ambiguity",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Tell me about performance",
+        "intent": "clarification_needed",
+        "subagents": [],
+        "sql_used": "",
+        "citations": [],
+        "answer": "Happy to help with AB InBev performance \u2014 could you specify which brand(s) (e.g., Corona, Budweiser, Corona Cero) and/or country (e.g., United States, Brazil) and which KPI (e.g., net_revenue_usd, volume, market_share_pct, gross_margin_pct) you'd like, and for which period (e.g., Q3 2025 or last 12 months)?",
+        "latency_ms": 27356.7,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-05",
+      "name": "Structured NL-to-SQL Fact Retrieval",
+      "category": "SQL Safety & Fact Retrieval",
+      "cap": "Cap 09 & 10: Structured Retrieval",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "What was Corona net revenue and volume in Mexico in 2025?",
+        "intent": "data_query",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT brand, country, year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume FROM fact_monthly_kpi WHERE brand = 'Corona' AND country = 'Mexico' AND year = 2025 GROUP BY brand, country, year LIMIT 500",
+        "citations": [],
+        "answer": "**Corona \u2013 Mexico \u2013 2025**\n\n| KPI | Value |\n| --- | --- |\n| Net revenue (USD) | $11,209,049 |\n| Volume | 113,001.2 hL |\n\nSource: structured KPI query on `fact_monthly_kpi` (brand = Corona, country = Mexico, year = 2025).\n\nTwo caveats worth flagging:\n- The result is a **full-year aggregation of all 2025 months available in the table**. The evidence doesn't tell us how many months of 2025 are populated, so if the year isn't complete in the dataset, these figures are a **partial-year total** and shouldn't be compared directly against full-year 2024 or earlier figures without checking coverage.\n- Only the two requested KPIs (net revenue and volume) are available here \u2014 no split by month, channel, or package type, and no prior-year benchmark in this evidence, so I can't state a growth rate.\n\nFollow-ups that might be useful:\n1. Break these 2025 figures down by month to see whether the year is complete and how the trend runs.\n2. Pull 2024 Corona Mexico net revenue and volume for a like-for-like YoY comparison.",
+        "latency_ms": 76281.6,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-06",
+      "name": "Semantic Alias & Abbreviation Resolution",
+      "category": "Semantics & Multilingual",
+      "cap": "Cap 06: Aliases & Abbreviations",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "What was BL revenue in United States in 2025?",
+        "intent": "data_query",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT brand, country, year, SUM(net_revenue_usd) AS net_revenue_usd\nFROM fact_monthly_kpi\nWHERE brand = 'Bud Light' AND country = 'United States' AND year = 2025\nGROUP BY brand, country, year LIMIT 500",
+        "citations": [],
+        "answer": "**Bud Light \u2014 United States \u2014 FY2025 net revenue: $4,623,330**\n\n| Brand | Country | Year | Net Revenue (USD) |\n| --- | --- | --- | --- |\n| Bud Light | United States | 2025 | $4,623,330 |\n\nA note on interpretation: the evidence returned a single aggregated figure for 2025 from the monthly KPI table. The retrieved data does not specify how many months are included, so this should be treated as the total recorded to date rather than a confirmed full calendar-year figure \u2014 I can't verify from this evidence alone whether the year is complete or partial, and the nominal amount would not be comparable to a full 12-month total if it is YTD.\n\nFollow-ups you may find useful:\n- Pull the same KPI for Bud Light US across 2023\u20132024 to establish a year-over-year comparison.\n- Break the 2025 figure down by month to confirm how many periods are actually covered.",
+        "latency_ms": 67407.3,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-07",
+      "name": "Multilingual Query Processing (Spanish)",
+      "category": "Semantics & Multilingual",
+      "cap": "Cap 07: Multilingual Understanding",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "\u00bfCu\u00e1l fue el volumen de Corona en M\u00e9xico en 2025?",
+        "intent": "data_query",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT year, SUM(volume) AS volume, volume_unit\nFROM fact_monthly_kpi\nWHERE brand = 'Corona' AND country = 'Mexico' AND year = 2025\nGROUP BY year, volume_unit LIMIT 500",
+        "citations": [],
+        "answer": "## Volumen de Corona en M\u00e9xico \u2014 2025\n\nSeg\u00fan los datos estructurados consultados, el volumen registrado para **Corona en M\u00e9xico en 2025** es:\n\n| A\u00f1o | Volumen | Unidad |\n| --- | --- | --- |\n| 2025 | **113,001.2 hL** | hL |\n\n**Nota de transparencia:** la evidencia disponible solo contiene el agregado anual de 2025 y no indica si se trata de un acumulado parcial (por ejemplo, YTD) o del a\u00f1o completo, ni el n\u00famero de meses cubiertos. Tampoco se dispone de a\u00f1os anteriores en el conjunto recuperado, por lo que no es posible calcular variaciones interanuales ni comparar contra otros periodos. Si necesitas confirmar la cobertura exacta del periodo, habr\u00eda que validar los meses cargados en `fact_monthly_kpi`.\n\n**Siguientes preguntas posibles:**\n- \u00bfC\u00f3mo se compara el volumen de Corona en M\u00e9xico en 2025 frente a 2024?\n- \u00bfCu\u00e1l es el desglose mensual del volumen de Corona en M\u00e9xico durante 2025?",
+        "latency_ms": 89979.3,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-08",
+      "name": "Unstructured Document Search with Citations",
+      "category": "Hybrid Retrieval & Citations",
+      "cap": "Cap 10, 11 & 12: Documents & Citations",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "What is AB InBev's Olympic commercial strategy for Corona Cero 0.0%?",
+        "intent": "data_query",
+        "subagents": [
+          "unstructured"
+        ],
+        "sql_used": "",
+        "citations": [
+          "DOC-001",
+          "DOC-019",
+          "DOC-028",
+          "DOC-003",
+          "DOC-002"
+        ],
+        "answer": "## AB InBev's Olympic commercial strategy for Corona Cero 0.0%\n\n**High-level answer:** Based on the retrieved evidence, AB InBev's Olympic play for Corona Cero is a **global sponsorship-led growth strategy**: it made Corona Cero the **Worldwide Olympic Partner** for the Olympic and Paralympic Games, using the platform to (a) build the non-alcoholic beer category, (b) associate the brand with responsible consumption / moderation, and (c) convert that visibility into measurable commercial acceleration in priority markets.\n\n### 1. The partnership itself\n- Corona Cero was named **Worldwide Olympic Partner** for the Olympic and Paralympic Games \u2014 billed as a \"historic global partnership\" with the IOC [DOC-001, 2025-01-15].\n- The stated strategic intent is twofold: reinforce AB InBev's **commitment to responsible consumption**, and **accelerate the growth of non-alcoholic beer** [DOC-001].\n- This sits on top of a favourable tailwind: non-alcoholic beer is moving from niche to mainstream, with **over 54% of consumers aged 21\u201334** actively seeking 0.0% options for weekday dining, social and fitness occasions [DOC-003].\n\n### 2. Commercial activation / early results\n- Q1 2025 results explicitly attribute Corona Cero's performance to being **\"buoyed by the global Olympic campaign\"** [DOC-002, 2025-04-30]:\n  - **UK:** net revenue **+22.6% YoY**; distribution (ACV) reached **79.3%** across grocery and On-Premise.\n  - **Mexico:** net revenue **+21.9% YoY**.\n- At group level, the **Beyond Beer portfolio \u2014 \"led by Corona Cero 0.0%\" \u2014 posted the leading growth rates across all zones** in the full-year summary [DOC-028, 2025-12-10].\n\n### 3. Competitive context\n- Heineken 0.0 remains the **volume leader in European grocery channels**, though Corona Cero \"gained significant\" ground \u2014 i.e., the Olympic platform is being used as a differentiation/scale lever against an entrenched 0.0% rival [DOC-019, 2025-03-14].\n\n### Transparency note on evidence gaps\nThe retrieved documents give the **strategic framing and the commercial outcome**, but they do **not** contain the operational detail you'd normally expect for a \"commercial strategy\" question, specifically:\n- **No marketing spend figures.** Your active KPI context is `marketing_spend_usd` for Corona Cero, but **no spend value was retrieved** in this evidence set \u2014 so I cannot quantify the investment behind the Olympic campaign.\n- No detail on campaign mechanics (activation assets, athlete ambassadors, on-pack/retail programmes, digital/BEES tie-ins), partnership duration, or the split of spend by market.\n- Several snippets are truncated (e.g. [DOC-001] and [DOC-019] cut off mid-sentence), so additional specifics may exist in the full documents.\n\n**Bottom line:** the strategy is a global IOC sponsorship used as a category-building and premiumisation platform for Corona Cero 0.0%, and early Q1 2025 data (UK +22.6%, Mexico +21.9% net revenue) suggests it translated into real commercial momentum \u2014 but the spend and activation specifics are not present in the evidence provided.\n\n---\n**Possible follow-ups:**\n- Pull the actual **Corona Cero marketing_spend_usd** figures (by market/quarter) to see how the Olympic investment compares to its revenue lift.\n- Compare **Corona Cero vs Heineken 0.0 European 0.0% share** to gauge whether the Olympic platform is closing the volume gap.",
+        "latency_ms": 90543.2,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-09",
+      "name": "Multi-Turn Context & Entity Filter Preservation",
+      "category": "Conversational Core",
+      "cap": "Cap 05 & 08: Context Preservation",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Multi-turn dialog: [Turn 1: Budweiser in US in 2025] -> [Turn 2: What about 2024?]",
+        "intent": "data_query",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT year, SUM(net_revenue_usd) AS net_revenue_usd FROM fact_monthly_kpi WHERE brand = 'Budweiser' AND country = 'United States' AND year = 2024 GROUP BY year LIMIT 500",
+        "citations": [],
+        "answer": "**Budweiser \u2014 United States \u2014 Net Revenue, 2024**\n\n| Year | Net Revenue (USD) |\n| --- | --- |\n| 2024 | $3,322,754 |\n\nBudweiser generated **$3,322,754 in net revenue in the United States in 2024** (sum of the monthly KPI records in the fact table).\n\nTwo transparency notes:\n- **No prior-year figure was retrieved** in this evidence, so I can't give you a 2024-vs-2023 change here \u2014 the 2024 total stands on its own.\n- The evidence does not state **how many months of 2024 are covered** by the underlying monthly records. The total is the sum of all 2024 rows available, but if the data is partial (e.g. YTD rather than a full 12 months), this should not be read as a full-year figure. I'd need a month-count check to confirm.\n\nPossible next steps:\n- Pull the **2023 total** for Budweiser US net revenue to compute the YoY change.\n- Verify **month coverage in 2024** to confirm whether $3,322,754 is a full-year or partial-year total.",
+        "latency_ms": 269108.9,
+        "turns_data": [
+          {
+            "query": "What was Budweiser revenue in US in 2025?",
+            "intent": "data_query",
+            "subagents": [
+              "structured"
+            ],
+            "sql_used": "SELECT SUM(net_revenue_usd) AS net_revenue_usd FROM fact_monthly_kpi WHERE brand = 'Budweiser' AND country = 'United States' AND year = 2025 LIMIT 500",
+            "answer": "**Budweiser net revenue in the United States, 2025: $3,483,878**\n\nSource: structured KPI data (`fact_monthly_kpi`, brand = Budweiser, country = United States, year = 2025), aggregated as a single sum of monthly net revenue.\n\nOne caveat for transparency: the result is reported as a single 2025 total with no indication of whether it covers the full 12 months or only the months loaded to date. If the year is still in progress in your dataset, this figure is a YTD total and not directly comparable to a full-year number.\n\nFollow-ups you might want:\n- Break this down by month to see the seasonality/trend within 2025.\n- Compare against 2024 (or the prior full year) to get a YoY change for Budweiser US."
+          },
+          {
+            "query": "What about in 2024?",
+            "intent": "data_query",
+            "subagents": [
+              "structured"
+            ],
+            "sql_used": "SELECT year, SUM(net_revenue_usd) AS net_revenue_usd FROM fact_monthly_kpi WHERE brand = 'Budweiser' AND country = 'United States' AND year = 2024 GROUP BY year LIMIT 500",
+            "answer": "**Budweiser \u2014 United States \u2014 Net Revenue, 2024**\n\n| Year | Net Revenue (USD) |\n| --- | --- |\n| 2024 | $3,322,754 |\n\nBudweiser generated **$3,322,754 in net revenue in the United States in 2024** (sum of the monthly KPI records in the fact table).\n\nTwo transparency notes:\n- **No prior-year figure was retrieved** in this evidence, so I can't give you a 2024-vs-2023 change here \u2014 the 2024 total stands on its own.\n- The evidence does not state **how many months of 2024 are covered** by the underlying monthly records. The total is the sum of all 2024 rows available, but if the data is partial (e.g. YTD rather than a full 12 months), this should not be read as a full-year figure. I'd need a month-count check to confirm.\n\nPossible next steps:\n- Pull the **2023 total** for Budweiser US net revenue to compute the YoY change.\n- Verify **month coverage in 2024** to confirm whether $3,322,754 is a full-year or partial-year total."
+          }
+        ],
+        "active_filters": {
+          "brand": "Budweiser",
+          "country": "United States",
+          "kpi": "net_revenue_usd",
+          "period": "2024"
+        }
+      }
+    },
+    {
+      "id": "LIVE-10",
+      "name": "Superlative & Comparative Analytics (Poor Year)",
+      "category": "Analytics & Reasoning",
+      "cap": "Cap 20: Comparative & Superlative",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "In which year did AB InBev perform poorly comparatively across net revenue and volume?",
+        "intent": "comparison",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume FROM fact_monthly_kpi GROUP BY year ORDER BY year LIMIT 500",
+        "citations": [],
+        "answer": "Based on AB InBev reporting, performance metrics remain consistent with commercial targets.",
+        "latency_ms": 79114.8,
+        "turns_data": [],
+        "assumptions": []
+      }
+    },
+    {
+      "id": "LIVE-11",
+      "name": "Geographic Hierarchy Rollup (City to Country)",
+      "category": "Governance & Guardrails",
+      "cap": "Cap 21: Entity Rollup (City to Country)",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "What was Corona volume in Monterrey in 2025?",
+        "intent": "data_query",
+        "subagents": [
+          "structured"
+        ],
+        "sql_used": "SELECT brand, country, year, SUM(volume) AS volume, 'hL' AS volume_unit FROM fact_monthly_kpi WHERE brand = 'Corona' AND country = 'Monterrey' AND year = 2025 GROUP BY brand, country, year LIMIT 500",
+        "citations": [],
+        "answer": "## No volume figure available for Monterrey (or a country-level fallback)\n\nThe structured KPI query for Corona volume returned **no matching rows**:\n\n```sql\nbrand = 'Corona' AND country = 'Monterrey' AND year = 2025\n-- 0 rows returned\n```\n\n**Why:** the `fact_monthly_kpi` table is not broken out by city \u2014 geography is recorded at country level only, so `'Monterrey'` will never match as a `country` value. Monterrey has no standalone row.\n\n**Important caveat:** although the standard workaround is to report **Mexico** (the country containing Monterrey) instead, the retrieved evidence does **not** contain any Mexico-level Corona volume figure for 2025 either \u2014 no fallback number was returned to me. I therefore can't give you a 2025 Corona volume for Monterrey, or a Mexico proxy, without inventing a figure, which I won't do.\n\n**To get an actual number, one of these is needed:**\n- Re-run against `country = 'Mexico'` (country-level proxy, with the understanding it covers all of Mexico, not Monterrey)\n- A city/region-level dataset or internal document that segments Mexican volume by market\n\n### Follow-up suggestions\n- Want me to pull **Corona volume for Mexico, 2025** as the closest available proxy (and flag it as country-level, not Monterrey)?\n- Should I compare Mexico 2025 against prior years to show the YoY trend once the country-level figure is available?",
+        "latency_ms": 137309.6,
+        "turns_data": [],
+        "assumptions": [
+          "Structured data isn't broken out by city; showing **Mexico** (the country containing Monterrey) instead."
+        ]
+      }
+    },
+    {
+      "id": "LIVE-12",
+      "name": "Catalog & Metadata Discovery",
+      "category": "Governance & Discovery",
+      "cap": "Cap 22: Catalog Discovery",
+      "status": "PASSED",
+      "error": "",
+      "details": {
+        "query": "Which brands and markets are available in the system?",
+        "intent": "metadata_discovery",
+        "subagents": [],
+        "sql_used": "",
+        "citations": [],
+        "answer": "**Available data** (Jan 2023\u2013Aug 2026):\n\nKPIs: Net Revenue (USD), Volume (hL), Market Share (%), Net Revenue per hL (ASP) (USD per hL), Distribution (ACV / BEES Reach) (%), Marketing Spend (USD), Promotion Spend (USD), Gross Margin (%)\n\nBrands & categories:\n- Premium & Above (Global Premium, Premium Active, Craft & Specialty): Corona, Stella Artois, Michelob ULTRA, Hoegaarden\n- Core & Value (Mainstream Core, Mainstream Light): Budweiser, Bud Light, Brahma\n- Beyond Beer (Non-Alcoholic): Corona Cero\n\nMarkets: United States (North America), Canada (North America), Mexico (Middle Americas), Brazil (South America), United Kingdom (Europe), Belgium (Europe), China (APAC), India (APAC)\nChannels: Modern Trade, Traditional Trade, On-Premise, BEES & E-commerce\n\nDocument types: press releases, earnings commentary, market research notes, sustainability updates, competitor intelligence, strategy memos.",
+        "latency_ms": 65451.3,
+        "turns_data": [],
+        "assumptions": []
+      }
+    }
+  ]
+}

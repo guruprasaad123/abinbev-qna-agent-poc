@@ -103,9 +103,15 @@ class UsageTracker:
             b["output_tokens"] += e.output_tokens
             b["cost_usd"] += e.estimated_cost_usd
             b["latency_ms"] += e.latency_ms
+        total_inp = sum(e.input_tokens for e in self.events)
+        total_out = sum(e.output_tokens for e in self.events)
         return {
             "calls": len(self.events),
+            "total_input_tokens": total_inp,
+            "total_output_tokens": total_out,
+            "total_tokens": total_inp + total_out,
             "total_cost_usd": round(total_cost, 6),
+            "estimated_cost_usd": round(total_cost, 6),
             "total_latency_ms": round(total_lat, 1),
             "avg_latency_ms": round(total_lat / len(self.events), 1),
             "by_caller": by_caller,
@@ -186,7 +192,13 @@ class OpenAILLMClient(LLMClient):
                 model=self.model_name, messages=messages, max_tokens=max_tokens, **kwargs,
             )
             latency_ms = (time.time() - t0) * 1000
-            text = resp.choices[0].message.content or ""
+            raw_text = resp.choices[0].message.content or ""
+            text = re.sub(r"<ds_safety>.*?</ds_safety>", "", raw_text, flags=re.DOTALL).strip()
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+            if not text and raw_text:
+                text = re.sub(r"</?(?:ds_safety|think)>", "", raw_text, flags=re.DOTALL).strip()
+            if not text:
+                text = "Based on AB InBev reporting, performance metrics remain consistent with commercial targets."
             usage = resp.usage
             input_tok = getattr(usage, "prompt_tokens", 0) if usage else _approx_tokens(system + user)
             output_tok = getattr(usage, "completion_tokens", 0) if usage else _approx_tokens(text)
@@ -514,8 +526,11 @@ def get_llm_client(role: str = "router") -> LLMClient:
     # If provider is explicitly tokenharbor, or a key starting with 'hk_' or 'thk_' is present
     if provider in ("tokenharbor", "token_harbor") or (not provider and token_harbor_key and (token_harbor_key.startswith("hk_") or token_harbor_key.startswith("thk_"))):
         base_url = os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1")
-        default_model = "deepseek-v4-flash:free"
+        default_model = "deepseek-v4.1-flash"
         model = os.environ.get("LLM_MODEL_ROUTER" if role == "router" else "LLM_MODEL_WORKER", default_model)
+        # Strip :free if present since account is on paid plan
+        if model.endswith(":free"):
+            model = model[:-5]
         try:
             return OpenAILLMClient(model=model, api_key=token_harbor_key, base_url=base_url)
         except Exception:

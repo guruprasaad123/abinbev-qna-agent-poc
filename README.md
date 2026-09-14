@@ -33,7 +33,8 @@ python3 main.py --test-capabilities # Runs 124 tests in tests/capabilities/
 python3 main.py --test              # Runs 21 regression tests in tests/test_pipeline.py
 
 # 3. Run the live LLM integration tests (uses Token Harbor / OpenAI from .env)
-python3 main.py --test-live
+python3 main.py --test-live-html  # Runs 12 live capability tests & outputs live_test_report.html
+python3 main.py --test-live       # Standard unittest runner for live tests
 
 # 4. Interactive Web UI (Executive & Developer Mode)
 streamlit run app.py
