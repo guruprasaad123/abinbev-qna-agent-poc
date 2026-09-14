@@ -296,8 +296,13 @@ transparent limitation rather than pretending it searched.
   (asyncio/threading), cutting hybrid-query latency roughly in half. Not
   done here to keep the control flow simple and easy to review under a hard
   deadline.
-- **Real semantic retrieval** (embeddings + vector index + reranker) on top
-  of BM25 (§6).
+- ~~Real semantic retrieval (embeddings) on top of BM25~~ — **done** (§6):
+  an optional local-embedding signal now blends into `DocumentIndex.search()`,
+  gracefully degrading to BM25+metadata if not installed. What's still a
+  genuine gap: a proper **vector index** (this brute-forces cosine similarity
+  over all 15 documents per query, which is fine at this corpus size but
+  wouldn't scale) and a **cross-encoder reranker** as a second-stage
+  precision pass over the top candidates — neither needed nor built yet.
 - **A hardened code-execution sandbox** (subprocess/container isolation) if
   handling less-trusted input (§7).
 - **Streaming responses** to the user instead of waiting for the full

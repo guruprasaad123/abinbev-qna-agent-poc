@@ -205,9 +205,11 @@ for the full trade-off, and §12 for how this closes in production with
 licensed/internal data). Beyond that, see
 [`docs/DESIGN_DECISIONS.md` §11](docs/DESIGN_DECISIONS.md#11-what-we-would-change-with-more-time-explicit-not-hidden)
 for the rest: sub-agent calls run sequentially rather than in parallel;
-retrieval is lexical (BM25) + metadata, not embedding-based semantic search;
-the code sandbox is prototype-grade, not hardened for untrusted multi-tenant
-use; and the web-search sub-agent depends on an optional external
+retrieval's optional semantic signal (see above) brute-forces cosine
+similarity over the corpus rather than using a real vector index or a
+reranker, which is fine at 15 documents but wouldn't scale; the code
+sandbox is prototype-grade, not hardened for untrusted multi-tenant use;
+and the web-search sub-agent depends on an optional external
 provider/package.
 
 ## License
