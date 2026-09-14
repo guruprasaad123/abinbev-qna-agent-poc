@@ -20,7 +20,8 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for `tests.*` imports
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # this script's own dir, for `import build_test_report`
 
 try:
     from dotenv import load_dotenv
@@ -108,6 +109,17 @@ def main():
     Path(args.report).parent.mkdir(parents=True, exist_ok=True)
     Path(args.report).write_text(json.dumps(report, indent=2, default=str))
     print(f"Report written to {args.report}")
+
+    # Keep reports/capability_test_report.html in sync automatically -- no
+    # separate step to remember. Cheap (re-runs only the free offline suite;
+    # reads whatever's already in tests/live/reports/, this run's write
+    # included) and non-fatal if it fails for any reason -- this run's own
+    # result still stands regardless.
+    try:
+        import build_test_report
+        build_test_report.main()
+    except Exception as e:
+        print(f"(non-fatal: could not auto-regenerate the HTML report: {e})")
 
     return 0 if grand_passed == grand_total else 1
 

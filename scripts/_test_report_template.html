@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Capability Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F7F9;
+    --surface: #FFFFFF;
+    --surface-2: #EEF0F3;
+    --border: #DCE0E5;
+    --text: #191C21;
+    --text-muted: #5C6370;
+    --text-faint: #8B92A0;
+    --accent: #9C6A1E;
+    --accent-strong: #7A5117;
+    --accent-soft: #F1E1C4;
+    --pass: #1E8A4C;
+    --pass-soft: #DEF2E4;
+    --fail: #C23B3B;
+    --fail-soft: #FAE3E1;
+    --shadow: 0 1px 2px rgba(25, 28, 33, 0.05), 0 4px 14px rgba(25, 28, 33, 0.045);
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1013;
+      --surface: #16191F;
+      --surface-2: #1D2128;
+      --border: #2A2F38;
+      --text: #E8EAED;
+      --text-muted: #9BA2AF;
+      --text-faint: #6B7280;
+      --accent: #D9A24F;
+      --accent-strong: #E8B569;
+      --accent-soft: #33281A;
+      --pass: #3FBE73;
+      --pass-soft: #13301F;
+      --fail: #E5675F;
+      --fail-soft: #341A1A;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1013;
+    --surface: #16191F;
+    --surface-2: #1D2128;
+    --border: #2A2F38;
+    --text: #E8EAED;
+    --text-muted: #9BA2AF;
+    --text-faint: #6B7280;
+    --accent: #D9A24F;
+    --accent-strong: #E8B569;
+    --accent-soft: #33281A;
+    --pass: #3FBE73;
+    --pass-soft: #13301F;
+    --fail: #E5675F;
+    --fail-soft: #341A1A;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 0 20px;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding-block: 40px 64px; }
+
+  ::selection { background: var(--accent-soft); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 6px 0 8px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .subtitle { color: var(--text-muted); font-size: 15px; max-width: 62ch; }
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-faint);
+    text-align: right;
+    line-height: 1.7;
+  }
+  .meta b { color: var(--text-muted); font-weight: 600; }
+
+  /* ---- stat tiles ---- */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow);
+  }
+  .tile { background: var(--surface); padding: 18px 20px; }
+  .tile .label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px;
+  }
+  .tile .value {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+  }
+  .tile .value.pass { color: var(--pass); }
+  .tile .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  section { margin-bottom: 40px; }
+  h2 {
+    font-family: var(--font-display); font-weight: 600; font-size: 21px;
+    margin: 0 0 4px; letter-spacing: -0.005em;
+  }
+  .section-note { color: var(--text-muted); font-size: 13.5px; margin-bottom: 18px; }
+
+  /* ---- cluster cards ---- */
+  .clusters {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 14px;
+  }
+  .cluster-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .cluster-card .row1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .cluster-card h3 { font-family: var(--font-body); font-size: 14.5px; font-weight: 600; margin: 0; }
+  .cluster-card .pill { flex-shrink: 0; }
+  .cluster-card .desc { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 12px; }
+  .bar-track {
+    height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-bottom: 8px;
+  }
+  .bar-fill { height: 100%; background: var(--pass); border-radius: 3px; }
+  .cluster-card .stats {
+    display: flex; justify-content: space-between; font-family: var(--font-mono);
+    font-size: 11.5px; color: var(--text-faint); font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- pills / badges ---- */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .pill.pass { background: var(--pass-soft); color: var(--pass); }
+  .pill.fail { background: var(--fail-soft); color: var(--fail); }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ---- controls ---- */
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .search {
+    flex: 1; min-width: 200px;
+    font-family: var(--font-body); font-size: 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; color: var(--text);
+  }
+  .search::placeholder { color: var(--text-faint); }
+  .filter-btn {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 14px; color: var(--text-muted); cursor: pointer;
+  }
+  .filter-btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+  .filter-btn:hover { color: var(--text); }
+
+  /* ---- capability accordion ---- */
+  .cap-list { display: flex; flex-direction: column; gap: 8px; }
+  .cap-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .cap-head {
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; background: none; border: none; cursor: pointer;
+    font-family: var(--font-body); color: var(--text); text-align: left;
+  }
+  .cap-head .num {
+    font-family: var(--font-mono); font-size: 12px; color: var(--text-faint);
+    width: 22px; flex-shrink: 0; font-variant-numeric: tabular-nums;
+  }
+  .cap-head .title { flex: 1; font-size: 14px; font-weight: 500; }
+  .cap-head .chev {
+    font-size: 11px; color: var(--text-faint); transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+  .cap-item[data-open="true"] .chev { transform: rotate(90deg); }
+  .cap-head .cost {
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--text-faint);
+    flex-shrink: 0; font-variant-numeric: tabular-nums;
+  }
+  .cap-body { display: none; border-top: 1px solid var(--border); }
+  .cap-item[data-open="true"] .cap-body { display: block; }
+  .case-row {
+    padding: 12px 16px 12px 50px; border-bottom: 1px solid var(--border);
+  }
+  .case-row:last-child { border-bottom: none; }
+  .case-row .case-top { display: flex; gap: 10px; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; }
+  .case-id { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+  .case-desc { font-size: 12.5px; color: var(--text-muted); flex: 1; min-width: 180px; }
+  .qa { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; margin-top: 4px; }
+  .qa .q { font-family: var(--font-mono); font-size: 12.5px; color: var(--text); margin-bottom: 6px; }
+  .qa .q::before { content: "Q  "; color: var(--accent-strong); font-weight: 600; }
+  .qa .a { font-size: 13px; color: var(--text-muted); white-space: pre-wrap; }
+  .qa .a::before { content: "A  "; color: var(--text-faint); font-family: var(--font-mono); font-weight: 600; }
+  .meta-line {
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);
+    margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .reason { font-size: 12px; color: var(--fail); margin-top: 6px; }
+
+  footer {
+    margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--text-faint);
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+
+  @media (max-width: 640px) {
+    header.top { flex-direction: column; align-items: flex-start; }
+    .meta { text-align: left; }
+    .case-row { padding-left: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">AB InBev Q&amp;A Agent</div>
+      <h1>Capability Audit</h1>
+      <div class="subtitle">Every required capability, verified against a real model — not mocked, not re-run to produce this page.</div>
+    </div>
+    <div class="meta" id="meta-block"></div>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section>
+    <h2>By enterprise domain</h2>
+    <div class="section-note">The 25 capabilities rolled up into 6 clusters — see <code>tests/high_level/clusters.py</code>.</div>
+    <div class="clusters" id="clusters"></div>
+  </section>
+
+  <section>
+    <h2>By capability</h2>
+    <div class="section-note">All 25 required capabilities, each expandable to its real cases and answers.</div>
+    <div class="controls">
+      <input type="search" class="search" id="search" placeholder="Search capabilities or questions…" />
+      <button class="filter-btn" id="filter-fail" aria-pressed="false">Failures only</button>
+    </div>
+    <div class="cap-list" id="cap-list"></div>
+  </section>
+
+  <footer>
+    <div id="footer-models"></div>
+    <div id="footer-note">Generated from tests/live/reports/ &middot; scripts/build_test_report.py</div>
+  </footer>
+</div>
+
+<script>
+const REPORT_DATA = /*__REPORT_DATA__*/{};
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderMeta() {
+  const d = REPORT_DATA;
+  document.getElementById('meta-block').innerHTML =
+    `<b>${esc(d.generated_at)}</b><br>${d.live_suite.total_cases} live cases &middot; $${d.live_suite.cost_usd.toFixed(4)} total`;
+}
+
+function renderTiles() {
+  const d = REPORT_DATA;
+  const passRate = d.live_suite.total_cases ? Math.round(100 * d.live_suite.passed / d.live_suite.total_cases) : 0;
+  const tiles = [
+    ['Capabilities', d.capabilities.length, `all ${d.capabilities.length} required, covered`],
+    ['Live cases', `${d.live_suite.passed}/${d.live_suite.total_cases}`, 'real model, real answers'],
+    ['Pass rate', passRate + '%', null, passRate === 100],
+    ['Total cost', '$' + d.live_suite.cost_usd.toFixed(4), 'across the whole live suite'],
+    ['Offline tests', `${d.offline_tests.passed}/${d.offline_tests.total}`, 'zero-cost, re-run for this page'],
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(([label, value, sub, isPass]) => `
+    <div class="tile">
+      <div class="label">${esc(label)}</div>
+      <div class="value${isPass ? ' pass' : ''}">${esc(value)}</div>
+      ${sub ? `<div class="sub">${esc(sub)}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderClusters() {
+  const d = REPORT_DATA;
+  document.getElementById('clusters').innerHTML = d.clusters.map(c => {
+    const rate = c.total_cases ? c.passed / c.total_cases : 0;
+    return `
+    <div class="cluster-card">
+      <div class="row1">
+        <h3>${esc(c.title)}</h3>
+        <span class="pill ${c.passed === c.total_cases ? 'pass' : 'fail'}">${c.passed}/${c.total_cases}</span>
+      </div>
+      <div class="desc">${esc(c.description)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(rate*100).toFixed(0)}%"></div></div>
+      <div class="stats"><span>caps ${c.capability_numbers.join(', ')}</span><span>$${c.total_cost_usd.toFixed(4)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function caseHTML(cap, cs) {
+  const turn = cs.turns[0] || '';
+  const answer = (cs.answers && cs.answers[0]) || '(no response captured)';
+  const intent = (cs.intents && cs.intents[0]) || '?';
+  const subAgents = (cs.sub_agents_used && cs.sub_agents_used[0]) || [];
+  return `
+    <div class="case-row" data-search="${esc((cs.description + ' ' + cs.turns.join(' ')).toLowerCase())}">
+      <div class="case-top">
+        <span class="case-id">${esc(cs.id)}</span>
+        <span class="case-desc">${esc(cs.description)}</span>
+        <span class="pill ${cs.passed ? 'pass' : 'fail'}">${cs.passed ? 'PASS' : 'FAIL'}</span>
+      </div>
+      <div class="qa">
+        <div class="q">${esc(turn)}</div>
+        <div class="a">${esc(answer)}</div>
+      </div>
+      <div class="meta-line">
+        <span>intent=${esc(intent)}</span>
+        <span>sub_agents=${esc(JSON.stringify(subAgents))}</span>
+        <span>${cs.latency_s ? cs.latency_s.toFixed(1) + 's' : ''}</span>
+        <span>${cs.cost_usd ? '$' + cs.cost_usd.toFixed(5) : ''}</span>
+      </div>
+      ${!cs.passed ? `<div class="reason">${esc(cs.reason)}</div>` : ''}
+    </div>`;
+}
+
+function renderCapabilities() {
+  const d = REPORT_DATA;
+  document.getElementById('cap-list').innerHTML = d.capabilities.map(cap => `
+    <div class="cap-item" data-num="${cap.number}" data-search="${esc(cap.title.toLowerCase())}" data-has-fail="${cap.passed < cap.total}">
+      <button class="cap-head" aria-expanded="false">
+        <span class="num">${String(cap.number).padStart(2,'0')}</span>
+        <span class="title">${esc(cap.title)}</span>
+        <span class="pill ${cap.passed === cap.total ? 'pass' : 'fail'}">${cap.passed}/${cap.total}</span>
+        <span class="cost">$${cap.cases.reduce((s,c)=>s+(c.cost_usd||0),0).toFixed(4)}</span>
+        <span class="chev">&#9656;</span>
+      </button>
+      <div class="cap-body">
+        ${cap.cases.map(cs => caseHTML(cap, cs)).join('')}
+      </div>
+    </div>`).join('');
+
+  document.querySelectorAll('.cap-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.cap-item');
+      const open = item.getAttribute('data-open') === 'true';
+      item.setAttribute('data-open', open ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+  });
+}
+
+function renderFooter() {
+  const m = REPORT_DATA.models;
+  const parts = Object.entries(m).filter(([k]) => k !== 'LLM_PROVIDER').map(([k,v]) => `${k.replace('LLM_MODEL_','')}=${v}`);
+  document.getElementById('footer-models').textContent = (m.LLM_PROVIDER ? 'provider=' + m.LLM_PROVIDER + ' · ' : '') + parts.join(' · ');
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const failOnly = document.getElementById('filter-fail').getAttribute('aria-pressed') === 'true';
+  document.querySelectorAll('.cap-item').forEach(item => {
+    const matchesSearch = !q || item.getAttribute('data-search').includes(q) ||
+      [...item.querySelectorAll('.case-row')].some(r => r.getAttribute('data-search').includes(q));
+    const matchesFail = !failOnly || item.getAttribute('data-has-fail') === 'true';
+    item.style.display = (matchesSearch && matchesFail) ? '' : 'none';
+  });
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+document.getElementById('filter-fail').addEventListener('click', function() {
+  const pressed = this.getAttribute('aria-pressed') === 'true';
+  this.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+  applyFilters();
+});
+
+renderMeta();
+renderTiles();
+renderClusters();
+renderCapabilities();
+renderFooter();
+</script>
+</body>
+</html>

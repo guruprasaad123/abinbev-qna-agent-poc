@@ -77,11 +77,15 @@ jupyter notebook notebooks/demo.ipynb    # Restart Kernel & Run All
 
 # Optional, separate: 185 real-LLM tests covering all 25 required
 # capabilities in depth (needs a real key/`.env` -- costs real tokens and
-# takes real wall-clock time, NOT part of the fast offline suite above):
+# takes real wall-clock time, NOT part of the fast offline suite above).
+# This also auto-regenerates reports/capability_test_report.html (a single
+# self-contained visual status page -- open it in any browser) and re-runs
+# the free offline suite for a fresh number, every time -- no separate step:
 python3 scripts/run_live_capability_tests.py
 python3 scripts/run_live_capability_tests.py --capability 9   # just one, e.g. SQL safety
-# then, to render the results as per-capability notebooks:
+# then, to render the results as per-capability/high-level notebooks:
 python3 scripts/build_capability_notebooks.py
+python3 scripts/build_high_level_notebooks.py
 ```
 
 Install only the extras you actually need — see `requirements.txt` for exactly which
@@ -138,7 +142,10 @@ scripts/
   generate_documents.py        # builds data/unstructured/*.md + manifest.json (real, cited)
   build_notebook.py            # builds notebooks/demo.ipynb
   build_capability_notebooks.py # renders notebooks/capabilities/ from a live test run's report
-  run_live_capability_tests.py # CLI for tests/live/ (progress output, --capability filter)
+  build_high_level_notebooks.py # renders notebooks/high_level/ (6 cluster rollups)
+  build_test_report.py         # renders reports/capability_test_report.html (visual status page)
+  run_live_capability_tests.py # CLI for tests/live/ (progress output, --capability filter,
+                                #   auto-regenerates the HTML report when it finishes)
   chat_cli.py                  # interactive terminal chat
 data/
   db/ab_inbev.db                # real, cited structured dataset
@@ -146,12 +153,16 @@ data/
 notebooks/
   demo.ipynb                   # prerun demo covering every required capability, end-to-end
   capabilities/<NN>_<slug>/demo.ipynb  # one notebook per capability, built from tests/live/ results
+  high_level/<slug>/demo.ipynb # one notebook per enterprise domain cluster (rollup over the above)
+reports/capability_test_report.html  # single-page visual test status (see build_test_report.py)
 tests/
   test_pipeline.py             # offline test suite (mock LLM, no API key needed)
   live/                        # real-LLM capability suite (opt-in, see Quickstart)
     runner.py                  # Case/run_case + reusable assertion helpers
     cases/cap01..cap25_*.py    # 185 cases, one file per required capability
+    reports/cap*.json          # captured results from the most recent live run per capability
     live_capabilities_suite.py # unittest suite (NOT auto-discovered -- see docs/DESIGN_DECISIONS.md §4)
+  high_level/                  # 6-cluster rollup over the 25 capabilities (clusters.py, rollup.py)
 docs/
   ARCHITECTURE.md              # system diagram + request flow
   DESIGN_DECISIONS.md          # why it's built this way (incl. real-vs-synthetic data), and what we'd change
