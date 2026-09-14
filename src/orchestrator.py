@@ -131,6 +131,10 @@ class Orchestrator:
             pattern = r"(?:\b|_)" + re.escape(alias) + r"(?:\b|_)"
             if re.search(pattern, cleaned):
                 if canonical in ALL_BRANDS and canonical not in brands:
+                    if canonical == "Budweiser" and "Bud Light" in brands and not re.search(r"\bbudweiser\b", cleaned):
+                        continue
+                    if canonical == "Corona" and "Corona Cero" in brands and not re.search(r"\b(corona extra|coronita)\b", cleaned):
+                        continue
                     brands.append(canonical)
                 elif canonical in ALL_COUNTRIES and canonical not in countries:
                     countries.append(canonical)

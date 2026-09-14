@@ -14,7 +14,8 @@ Built for the FMCG AI Engineer prototype assignment. See `docs/` for the archite
   2. **Unstructured Data Sub-Agent** (`src/agents/unstructured_agent.py`): Hybrid lexical (BM25) + metadata/tag/recency filtering over corporate documents with inline `[DOC-xxx]` citations.
   3. **Internet Search Sub-Agent** (`src/agents/websearch_agent.py`): Pluggable search (Tavily / DuckDuckGo / graceful degradation) for external benchmarking outside AB InBev's internal reporting.
   4. **Coding Sub-Agent** (`src/agents/coding_agent.py`): In-process sandboxed Python execution for derived calculations (CAGR, multi-year projections).
-- **21 Offline Unit Tests** (`tests/test_pipeline.py`) — Passing in ~0.6s against `MockLLMClient`, validating the entire pipeline without requiring API keys or network access.
+- **340 Offline Tests** (`tests/`) — Comprehensive test coverage across **`tests/high_level/`** (195 tests across 6 domain suites), **`tests/capabilities/`** (124 tests across all 25 individual capability attributes), and **`tests/test_pipeline.py`** (21 regression tests). All pass deterministically in ~9 seconds without requiring API keys or network access.
+- **12 Modular Notebooks** (`notebooks/`) — Pre-computed, interactive Jupyter notebooks organized into **`notebooks/high_level/`** (6 domain notebooks) and **`notebooks/capabilities/`** (6 capability notebooks), alongside the master executive showcase in `notebooks/demo.ipynb`.
 - **Interactive Streamlit Web UI** (`app.py`) — Executive & Developer Mode interface with real-time agentic step inspection, SQL audit, and session telemetry.
 - **Full Documentation** in `docs/`: Architecture diagrams, design trade-offs, capability checklist mapping, and a comprehensive cost/latency/token telemetry analysis.
 
@@ -25,8 +26,11 @@ Built for the FMCG AI Engineer prototype assignment. See `docs/` for the archite
 python3 scripts/generate_structured_data.py
 python3 scripts/generate_documents.py
 
-# 2. Run the offline test suite (no API key needed, ~0.6s)
-python3 main.py --test
+# 2. Run the offline test suites (no API key needed)
+python3 main.py --test-all          # Runs all 340 offline tests (~9s)
+python3 main.py --test-high-level   # Runs 195 tests in tests/high_level/
+python3 main.py --test-capabilities # Runs 124 tests in tests/capabilities/
+python3 main.py --test              # Runs 21 regression tests in tests/test_pipeline.py
 
 # 3. Run the live LLM integration tests (uses Token Harbor / OpenAI from .env)
 python3 main.py --test-live
@@ -37,8 +41,10 @@ streamlit run app.py
 # 5. Interactive CLI chat (auto-loads .env if present; defaults to mock if no key found)
 python3 main.py
 
-# 6. Full demo & capability checklist:
-# Open notebooks/demo.ipynb to view the pre-computed outputs covering every capability!
+# 6. Notebooks & capability inspection:
+# - Master demo: notebooks/demo.ipynb
+# - High-level domain notebooks: notebooks/high_level/ (6 notebooks)
+# - Fine-grained capability notebooks: notebooks/capabilities/ (6 notebooks)
 ```
 
 ## Repository Structure

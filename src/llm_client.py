@@ -233,10 +233,11 @@ class MockLLMClient(LLMClient):
             kpis = [k for k in ALL_KPIS if k.replace("_", " ") in u]
 
             # Also resolve aliases in mock entity extraction
-            if any(k in u for k in ("bud", "budweiser")) and "Budweiser" not in brands and "Bud Light" not in brands:
-                brands.append("Budweiser")
             if any(k in u for k in ("bud light", "bl")) and "Bud Light" not in brands:
                 brands.append("Bud Light")
+            if any(k in u for k in ("budweiser", "bud")) and "Budweiser" not in brands and "Bud Light" not in brands:
+                if not ("bud" in u and "light" in u and "budweiser" not in u):
+                    brands.append("Budweiser")
             if any(k in u for k in ("ultra", "michelob")):
                 if "Michelob ULTRA" not in brands:
                     brands.append("Michelob ULTRA")
@@ -279,17 +280,17 @@ class MockLLMClient(LLMClient):
 
             # Intent classification heuristics
             is_comp = any(w in u for w in ("in year did", "which year", "poor", "worst", "best", "trend", "performed poor", "comparatively", "compare", "vs", "versus", "difference between", "yoy"))
-            if any(g in u for g in ("hi", "hello", "hey")) and len(u.split()) < 4:
+            if any(g in u for g in ("hi", "hello", "hey", "good morning")) and len(u.split()) < 5:
                 intent = "greeting"
-            elif "what can you" in u or ("help" in u and "with" in u):
+            elif any(w in u for w in ("what can you", "what is your purpose", "show your capabilities", "show capabilities")) or ("help" in u and "with" in u):
                 intent = "capability_intro"
-            elif any(w in u for w in ("weather", "joke", "stock price of apple", "who is the president")):
+            elif any(w in u for w in ("weather", "joke", "stock price", "who is the president", "bake", "recipe", "quicksort", "c++", "fifa", "world cup", "political situation", "politics")):
                 intent = "out_of_scope"
-            elif any(w in u for w in ("available", "which kpis", "what kpis", "what data", "metadata", "what can i ask", "what metrics")):
+            elif any(w in u for w in ("available", "which kpis", "what kpis", "what data", "metadata", "what can i ask", "what metrics", "which brands", "what channels", "what time period", "document types")):
                 intent = "metadata_discovery"
             elif is_comp:
                 intent = "comparison"
-            elif ("performance" in u or "tell me about" in u) and not brands and not countries and not kpis:
+            elif ("performance" in u or "tell me about" in u or "give me data" in u or "how is beer doing" in u) and not brands and not countries:
                 # Ambiguous query requiring clarification
                 return json.dumps({
                     "language": "en",
@@ -310,11 +311,11 @@ class MockLLMClient(LLMClient):
                 needed.append("web")
             if any(w in u for w in ("cagr", "projection", "if it grew", "calculate", "multiple")):
                 needed.append("coding")
-            if not needed or brands or countries or kpis or intent in ("data_query", "comparison"):
+            if not needed or brands or countries or kpis:
                 if "structured" not in needed:
                     needed.insert(0, "structured")
 
-            period = "2025" if "2025" in u else "2024" if "2024" in u else None
+            period = "2026" if "2026" in u else "2023" if "2023" in u else "2025" if "2025" in u else "2024" if "2024" in u else None
             comp_period = "2024" if "2024" in u and "2025" in u else None
 
             # Detect language specifically on the current user turn
@@ -342,17 +343,15 @@ class MockLLMClient(LLMClient):
 
             # Check if an explicit brand was mentioned
             brand = None
-            for b in ("corona cero", "corona", "coron", "bud light", "budweiser", "bud", "michelob ultra", "michelob", "stella artois", "stella", "hoegaarden", "brahma"):
-                if b in u:
-                    if b in ("corona", "coron"): brand = "Corona"
-                    elif b == "corona cero": brand = "Corona Cero"
-                    elif b == "bud light": brand = "Bud Light"
-                    elif b in ("budweiser", "bud"): brand = "Budweiser"
-                    elif b in ("michelob ultra", "michelob"): brand = "Michelob ULTRA"
-                    elif b in ("stella artois", "stella"): brand = "Stella Artois"
-                    elif b == "brahma": brand = "Brahma"
-                    elif b == "hoegaarden": brand = "Hoegaarden"
-                    break
+            multi_brands = []
+            for b_name, b_canon in [("corona cero", "Corona Cero"), ("bud light", "Bud Light"), ("michelob ultra", "Michelob ULTRA"),
+                                    ("stella artois", "Stella Artois"), ("corona", "Corona"), ("budweiser", "Budweiser"),
+                                    ("hoegaarden", "Hoegaarden"), ("brahma", "Brahma")]:
+                if b_name in u:
+                    if b_canon not in multi_brands:
+                        multi_brands.append(b_canon)
+            if multi_brands:
+                brand = multi_brands[0]
 
             if (is_comp or is_company_wide) and not brand:
                 return "SELECT year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume, AVG(gross_margin_pct) AS gross_margin_pct, AVG(market_share_pct) AS market_share_pct FROM fact_monthly_kpi GROUP BY year ORDER BY year;"
@@ -382,8 +381,14 @@ class MockLLMClient(LLMClient):
             else:
                 country = "United States"
 
-            year = "2025" if "2025" in u else "2024" if "2024" in u else "2025"
+            year = "2026" if "2026" in u else "2023" if "2023" in u else "2024" if "2024" in u else "2025"
 
+            if len(multi_brands) > 1:
+                in_list = ", ".join(repr(b) for b in multi_brands)
+                return f"SELECT brand, country, year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume, AVG(market_share_pct) AS market_share_pct FROM fact_monthly_kpi WHERE brand IN ({in_list}) AND country='{country}' AND year={year} GROUP BY brand, country, year;"
+
+            if "bees" in u and "by channel" not in u:
+                return f"SELECT brand, country, channel, year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume FROM fact_monthly_kpi WHERE channel='BEES & E-commerce' AND country='{country}' AND year={year} GROUP BY brand, country, channel, year;"
             if "by channel" in u or "channel" in u:
                 return f"SELECT brand, country, channel, year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume FROM fact_monthly_kpi WHERE brand='{brand}' AND country='{country}' AND year={year} GROUP BY brand, country, channel, year;"
             return f"SELECT brand, country, year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume, AVG(market_share_pct) AS market_share_pct FROM fact_monthly_kpi WHERE brand='{brand}' AND country='{country}' AND year={year} GROUP BY brand, country, year;"
