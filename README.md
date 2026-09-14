@@ -14,7 +14,7 @@ Built for the FMCG AI Engineer prototype assignment. See `docs/` for the archite
   2. **Unstructured Data Sub-Agent** (`src/agents/unstructured_agent.py`): Hybrid lexical (BM25) + metadata/tag/recency filtering over corporate documents with inline `[DOC-xxx]` citations.
   3. **Internet Search Sub-Agent** (`src/agents/websearch_agent.py`): Pluggable search (Tavily / DuckDuckGo / graceful degradation) for external benchmarking outside AB InBev's internal reporting.
   4. **Coding Sub-Agent** (`src/agents/coding_agent.py`): In-process sandboxed Python execution for derived calculations (CAGR, multi-year projections).
-- **20 Offline Unit Tests** (`tests/test_pipeline.py`) — Passing in ~0.6s against `MockLLMClient`, validating the entire pipeline without requiring API keys or network access.
+- **21 Offline Unit Tests** (`tests/test_pipeline.py`) — Passing in ~0.6s against `MockLLMClient`, validating the entire pipeline without requiring API keys or network access.
 - **Interactive Streamlit Web UI** (`app.py`) — Executive & Developer Mode interface with real-time agentic step inspection, SQL audit, and session telemetry.
 - **Full Documentation** in `docs/`: Architecture diagrams, design trade-offs, capability checklist mapping, and a comprehensive cost/latency/token telemetry analysis.
 

@@ -135,6 +135,12 @@ class TestOrchestrator(unittest.TestCase):
         self.assertIn("18.04%", r.answer)
         self.assertIn("2026", r.answer)
 
+    def test_derived_calculation_routes_to_coding(self):
+        r = self.orch.handle_turn("Calculate CAGR if revenue grew from 100 to 200 over 5 years")
+        self.assertIn("coding", r.sub_agents_used)
+        self.assertIn("code_used", r.intermediate_steps)
+        self.assertTrue(len(r.intermediate_steps["code_used"]) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
