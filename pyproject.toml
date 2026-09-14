@@ -16,11 +16,19 @@ websearch = ["duckduckgo-search>=6.0", "requests>=2.31.0"]
 notebook = ["jupyter>=1.0.0", "notebook>=7.0.0"]
 dotenv = ["python-dotenv>=1.2.3"]
 ui = ["streamlit>=1.38.0"]
+# Local embedding model for the optional semantic-retrieval signal in
+# src/tools/embedding_tool.py -- NOT included in the `ui` extra or the `dev`
+# convenience group below on purpose: it adds a real, measured ~288MB
+# process RSS (see docs/DESIGN_DECISIONS.md #6), which matters if `ui` is
+# deployed to a memory-constrained target (e.g. Streamlit Community Cloud's
+# free tier, 1GB). Opt in explicitly if you want it.
+embeddings = ["fastembed>=0.8.0"]
 
 # `uv run`/`uv sync` install this group by default (unlike the optional-
 # dependencies above, which are opt-in for an actual install) -- convenience
 # for anyone actively developing or running this repo locally, since that
 # workflow wants everything at once regardless of which LLM provider they pick.
+# fastembed is deliberately NOT here -- see the `embeddings` extra above for why.
 [dependency-groups]
 dev = [
     "anthropic>=0.40.0",

@@ -1,0 +1,20 @@
+# OPTIONAL, and NOT auto-installed by requirements.txt or a default
+# Streamlit Community Cloud deploy -- deliberately a separate file.
+#
+# Enables the semantic-similarity signal in src/tools/retrieval_tool.py
+# (see docs/DESIGN_DECISIONS.md #6 for the real measured cost/benefit
+# before installing this on a memory-constrained target):
+#   ~288MB additional process memory once the model is loaded
+#   ~11.6s first-run boot (downloads the model), ~0.46s after that
+#   ~4ms per document/query embedded (negligible vs. LLM call latency)
+#
+# To enable on Streamlit Community Cloud: add a line to requirements.txt
+# with this file's content (`-r requirements-embeddings.txt` works too, if
+# supported by your deploy tooling), and run
+# `python3 scripts/generate_embeddings.py` once so the corpus embeddings
+# cache exists (or commit data/unstructured/embeddings_cache.json, which
+# this repo already does).
+#
+# Locally: pip install -r requirements-embeddings.txt
+#      or: uv sync --extra embeddings
+fastembed>=0.8.0

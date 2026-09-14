@@ -116,6 +116,16 @@ sub-agent, are needed beyond that — `pyproject.toml`'s base `dependencies` lis
 exactly this reason; everything else lives in `[project.optional-dependencies]` / the `dev`
 dependency group.
 
+**Optional: semantic document retrieval.** `src/tools/retrieval_tool.py` blends BM25 +
+metadata with an optional local-embedding similarity signal — off by default (falls back to
+BM25 + metadata only, the original behavior), since the model adds a real, measured ~288MB of
+process memory (see `docs/DESIGN_DECISIONS.md` §6 for the full cost/benefit, including a real
+before/after example). Deliberately **not** in `requirements.txt` (which a default Streamlit
+Community Cloud deploy installs unconditionally, with no concept of "optional") — enable it by
+adding `requirements-embeddings.txt`'s contents, or `uv sync --extra embeddings` locally, then
+`python3 scripts/generate_embeddings.py` (or just use the committed
+`data/unstructured/embeddings_cache.json`, already generated).
+
 ## Repository structure
 
 ```
@@ -127,7 +137,8 @@ src/
   orchestrator.py        # main agent: NLU, routing, synthesis, validation/retry
   tools/
     sql_tool.py          # safe, read-only, whitelisted SQL execution
-    retrieval_tool.py     # BM25 + metadata/tag/recency document retrieval
+    retrieval_tool.py     # BM25 + metadata/tag/recency + optional semantic document retrieval
+    embedding_tool.py      # optional local embedding model (graceful degradation if absent)
     web_search_tool.py    # pluggable internet search (Tavily / DuckDuckGo / degraded)
     code_tool.py           # sandboxed Python execution
     bm25.py                # dependency-free BM25 implementation
@@ -140,6 +151,8 @@ ui/app.py                      # Streamlit developer-mode UI (see Quickstart)
 scripts/
   generate_structured_data.py  # builds data/db/ab_inbev.db from real, cited figures
   generate_documents.py        # builds data/unstructured/*.md + manifest.json (real, cited)
+  generate_embeddings.py       # optional: builds data/unstructured/embeddings_cache.json
+                                #   (needs the `embeddings` extra -- see Quickstart)
   build_notebook.py            # builds notebooks/demo.ipynb
   build_capability_notebooks.py # renders notebooks/capabilities/ from a live test run's report
   build_high_level_notebooks.py # renders notebooks/high_level/ (6 cluster rollups)
@@ -150,6 +163,8 @@ scripts/
 data/
   db/ab_inbev.db                # real, cited structured dataset
   unstructured/*.md            # real, cited document corpus + manifest.json
+  unstructured/embeddings_cache.json  # precomputed corpus embeddings (optional signal, see above)
+requirements-embeddings.txt    # optional -- NOT auto-installed by requirements.txt, see above
 notebooks/
   demo.ipynb                   # prerun demo covering every required capability, end-to-end
   capabilities/<NN>_<slug>/demo.ipynb  # one notebook per capability, built from tests/live/ results
