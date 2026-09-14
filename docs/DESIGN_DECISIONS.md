@@ -171,6 +171,32 @@ and latency) bounded in long sessions instead of growing linearly forever.
 The notebook's §17 deliberately runs past the summarization threshold to
 show this triggering.
 
+**Deliberately in-process, not Redis (or similar) -- and why that's the right
+call for now, not an oversight.** `ConversationMemory` lives inside one
+`Orchestrator` instance for the lifetime of one process (a CLI run, one
+Streamlit session, one notebook kernel). This is a separate question from
+short-vs-long history above: it's about *where the object lives*, not how
+long it remembers. An external store only earns its cost once one of these
+becomes true, none of which apply to this prototype's actual deployment
+shape today:
+- **Multiple server instances** behind a load balancer, where a user's next
+  turn might land on a different process than the one holding their state --
+  in-process memory breaks the moment state needs to cross a process
+  boundary.
+- Conversations need to **survive a server restart/redeploy**.
+- **Many concurrent users**, where memory eviction is better handled by
+  infrastructure (a TTL) than by hand-rolled application-level sweeping.
+
+Adding Redis now would mean a new infrastructure dependency, deployment
+complexity, and serialization code to solve a scaling problem this prototype
+doesn't have -- directly against the lightweight, minimal-dependency
+philosophy in §3/§4 above. The migration path is cheap *when* it's actually
+needed, precisely because `ConversationMemory` is already a small, plain
+dataclass (`raw_turns`, `rolling_summary`, `active_filters`, `turn_count` --
+lists/strings/dicts, no framework objects): serialize it to JSON, store/load
+it from Redis keyed by session ID, and use `SETEX` for expiry instead of
+hand-rolling a sweep. A considered deferral, not an unaddressed gap.
+
 ## 9. Validation/retry: a cheap deterministic check before a second LLM call
 
 Rather than always issuing a second "critic" LLM call to validate every
