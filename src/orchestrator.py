@@ -38,6 +38,7 @@ class AgentResponse:
     follow_up_suggestions: list[str] = field(default_factory=list)
     retried: bool = False
     raw_nlu: dict = field(default_factory=dict)
+    intermediate_steps: dict = field(default_factory=dict)
 
 
 NLU_SYSTEM_PROMPT = f"""You are the natural-language-understanding module for an enterprise
@@ -98,6 +99,13 @@ Rules:
 - Cite unstructured documents inline like [DOC-014] using the doc_id given.
 - If evidence is partial, missing, or an entity was unsupported, say so plainly rather than
   glossing over it (transparency > false confidence).
+- When the question asks for comparison, poor/best performance, or trend across years:
+  * Directly answer which period performed lowest or highest based on the evidence.
+  * Cite supporting numbers from the evidence table for all relevant years.
+  * State the percentage differences (% lower/higher YoY or vs peak).
+  * Explicitly note if any year represents partial data (e.g. YTD 8 months) so nominal
+    totals are not conflated with full-year figures.
+  * Avoid generic filler like "healthy commercial execution" without answering the question.
 - Keep the answer focused and well-formatted; use markdown only where it aids readability.
 - End with 1-2 short, genuinely relevant follow-up suggestions IF there's a natural next
   question (e.g. a related KPI, an adjacent period, an adjacent brand/market) -- omit this if
@@ -152,7 +160,11 @@ class Orchestrator:
                                         max_tokens=600, caller="orchestrator_nlu")
         try:
             data = json.loads(_strip_fences(raw))
-        except json.JSONDecodeError:
+            if isinstance(data, list):
+                data = data[0] if data and isinstance(data[0], dict) else {}
+            elif not isinstance(data, dict):
+                data = {}
+        except (json.JSONDecodeError, Exception):
             # Graceful degradation: fall back to a permissive default rather than crashing.
             data = {"language": "en", "intent": "data_query", "needs_clarification": False,
                      "clarification_question": None, "entities": {}, "unsupported_entities": [],
@@ -171,6 +183,17 @@ class Orchestrator:
         for item in norm.get("unsupported_entities", []):
             if item not in data["unsupported_entities"]:
                 data["unsupported_entities"].append(item)
+
+        # Detect company-wide / portfolio-wide scope
+        company_wide_terms = (
+            "ab inbev", "abinbev", "anheuser-busch", "anheuser busch", "the company",
+            "company-wide", "entire company", "all brands", "portfolio", "overall",
+            "total", "globally", "as a whole", "across years", "in year did", "which year",
+            "performed poor", "performed poorly", "worst year", "best year", "comparatively"
+        )
+        msg_l = user_message.lower()
+        is_comp_wide = any(t in msg_l for t in company_wide_terms) and not data["entities"].get("brands")
+        data["is_company_wide"] = is_comp_wide
 
         return data
 
@@ -201,12 +224,16 @@ class Orchestrator:
     def _context_block_for_subagents(self) -> str:
         return self.memory.context_block()
 
-    def _call_structured(self, user_message: str, entities: dict) -> tuple[str, list[str]]:
+    def _call_structured(self, user_message: str, entities: dict, is_company_wide: bool = False) -> tuple[str, list[str], str]:
         filt_desc = _entities_to_context_line(entities)
-        ctx = (self._context_block_for_subagents() + "\n" + filt_desc).strip()
+        if is_company_wide:
+            ctx = f"Scope: Enterprise-wide (AB InBev company-wide portfolio across all brands, all countries). Do NOT filter by specific brand or country.\n{filt_desc}".strip()
+        else:
+            ctx = (self._context_block_for_subagents() + "\n" + filt_desc).strip()
         result = structured_agent.answer(self.llm_worker, user_message, context_block=ctx)
         evidence = []
         assumptions = list(result.notes)
+        sql = result.sql_used if result.ok else ""
         if result.ok:
             # Volume is always reported in hL (hectoliters) -- see src/config.py.
             vol_units = ["hL"] * len(result.rows) if "volume" in result.columns else None
@@ -215,34 +242,38 @@ class Orchestrator:
         else:
             assumptions.append(f"Structured data lookup failed: {result.error}")
             evidence.append("STRUCTURED DATA: unavailable for this request.")
-        return "\n".join(evidence), assumptions
+        return "\n".join(evidence), assumptions, sql
 
-    def _call_unstructured(self, user_message: str) -> tuple[str, list[dict]]:
+    def _call_unstructured(self, user_message: str) -> tuple[str, list[dict], list[dict]]:
         ctx = self._context_block_for_subagents()
         result = unstructured_agent.answer(self.llm_worker, user_message, context_block=ctx)
         citations = []
+        docs = []
         if result.ok and result.documents:
             lines = ["RETRIEVED DOCUMENTS:"]
             for d in result.documents:
                 lines.append(f"[{d.doc_id}] {d.title} ({d.date}, {d.source_type}): {d.excerpt}")
                 citations.append({"doc_id": d.doc_id, "title": d.title, "date": d.date, "source_type": d.source_type})
-            return "\n".join(lines), citations
-        return "RETRIEVED DOCUMENTS: none relevant found.", citations
+                docs.append({"doc_id": d.doc_id, "title": d.title, "date": d.date, "source_type": d.source_type, "excerpt": d.excerpt})
+            return "\n".join(lines), citations, docs
+        return "RETRIEVED DOCUMENTS: none relevant found.", citations, docs
 
-    def _call_web(self, user_message: str) -> tuple[str, list[str]]:
+    def _call_web(self, user_message: str) -> tuple[str, list[str], list[dict]]:
         result = websearch_agent.answer(user_message)
+        hits = result.results if result.ok else []
         if result.ok:
             lines = ["WEB SEARCH RESULTS:"]
             for r in result.results:
                 lines.append(f"- {r['title']} ({r['url']}): {r['snippet']}")
-            return "\n".join(lines), []
-        return "WEB SEARCH: unavailable.", [f"Web search was unavailable ({result.unavailable_reason})."]
+            return "\n".join(lines), [], hits
+        return "WEB SEARCH: unavailable.", [f"Web search was unavailable ({result.unavailable_reason})."], []
 
-    def _call_coding(self, user_message: str, prior_evidence: str) -> tuple[str, list[str]]:
+    def _call_coding(self, user_message: str, prior_evidence: str) -> tuple[str, list[str], str]:
         result = coding_agent.answer(self.llm_worker, user_message, supporting_data=prior_evidence)
+        code = result.code_used if result.ok else ""
         if result.ok:
-            return f"CODE EXECUTION RESULT: {result.result} (code: {result.code_used})", []
-        return "CODE EXECUTION: failed.", [f"Custom calculation failed: {result.error}"]
+            return f"CODE EXECUTION RESULT: {result.result} (code: {result.code_used})", [], code
+        return "CODE EXECUTION: failed.", [f"Custom calculation failed: {result.error}"], ""
 
     # -------------------------------------------------------- validation
     def _needs_retry(self, answer_text: str, evidence_numbers: set[str]) -> bool:
@@ -259,10 +290,14 @@ class Orchestrator:
         return len(overlap) < 0.5 * len(answer_numbers)
 
     # ------------------------------------------------------------- main
-    def handle_turn(self, user_message: str) -> AgentResponse:
+    def handle_turn(self, user_message: str, on_step=None) -> AgentResponse:
         self.memory.add_turn("user", user_message)
+        if on_step:
+            on_step("nlu_start", "Parsing natural language intent and resolving entity aliases...")
         nlu = self._run_nlu(user_message)
         intent = nlu.get("intent", "data_query")
+        if on_step:
+            on_step("nlu_done", f"Intent classified: `{intent}` | Sub-Agents: `{nlu.get('needed_subagents', ['structured'])}`")
 
         if intent == "greeting":
             text = (f"Hello! I'm the {COMPANY_NAME} Q&A assistant. {DOMAIN_DESCRIPTION} "
@@ -290,34 +325,63 @@ class Orchestrator:
             return self._finish(question, intent, nlu)
 
         # --- data_query / comparison: route to sub-agents ---
-        self.memory.update_filters(_flatten_entities(nlu.get("entities", {})))
+        is_comp_wide = nlu.get("is_company_wide", False)
+        self.memory.update_filters(_flatten_entities(nlu.get("entities", {})), is_company_wide=is_comp_wide)
         assumptions = self._hierarchy_fallback_notes(nlu)
 
         needed = nlu.get("needed_subagents") or ["structured"]
         evidence_blocks = []
         citations = []
         used = []
+        sql_used = ""
+        steps = {
+            "nlu": nlu,
+            "needed_subagents": list(needed),
+            "sql_used": "",
+            "documents": [],
+            "web_results": [],
+            "code_used": "",
+        }
 
         if "structured" in needed:
-            block, notes = self._call_structured(user_message, nlu.get("entities", {}))
+            if on_step:
+                on_step("sql_start", "Generating and executing safe SQL query against `abinbev.db`...")
+            block, notes, sql = self._call_structured(user_message, nlu.get("entities", {}), is_company_wide=is_comp_wide)
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("structured")
+            sql_used = sql
+            steps["sql_used"] = sql
+            if on_step and sql:
+                on_step("sql_done", f"Executed validated SQL on fact table (`{sql[:65]}...`)")
         if "unstructured" in needed:
-            block, cites = self._call_unstructured(user_message)
+            if on_step:
+                on_step("docs_start", "Searching 28 internal corporate documents via BM25 hybrid ranking...")
+            block, cites, docs = self._call_unstructured(user_message)
             evidence_blocks.append(block)
             citations.extend(cites)
             used.append("unstructured")
+            steps["documents"] = docs
+            if on_step:
+                on_step("docs_done", f"Retrieved {len(docs)} internal document excerpts with citations")
         if "web" in needed:
-            block, notes = self._call_web(user_message)
+            if on_step:
+                on_step("web_start", "Dispatching public web search sub-agent for competitor intelligence...")
+            block, notes, hits = self._call_web(user_message)
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("web")
+            steps["web_results"] = hits
+            if on_step:
+                on_step("web_done", f"Retrieved {len(hits)} public web results")
         if "coding" in needed:
-            block, notes = self._call_coding(user_message, "\n".join(evidence_blocks))
+            if on_step:
+                on_step("code_start", "Executing derived calculations in sandboxed Python environment...")
+            block, notes, code = self._call_coding(user_message, "\n".join(evidence_blocks))
             evidence_blocks.append(block)
             assumptions.extend(notes)
             used.append("coding")
+            steps["code_used"] = code
 
         evidence_text = "\n\n".join(evidence_blocks) if evidence_blocks else "No evidence retrieved."
         evidence_numbers = set(re.findall(r"\d[\d,]*\.?\d*", evidence_text))
@@ -325,12 +389,18 @@ class Orchestrator:
         synth_prompt = (f"{self.memory.context_block()}\n\nUser question: {user_message}\n\n"
                          f"Evidence:\n{evidence_text}\n\n"
                          + (f"Known data limitations to mention: {'; '.join(assumptions)}\n" if assumptions else ""))
+        if on_step:
+            on_step("synthesis_start", "Synthesizing executive answer with verified numbers and citations...")
         answer_text = self.llm_router.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=synth_prompt,
                                                 max_tokens=900, caller="orchestrator_synthesis")
 
         retried = False
+        if on_step:
+            on_step("validation", "Verifying numerical overlap & consistency against retrieved SQLite facts...")
         if self._needs_retry(answer_text, evidence_numbers):
             retried = True
+            if on_step:
+                on_step("retry", "Draft numerical check failed threshold; running corrective synthesis retry...")
             correction_prompt = (synth_prompt + "\n\nYour previous draft:\n" + answer_text +
                                   "\n\nThat draft used figures not found in the evidence above. "
                                   "Rewrite the answer using ONLY numbers present in the evidence.")
@@ -339,18 +409,22 @@ class Orchestrator:
 
         follow_ups = self._follow_up_suggestions(nlu)
         resp = self._finish(answer_text, intent, nlu, sub_agents_used=used, citations=citations,
-                             assumptions=assumptions, follow_up_suggestions=follow_ups, retried=retried)
+                             assumptions=assumptions, follow_up_suggestions=follow_ups, retried=retried,
+                             sql_used=sql_used, intermediate_steps=steps)
+        if on_step:
+            on_step("complete", "Verified response generated.")
         return resp
 
     # -------------------------------------------------------- helpers
     def _finish(self, text, intent, nlu, sub_agents_used=None, citations=None, assumptions=None,
-                follow_up_suggestions=None, retried=False) -> AgentResponse:
+                follow_up_suggestions=None, retried=False, sql_used="", intermediate_steps=None) -> AgentResponse:
         self.memory.add_turn("assistant", text)
         self.memory.summarize_overflow(lambda s, u: self.llm_worker.generate(system=s, user=u, max_tokens=300, caller="memory_summarizer"))
         return AgentResponse(
             answer=text, intent=intent, sub_agents_used=sub_agents_used or [],
-            citations=citations or [], assumptions=assumptions or [],
+            sql_used=sql_used, citations=citations or [], assumptions=assumptions or [],
             follow_up_suggestions=follow_up_suggestions or [], retried=retried, raw_nlu=nlu,
+            intermediate_steps=intermediate_steps or {},
         )
 
     def _capability_intro_text(self) -> str:

@@ -24,14 +24,13 @@ Built for the FMCG AI Engineer prototype assignment. See `docs/` for the archite
 python3 scripts/generate_structured_data.py
 python3 scripts/generate_documents.py
 
-# 2. Run the offline test suite (no API key needed)
-python3 -m unittest discover -s tests -v
+# 2. Run the offline test suite (no API key needed, ~0.6s)
+python3 main.py --test
 
-# 3. Interactive CLI chat (auto-loads .env if present; defaults to mock if no key found)
-python3 main.py
+# 3. Run the live LLM integration tests (uses Token Harbor / OpenAI from .env)
+python3 main.py --test-live
 
-# 4. Running with a model provider (Token Harbor, OpenAI, or Anthropic):
-# Place your token in .env (e.g. api_key=hk_live_... or OPENAI_API_KEY=... or ANTHROPIC_API_KEY=...)
+# 4. Interactive CLI chat (auto-loads .env if present; defaults to mock if no key found)
 python3 main.py
 
 # 5. Full demo & capability checklist:

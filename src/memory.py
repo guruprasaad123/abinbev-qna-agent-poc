@@ -39,11 +39,17 @@ class ConversationMemory:
         self.raw_turns.append({"role": role, "content": content})
         self.turn_count += 1
 
-    def update_filters(self, extracted: dict):
+    def update_filters(self, extracted: dict, is_company_wide: bool = False):
         """Merge newly-extracted entities into active filters. Only non-empty
         values overwrite -- an omitted dimension in a follow-up question means
         'keep using what we already had', which is the whole point of this
-        mechanism (e.g. user asks brand+country, then just 'and last year?')."""
+        mechanism (e.g. user asks brand+country, then just 'and last year?').
+        If is_company_wide is True, brand/country/channel filters are cleared
+        so enterprise-wide queries are not restricted to a single entity."""
+        if is_company_wide:
+            self.active_filters.pop("brand", None)
+            self.active_filters.pop("country", None)
+            self.active_filters.pop("channel", None)
         for k, v in (extracted or {}).items():
             if v:
                 self.active_filters[k] = v

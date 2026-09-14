@@ -17,14 +17,11 @@ from src.llm_client import GLOBAL_USAGE
 
 
 def main():
-    provider = os.environ.get("LLM_PROVIDER", "").lower() or (
-        "anthropic" if os.environ.get("ANTHROPIC_API_KEY") else
-        "openai" if os.environ.get("OPENAI_API_KEY") else "mock"
-    )
-    print(f"[LLM provider: {provider}]" + ("  (mock mode -- set an API key for real answers)" if provider == "mock" else ""))
-    print("Type your question ('usage' for cost/latency summary, 'exit' to quit).\n")
-
     orch = Orchestrator()
+    client_name = type(orch.llm_router).__name__
+    model_name = orch.llm_router.model_name
+    print(f"[LLM provider: {client_name} | model: {model_name}]" + ("  (mock mode -- set an API key for real answers)" if "Mock" in client_name else ""))
+    print("Type your question ('usage' for cost/latency summary, 'exit' to quit).\n")
     while True:
         try:
             q = input("You: ").strip()

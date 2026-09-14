@@ -26,12 +26,14 @@ We avoided heavy agent frameworks (LangGraph, CrewAI, AutoGen). A clean, modular
 
 *Production follow-up*: A production enterprise implementation would add parallelized sub-agent execution (`asyncio.gather`) and streaming response tokens.
 
-## 4. Pluggable Client with Token Harbor & .env Auto-Loading
+## 4. Pluggable Client with Two-Tier Token Harbor Model Routing
 
 All LLM calls flow through `src/llm_client.py`:
-- Automatically loads credentials from `.env` (e.g., `api_key=hk_live_...` or provider tokens).
-- Supports **Token Harbor** (`https://tokenharbor.ai/v1`), OpenAI, Anthropic, and `MockLLMClient`.
-- Includes graceful error-handling: if an external API key is invalid or unreachable, the client falls back to the deterministic offline mock engine rather than crashing the session.
+- Automatically loads credentials from `.env` (`TOKEN_HARBOR_API_KEY=thk_live_...`, OpenAI, Anthropic, or Mock).
+- Supports **Token Harbor** (`https://tokenharbor.ai/v1`) using an intelligent two-tier allocation:
+  - **Router Model (`deepseek-v4.1-flash:free`)**: With an Intelligence Index of 39.5 (Rank #21), this higher-reasoning tier is allocated to NLU classification, multi-evidence synthesis, and hallucination retry prompts where instruction-following and citation fidelity matter most.
+  - **Worker Model (`deepseek-v4-flash:free`)**: With an Intelligence Index of 35.0 (Rank #32) and unconstrained rate limits, this model handles high-volume, templated tasks (NL-to-SQL generation and conversation memory summarization). This prevents burning through the stricter rate limits of V4.1.
+- Includes graceful error-handling: on invalid/revoked keys or network outage, seamlessly falls back to the deterministic offline mock engine (`MockLLMClient`) to prevent session crashing.
 - Centralized usage telemetry (`GLOBAL_USAGE`) tracks tokens, latency, and estimated cost across all router and worker calls.
 
 ## 5. SQL Safety: Whitelist, Not Blacklist
@@ -75,12 +77,23 @@ To prevent hallucinations without incurring a 2x LLM cost on every turn:
 
 For questions concerning external competitors (Heineken NV, Carlsberg Group, Molson Coors):
 - Routes to Tavily (if configured) or free DuckDuckGo search.
+- Cleanly silences internal library rename warnings while handling network timeouts.
 - If network or provider is unavailable, surfaces a clear, transparent explanation rather than fabricating answers.
 
-## 11. Production Evolution Roadmap
+## 11. Multimodal Strategy: Why and Where to Deploy MiMo V2.5
+
+Token Harbor provides access to **MiMo V2.5 (`mimo-v2.5:free`)**, an omnimodal model handling text, images, audio, and video with an Intelligence Index of 22.3.
+- **Why NOT in Core Text Reasoning**: With an intelligence index of 22.3, deploying MiMo on NLU intent parsing or SQL generation introduces unacceptable risks of malformed JSON or SQL syntax errors compared to DeepSeek V4 (35.0) and V4.1 (39.5).
+- **Where MiMo Fits in FMCG / AB InBev Operations**:
+  1. **Retail Execution & Cooler Audits (Vision)**: Processing store photos uploaded via the BEES B2B app to calculate facing share (e.g. Corona vs. Heineken shelf presence) and detect promotional compliance.
+  2. **PDF Financial Chart Extraction (Vision OCR)**: Inspecting quarterly investor presentation slide graphics and converting non-textual waterfall charts into structured markdown tables for the document index.
+  3. **Voice Input for Field Sales Reps (Audio)**: Enabling on-the-road sales and distribution reps to query brand inventory and pricing via voice notes.
+
+## 12. Production Evolution Roadmap
 
 With additional development time:
 1. **Parallelized Sub-Agent Calls**: Run structured SQL, unstructured retrieval, and web search concurrently via `asyncio`.
-2. **Dense Vector Embeddings**: Integrate an enterprise vector store (e.g. pgvector or Qdrant) with hybrid BM25 search.
-3. **Containerized Sandbox**: Run coding execution in ephemeral gVisor/Docker containers with strict cgroups.
-4. **Streaming UX**: Stream synthesized answers token-by-token for lower perceived latency.
+2. **Multimodal Ingestion Pipeline**: Wire MiMo V2.5 to ingest store audit photos and investor presentation slides.
+3. **Dense Vector Embeddings**: Integrate an enterprise vector store (e.g. pgvector or Qdrant) with hybrid BM25 search.
+4. **Containerized Sandbox**: Run coding execution in ephemeral gVisor/Docker containers with strict cgroups.
+5. **Streaming UX**: Stream synthesized answers token-by-token for lower perceived latency.

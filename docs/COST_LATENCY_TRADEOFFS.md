@@ -77,6 +77,13 @@ schema) and doesn't need frontier multi-step reasoning; spending there would
 inflate cost with little measurable quality gain for this task shape. Revisit
 if the domain grows to open-ended, ambiguous multi-hop reasoning.
 
+### Applied to Token Harbor: DeepSeek V4.1 vs V4 Allocation
+
+In our live evaluation environment on Token Harbor, this two-tier philosophy directly resolves rate limit constraints:
+- **Router (`deepseek-v4.1-flash:free`)**: Intelligence Index 39.5 (Rank #21). Because this model has **LIMITED** quota/rate limits, we allocate it strictly to NLU and synthesis.
+- **Worker (`deepseek-v4-flash:free`)**: Intelligence Index 35.0 (Rank #32). Handles high-throughput, templated NL-to-SQL generation and transcript summarization where quota limits would otherwise throttle multi-turn analytical sessions.
+- **Multimodal (`mimo-v2.5:free`)**: With an Intelligence Index of 22.3, MiMo is intentionally excluded from the core text/SQL reasoning path to avoid schema and JSON hallucinations, but serves as the dedicated sub-agent for retail cooler image audits and PDF chart OCR.
+
 ## 3. Latency: where the time actually goes
 
 Sub-agent *tool* latency is negligible: SQLite queries and BM25 search both

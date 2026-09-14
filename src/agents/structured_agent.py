@@ -45,7 +45,12 @@ Known channels: {', '.join(ALL_CHANNELS)}
 Rules:
 - Only reference the tables/columns above.
 - If the question implies a time comparison (YoY, QoQ, "vs last year"), compute
-  it with conditional aggregation (e.g. SUM(CASE WHEN year=2025 THEN ... END)).
+  it with conditional aggregation or yearly group by.
+- If the question refers to the company as a whole (AB InBev), asks about overall
+  performance, or does not specify a brand/country, do NOT filter by brand or country.
+- When asked in which year performance was poor, worst, best, highest, lowest, or to
+  compare performance across years, select yearly totals across all available years:
+  SELECT year, SUM(net_revenue_usd) AS net_revenue_usd, SUM(volume) AS volume, AVG(gross_margin_pct) AS gross_margin_pct, AVG(market_share_pct) AS market_share_pct FROM fact_monthly_kpi GROUP BY year ORDER BY year;
 - If a brand/country/channel named by the user is not in the known lists above,
   do NOT invent a row for it -- instead select nothing for it (the caller
   handles reporting unsupported entities).

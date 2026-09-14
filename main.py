@@ -15,10 +15,24 @@ from scripts.chat_cli import main as cli_main
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] in ("--test", "-t", "test"):
+    if len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test-live", "-tl", "test-live")):
+        import unittest
+        loader = unittest.TestLoader()
+        suite = loader.loadTestsFromName("tests.test_live_llm")
+        runner = unittest.TextTestRunner(verbosity=2)
+        res = runner.run(suite)
+        sys.exit(0 if res.wasSuccessful() else 1)
+    elif len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test-all", "test-all")):
         import unittest
         loader = unittest.TestLoader()
         suite = loader.discover("tests")
+        runner = unittest.TextTestRunner(verbosity=2)
+        res = runner.run(suite)
+        sys.exit(0 if res.wasSuccessful() else 1)
+    elif len(sys.argv) > 1 and any(sys.argv[1] == flag for flag in ("--test", "-t", "test")):
+        import unittest
+        loader = unittest.TestLoader()
+        suite = loader.loadTestsFromName("tests.test_pipeline")
         runner = unittest.TextTestRunner(verbosity=2)
         res = runner.run(suite)
         sys.exit(0 if res.wasSuccessful() else 1)

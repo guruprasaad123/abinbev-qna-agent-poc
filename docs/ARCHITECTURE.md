@@ -76,3 +76,21 @@ All four sub-agents share one `LLMClient` abstraction (`src/llm_client.py`) that
 - **Structured**: one SQLite DB (`data/db/abinbev.db`), one fact table (`fact_monthly_kpi`, grain = brand $\times$ country $\times$ channel $\times$ month) plus three dimension tables (`dim_brand`, `dim_geo`, `dim_channel`). See `scripts/generate_structured_data.py` and `src/tools/sql_tool.py::schema_description()`.
 - **Unstructured**: 28 generated markdown documents across 6 source types (press release, earnings commentary, market research, sustainability, competitor intel, strategy memo), indexed by `data/unstructured/manifest.json` with per-doc tags, brands, countries, and dates. See `scripts/generate_documents.py`.
 - **Single Source of Truth**: `src/config.py` defines every brand, country, channel, KPI, and alias exactly once; both generators import from it, guaranteeing that the structured and unstructured corpora describe the *same* entities and cross-validate each other.
+
+## Model Allocation & Intelligence Tiers
+
+To balance cognitive accuracy against provider rate limits, the orchestrator divides work into two distinct LLM tiers:
+
+| Tier | Model in `.env` | Intelligence Index | Responsibilities |
+|---|---|---|---|
+| **Router Tier** | `deepseek-v4.1-flash:free` | **39.5** (Rank #21) | • NLU intent classification & multi-agent routing<br>• Ambiguous query clarification generation<br>• Multi-source evidence synthesis with inline citations<br>• Corrective synthesis retry upon numeric mismatch |
+| **Worker Tier** | `deepseek-v4-flash:free` | **35.0** (Rank #32) | • Natural Language $\rightarrow$ SQL query generation against fixed 4-table schema<br>• Conversation transcript summarization (`memory_summarizer`)<br>• Sandboxed Python snippet generation (`coding_agent`) |
+
+*Rationale*: High-volume, narrow tasks run on unconstrained V4, while scarce V4.1 quota is preserved exclusively for nuanced reasoning and answer synthesis.
+
+## Multimodal Architectural Extension (MiMo V2.5)
+
+For omnimodal enterprise scenarios, Token Harbor's **MiMo V2.5 (`mimo-v2.5:free`)** (Intelligence Index 22.3, text/image/audio/video) is decoupled from text reasoning and allocated to field ingestion:
+1. **BEES Retail Cooler Audits**: Ingesting store photos to calculate cooler facing share and tap handle compliance.
+2. **Investor Presentation OCR**: Converting graphic-heavy earnings slides into structured tables for the BM25 index.
+3. **Field Voice Notes**: Transcribing audio dictations from on-the-road sales representatives.

@@ -117,6 +117,25 @@ class TestOrchestrator(unittest.TestCase):
         # brand should still be remembered from the previous turn
         self.assertEqual(self.orch.memory.active_filters.get("brand"), "Budweiser")
 
+    def test_comparative_poor_year_query_company_wide(self):
+        # Turn 1 sets active filters for Bud Light in United States
+        self.orch.handle_turn("What was Bud Light in United States in 2025?")
+        self.assertEqual(self.orch.memory.active_filters.get("country"), "United States")
+
+        # Turn 2 asks about AB InBev company-wide poor performance comparatively
+        r = self.orch.handle_turn("in year did the AB inBev performed poor comparatively")
+        self.assertEqual(r.intent, "comparison")
+        self.assertIn("structured", r.sub_agents_used)
+        # SQL should group by year and NOT filter by brand='Bud Light'
+        self.assertIn("GROUP BY year", r.sql_used)
+        self.assertNotIn("brand='Bud Light'", r.sql_used)
+        # Answer must cite 2023 as lowest full year and include percentage deltas
+        self.assertIn("2023", r.answer)
+        self.assertIn("9.66%", r.answer)
+        self.assertIn("18.04%", r.answer)
+        self.assertIn("2026", r.answer)
+
 
 if __name__ == "__main__":
     unittest.main()
+

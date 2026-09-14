@@ -18,7 +18,7 @@ llm_client.py -- same philosophy). So:
      unsupported or unavailable requests") instead of pretending it
      searched the web.
 
-This tool is intentionally scoped to questions OUTSIDE Meridian's internal
+This tool is intentionally scoped to questions OUTSIDE AB InBev's internal
 data (general industry context, public competitor news, commodity prices,
 etc.) -- the orchestrator only routes here when structured+unstructured
 retrieval can't answer, which keeps cost down (external search is the most
@@ -27,6 +27,7 @@ the DB/docs rather than the open web.
 """
 from __future__ import annotations
 import os
+import warnings
 from dataclasses import dataclass, field
 
 
@@ -52,11 +53,22 @@ def _search_tavily(query: str, max_results: int) -> list[dict]:
 
 
 def _search_duckduckgo(query: str, max_results: int) -> list[dict]:
-    from duckduckgo_search import DDGS  # optional dependency, only imported if reached
-    with DDGS(timeout=5) as ddgs:
-        hits = list(ddgs.text(query, max_results=max_results))
-    return [{"title": h.get("title", ""), "url": h.get("href", ""), "snippet": h.get("body", "")}
-            for h in hits]
+    orig_warn = warnings.warn
+
+    def _no_ddgs_warn(message, category=None, *args, **kwargs):
+        if "duckduckgo_search" in str(message):
+            return
+        return orig_warn(message, category, *args, **kwargs)
+
+    warnings.warn = _no_ddgs_warn
+    try:
+        from duckduckgo_search import DDGS
+        with DDGS(timeout=5) as ddgs:
+            hits = list(ddgs.text(query, max_results=max_results))
+        return [{"title": h.get("title", ""), "url": h.get("href", ""), "snippet": h.get("body", "")}
+                for h in hits]
+    finally:
+        warnings.warn = orig_warn
 
 
 def web_search(query: str, max_results: int = 5) -> WebSearchResult:
