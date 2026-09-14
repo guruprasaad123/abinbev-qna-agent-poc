@@ -60,7 +60,9 @@ python3 -m unittest discover -s tests -v
 python3 scripts/chat_cli.py
 
 # Or run it "for real" with an actual model -- export the vars, or put them
-# in a .env file (auto-loaded if python-dotenv is installed):
+# in a .env file (auto-loaded if python-dotenv is installed). A real
+# exported environment variable always takes priority over .env; .env only
+# fills in whatever isn't already set in the shell:
 export LLM_PROVIDER=anthropic            # or: openai
 export ANTHROPIC_API_KEY=sk-...          # or: export OPENAI_API_KEY=sk-...
 python3 scripts/chat_cli.py

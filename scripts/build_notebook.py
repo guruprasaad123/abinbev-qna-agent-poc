@@ -59,7 +59,10 @@ import os
 
 try:
     from dotenv import load_dotenv  # optional: picks up a .env file if python-dotenv is installed
-    load_dotenv()
+    # override=False (the default, made explicit here) means a real
+    # environment variable always wins over .env -- .env only fills in
+    # whatever isn't already set.
+    load_dotenv(override=False)
 except ImportError:
     pass
 

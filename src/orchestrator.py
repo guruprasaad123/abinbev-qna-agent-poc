@@ -16,7 +16,7 @@ import json
 import re
 from dataclasses import dataclass, field
 
-from src.llm_client import get_llm_client
+from src.llm_client import get_llm_client, get_synthesis_tier_models, LLMUnavailableError
 from src.memory import ConversationMemory
 from src.config import (
     ALL_ZONES, ALL_COUNTRIES, ALL_BRANDS, ALL_KPIS, KPI_CATALOG, ENTITY_ALIASES,
@@ -38,6 +38,7 @@ class AgentResponse:
     follow_up_suggestions: list[str] = field(default_factory=list)
     retried: bool = False
     raw_nlu: dict = field(default_factory=dict)
+    unavailable: bool = False  # True if this is a degraded response from an LLM outage, not a real answer
 
 
 NLU_SYSTEM_PROMPT = f"""You are the natural-language-understanding module for an enterprise
@@ -118,6 +119,13 @@ class Orchestrator:
         self.llm_classify = llm_classify or get_llm_client("classify")
         self.llm_generate = llm_generate or get_llm_client("generate")
         self.llm_synthesize = llm_synthesize or get_llm_client("synthesize")
+        # Within the synthesize ROLE, a further per-turn COMPLEXITY split
+        # (simple/moderate/complex) -- see _classify_complexity() and
+        # docs/COST_LATENCY_TRADEOFFS.md §2. Read once here; the chosen
+        # tier's model is passed per-call via generate(model_override=...)
+        # on the one llm_synthesize client, so its fallback/retry guards
+        # still apply underneath whichever tier gets picked.
+        self._synthesis_tiers = get_synthesis_tier_models()
         self.memory = ConversationMemory()
 
     # ------------------------------------------------------------------ NLU
@@ -234,6 +242,25 @@ class Orchestrator:
 
     # ------------------------------------------------------------- main
     def handle_turn(self, user_message: str, on_step=None) -> AgentResponse:
+        """Thin wrapper around _handle_turn_inner: guarantees this never raises
+        past the orchestrator's own boundary. An LLM-provider outage (rate
+        limit, account/quota block, network failure, ...) surfaces from
+        src/llm_client.py as LLMUnavailableError -- caught here and turned
+        into a plain, honest AgentResponse instead of an unhandled exception
+        crashing the caller (e.g. the Streamlit UI). This is "Support graceful
+        handling of unsupported or unavailable requests" applied to the LLM
+        dependency itself, not just to unsupported entities/data."""
+        try:
+            return self._handle_turn_inner(user_message, on_step=on_step)
+        except LLMUnavailableError as e:
+            text = ("I'm temporarily unable to reach the language model service, so I can't "
+                     "process this request right now. Please try again in a moment.\n\n"
+                     f"(Details: {e})")
+            self.memory.add_turn("assistant", text)
+            return AgentResponse(answer=text, intent="service_unavailable",
+                                  assumptions=[str(e)], unavailable=True)
+
+    def _handle_turn_inner(self, user_message: str, on_step=None) -> AgentResponse:
         """`on_step`, if given, is called as `on_step(phase: str, detail: dict)` at each
         major milestone (nlu, routing, subagent, synthesis) -- purely observational,
         never affects behavior. Built for a UI (see ui/app.py) to show a live trace of
@@ -329,23 +356,33 @@ class Orchestrator:
         synth_prompt = (f"{self.memory.context_block()}\n\nUser question: {user_message}\n\n"
                          f"Evidence:\n{evidence_text}\n\n"
                          + (f"Known data limitations to mention: {'; '.join(assumptions)}\n" if assumptions else ""))
-        emit("synthesis", {"status": "start"})
+        tier = _classify_complexity(nlu, needed)
+        tier_model = self._synthesis_tiers[tier]
+        emit("synthesis", {"status": "start", "complexity_tier": tier, "model_requested": tier_model})
         # max_tokens is generous (not just the length of the expected prose answer)
         # because some models spend a chunk of the budget on internal reasoning
         # before writing the final answer -- too tight a cap risks the response
         # getting cut off mid-reasoning, before the actual answer is ever written.
         answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=synth_prompt,
-                                                    max_tokens=1600, caller="orchestrator_synthesis")
+                                                    max_tokens=1600, caller="orchestrator_synthesis",
+                                                    model_override=tier_model)
 
         retried = False
         if self._needs_retry(answer_text, evidence_numbers):
             retried = True
-            emit("synthesis", {"status": "retry", "reason": "drafted answer used numbers not found in evidence"})
+            # Escalate rather than retry the same tier that just produced a
+            # hallucinated draft -- _classify_complexity(is_retry=True) always
+            # returns "complex".
+            retry_tier = _classify_complexity(nlu, needed, is_retry=True)
+            retry_model = self._synthesis_tiers[retry_tier]
+            emit("synthesis", {"status": "retry", "reason": "drafted answer used numbers not found in evidence",
+                                "complexity_tier": retry_tier, "model_requested": retry_model})
             correction_prompt = (synth_prompt + "\n\nYour previous draft:\n" + answer_text +
                                   "\n\nThat draft used figures not found in the evidence above. "
                                   "Rewrite the answer using ONLY numbers present in the evidence.")
             answer_text = self.llm_synthesize.generate(system=SYNTHESIS_SYSTEM_PROMPT, user=correction_prompt,
-                                                        max_tokens=1600, caller="orchestrator_synthesis_retry")
+                                                        max_tokens=1600, caller="orchestrator_synthesis_retry",
+                                                        model_override=retry_model)
         emit("synthesis", {"status": "done", "retried": retried})
 
         follow_ups = self._follow_up_suggestions(nlu)
@@ -357,7 +394,14 @@ class Orchestrator:
     def _finish(self, text, intent, nlu, sub_agents_used=None, citations=None, assumptions=None,
                 follow_up_suggestions=None, retried=False) -> AgentResponse:
         self.memory.add_turn("assistant", text)
-        self.memory.summarize_overflow(lambda s, u: self.llm_generate.generate(system=s, user=u, max_tokens=300, caller="memory_summarizer"))
+        try:
+            self.memory.summarize_overflow(lambda s, u: self.llm_generate.generate(system=s, user=u, max_tokens=300, caller="memory_summarizer"))
+        except LLMUnavailableError:
+            # Memory summarization is a cost/latency optimization for long
+            # sessions, not core to answering THIS question -- an outage here
+            # shouldn't discard an answer that already synthesized fine.
+            # raw_turns just keeps growing unsummarized until it succeeds.
+            pass
         return AgentResponse(
             answer=text, intent=intent, sub_agents_used=sub_agents_used or [],
             citations=citations or [], assumptions=assumptions or [],
@@ -415,6 +459,25 @@ def _strip_fences(text: str) -> str:
     text = re.sub(r"^```(json)?", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"```$", "", text).strip()
     return text
+
+
+def _classify_complexity(nlu: dict, needed_subagents: list[str], is_retry: bool = False) -> str:
+    """Deterministic (no extra LLM call) complexity tier for the SYNTHESIZE
+    role, from signals already available after NLU + routing: sub-agent
+    count/hybrid retrieval, comparison intent, multi-entity questions, and
+    whether a validation retry already fired once (escalate rather than
+    retry the same tier that just produced a hallucinated draft). See
+    docs/COST_LATENCY_TRADEOFFS.md §2 for the full reasoning and the model
+    each tier maps to."""
+    if is_retry:
+        return "complex"
+    if len(needed_subagents) >= 3:
+        return "complex"
+    entities = nlu.get("entities", {})
+    multi_entity = len(entities.get("zones") or []) > 1 or len(entities.get("kpis") or []) > 1
+    if nlu.get("intent") == "comparison" or len(needed_subagents) == 2 or multi_entity:
+        return "moderate"
+    return "simple"
 
 
 def _detect_corrections(user_message: str, entities: dict) -> list[dict]:

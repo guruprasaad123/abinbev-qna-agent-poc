@@ -126,20 +126,78 @@ LLM_MODEL_SYNTHESIZE=deepseek-v4.1-flash:free  # limited quota, spent on the rol
 ```
 
 **The risk this creates, and how it's guarded:** a hard quota cap means the
-`synthesize` call can legitimately get rate-limited mid-session in a way the
-unlimited `classify`/`generate` calls won't. Without a guard, that would
-surface as an unhandled exception crashing the turn — the same class of
-failure this system already hardened against for token-truncation (§1
-above). `AnthropicLLMClient`/`OpenAILLMClient` (`src/llm_client.py`) both
-catch a rate-limit error on the primary model and retry once against a
-configured `fallback_model` — for the `synthesize` role, that fallback is
-whatever `generate` is configured to use (the always-available baseline),
-wired automatically in `get_llm_client()`. `classify`/`generate` themselves
-have no fallback configured, since they're already the baseline tier —
-there's nowhere cheaper/more-available to fall back to. Usage/cost is
-recorded against whichever model actually served the request, not the
+`synthesize` call can legitimately fail mid-session in a way the unlimited
+`classify`/`generate` calls won't. Without a guard, that would surface as an
+unhandled exception crashing the turn — the same class of failure this
+system already hardened against for token-truncation (§1 above).
+`AnthropicLLMClient`/`OpenAILLMClient` (`src/llm_client.py`) both catch *any*
+API-layer failure on the primary model (not narrowly a 429 rate limit —
+this was widened after actually hitting a `402 confidence_level_required`
+account-level block from a free gateway mid-session, a different error
+class than rate-limiting but the same underlying risk) and retry once
+against a configured `fallback_model` — for the `synthesize` role, that
+fallback is whatever `generate` is configured to use (the always-available
+baseline), wired automatically in `get_llm_client()`. `classify`/`generate`
+themselves have no fallback configured, since they're already the baseline
+tier — there's nowhere cheaper/more-available to fall back to. Usage/cost
+is recorded against whichever model actually served the request, not the
 one originally requested, so `GLOBAL_USAGE.summary()` stays accurate even
 when a fallback fires.
+
+**And if the fallback ALSO fails** (the account-level block above affected
+*every* model on that gateway equally, so the fallback attempt failed too):
+the client translates the final failure into one provider-agnostic
+`LLMUnavailableError`, and `Orchestrator.handle_turn` (a thin wrapper around
+the real turn-handling logic) catches it and returns a plain, honest
+"I'm temporarily unable to reach the language model service..." answer
+(`AgentResponse.unavailable=True`) instead of propagating an exception —
+verified by forcing every underlying API call to fail and confirming
+`handle_turn` still returns cleanly rather than crashing the caller (the
+Streamlit UI, in the case that actually surfaced this gap). A narrower,
+separate guard around the memory-summarization call specifically avoids the
+opposite mistake: discarding an already-successfully-synthesized answer
+just because the *unrelated*, best-effort summarization call happened to
+fail afterward.
+
+### Going further: dynamic per-turn routing *within* the synthesize role
+
+The three-role split (classify/generate/synthesize) is static -- set once via
+env vars, same model for every turn. Once a paid pass unlocked several
+models at different price/quality points on one account (rather than one
+quota-limited model to spend carefully), a further, *dynamic* split became
+worth adding: not every `synthesize` call is equally hard, so not every one
+should cost the same.
+
+`Orchestrator._classify_complexity()` picks a tier -- `simple` / `moderate` /
+`complex` -- per turn, from signals already available after NLU + routing,
+with **no extra LLM call**:
+
+| Tier | Trigger | Model (this deployment) | Real Artificial Analysis Intelligence Index |
+|---|---|---|---|
+| `simple` | single zone/KPI, one sub-agent | `deepseek-v4-flash:free` | 35.0 |
+| `moderate` | comparison intent, OR 2 sub-agents, OR multi-zone/multi-KPI question | `deepseek-v4.1-flash:free` | 39.5 |
+| `complex` | 3+ sub-agents (hybrid retrieval), OR a validation retry already fired once | `glm-5.3-flash` | ~42-46 |
+
+The `complex` tier is also what a validation retry escalates to,
+unconditionally -- if the cheaper tier's draft already got flagged as
+citing numbers not present in the evidence, retrying with the *same* tier
+that just got it wrong is a worse bet than escalating.
+
+Mechanically, this reuses the existing single `llm_synthesize` client
+(constructed once, not re-instantiated per turn) via a new
+`generate(..., model_override=...)` parameter -- the client's own
+rate-limit/outage fallback (above) still applies underneath whichever tier
+is requested, so a `complex`-tier call that fails still falls back to
+`generate`'s model rather than crashing.
+
+Verified live against the real gateway: a single-zone/single-KPI question
+routed to `deepseek-v4-flash:free`; a two-zone comparison routed to
+`deepseek-v4.1-flash:free`; a 3-sub-agent hybrid question (structured +
+web + coding) routed to `glm-5.3-flash`, including on its validation retry.
+`Orchestrator._classify_complexity()` itself is pure/deterministic and unit
+tested (`tests/test_pipeline.py::TestSynthesisComplexityRouting`) without
+needing a live model call to verify the *routing decision* -- only the
+worked example above needed a real call, to verify the *plumbing*.
 
 ## 3. Which APIs are affordable, and how they map onto the three tiers
 

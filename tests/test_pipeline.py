@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.tools.sql_tool import run_query, validate_sql, SQLSafetyError
 from src.tools.retrieval_tool import get_index
 from src.tools.code_tool import run_code
-from src.orchestrator import Orchestrator
+from src.orchestrator import Orchestrator, _classify_complexity
 from src.llm_client import MockLLMClient
 
 
@@ -113,6 +113,35 @@ class TestOrchestrator(unittest.TestCase):
         self.orch.handle_turn("Revenue figure question with no new entity")
         # zone should still be remembered from the previous turn
         self.assertEqual(self.orch.memory.active_filters.get("zone"), "North America")
+
+
+class TestSynthesisComplexityRouting(unittest.TestCase):
+    """_classify_complexity is pure/deterministic -- no LLM call needed to
+    test it, unlike the rest of the synthesis-tier routing feature."""
+
+    def test_single_entity_single_subagent_is_simple(self):
+        nlu = {"intent": "data_query", "entities": {"zones": ["North America"], "kpis": ["revenue_usd_m"]}}
+        self.assertEqual(_classify_complexity(nlu, ["structured"]), "simple")
+
+    def test_comparison_intent_is_moderate(self):
+        nlu = {"intent": "comparison", "entities": {"zones": ["North America"], "kpis": ["revenue_usd_m"]}}
+        self.assertEqual(_classify_complexity(nlu, ["structured"]), "moderate")
+
+    def test_two_subagents_is_moderate(self):
+        nlu = {"intent": "data_query", "entities": {"zones": ["North America"], "kpis": ["revenue_usd_m"]}}
+        self.assertEqual(_classify_complexity(nlu, ["structured", "unstructured"]), "moderate")
+
+    def test_multi_zone_entity_is_moderate(self):
+        nlu = {"intent": "data_query", "entities": {"zones": ["North America", "EMEA"], "kpis": ["revenue_usd_m"]}}
+        self.assertEqual(_classify_complexity(nlu, ["structured"]), "moderate")
+
+    def test_three_or_more_subagents_is_complex(self):
+        nlu = {"intent": "data_query", "entities": {}}
+        self.assertEqual(_classify_complexity(nlu, ["structured", "unstructured", "web"]), "complex")
+
+    def test_retry_always_escalates_to_complex(self):
+        nlu = {"intent": "data_query", "entities": {"zones": ["North America"], "kpis": ["revenue_usd_m"]}}
+        self.assertEqual(_classify_complexity(nlu, ["structured"], is_retry=True), "complex")
 
 
 if __name__ == "__main__":
